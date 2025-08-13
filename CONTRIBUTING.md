@@ -64,7 +64,7 @@ git push origin feature/your-feature-name
 
 1. Go to the original repository on GitHub.
 2. Click the "Pull Requests" tab.
-3. Click the "New Pull Request" button.
+3. If you see a "Compare & pull request" button for your branch, click it to start your pull request. Otherwise, click the "New Pull Request" button.
 4. Select your branch and provide a clear description of your changes.
 5. Submit the pull request.
 
