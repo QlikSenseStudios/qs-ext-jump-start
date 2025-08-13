@@ -31,7 +31,7 @@ QS-Ext-Jump-Start is a boilerplate project designed to accelerate the developmen
 
 ## Development
 
-To develop an extension with this boilerplate, use the GitHub template feature to create a new repository based on this project. Click the "Use this template" button on the GitHub page, then name your new repository as desired. This is preferred over forking, as it creates a clean project history for your extension.
+To develop an extension with this boilerplate, use the GitHub template feature to create a new repository based on this project. Click the "Use this template" button on the [GitHub repository](https://github.com/QlikSenseStudios/qs-ext-jump-start) page, then name your new repository as desired. This is preferred over forking, as it creates a clean project history for your extension.
 
 If you would like to contribute improvements or fixes to this boilerplate, please refer to the [Contributing](#contributing) section below for guidelines and instructions.
 
