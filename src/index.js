@@ -1,7 +1,6 @@
 import { useElement, useLayout, useEffect } from '@nebula.js/stardust';
 
-import properties from './object-properties';
-import data from './data';
+import { properties, data } from './qae';
 import ext from './ext';
 
 /**
