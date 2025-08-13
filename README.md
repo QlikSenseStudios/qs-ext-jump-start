@@ -31,7 +31,9 @@ QS-Ext-Jump-Start is a boilerplate project designed to accelerate the developmen
 
 ## Development
 
-To develop an extension with this boilerplate, you will need to fork this repository and rename it to your desired extension name. After that, you can start building your custom Qlik Sense extension.
+To develop an extension with this boilerplate, use the GitHub template feature to create a new repository based on this project. Click the "Use this template" button on the GitHub page, then name your new repository as desired. This is preferred over forking, as it creates a clean project history for your extension.
+
+If you would like to contribute improvements or fixes to this boilerplate, please refer to the [Contributing](#contributing) section below for guidelines and instructions.
 
 This Qlik Sense Extension is developed with Nebula CLI tools and tested using Playwright. Documentation is available at [Qlik Sense Extension Documentation](https://qlik.dev/extend/) and [Playwright Documentation](https://playwright.dev/docs/intro).
 
@@ -46,15 +48,15 @@ This Qlik Sense Extension is developed with Nebula CLI tools and tested using Pl
 
 ### Getting Started
 
-1. Fork the repository.
-2. Clone the repository:
+1. Click "Use this template" on the [GitHub repository](https://github.com/QlikSenseStudios/qs-ext-jump-start) page to create a new repository for your extension.
+2. Clone your new repository:
    ```bash
-   git clone https://github.com/your-forked-repo/qs-ext-jump-start.git
+   git clone https://github.com/your-username/your-extension-name.git
    ```
-   This will create a local copy of the repository on your machine.
+   This will create a local copy of your new extension project.
 3. Navigate to the project directory:
    ```bash
-   cd qs-ext-jump-start
+   cd your-extension-name
    ```
 4. Install dependencies:
    ```bash
