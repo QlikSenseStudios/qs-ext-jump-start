@@ -1,10 +1,20 @@
 # Contributing to QS-Ext-Jump-Start
 
-Thank you for considering contributing to QS-Ext-Jump-Start! Contributions are welcome and appreciated. By contributing, you help improve this project for everyone.
+Thank you for considering contributing to QS-Ext-Jump-Start! Contributions help improve this template for everyone.
 
 For a list of planned improvements and enhancement ideas, please see [TODO.md](./TODO.md).
 
-## How to Contribute
+## Quick Start for Contributors
+
+1. **Fork and clone** the repository
+2. **Set up development environment:**
+   - Follow [setup guides](./docs/) for your Qlik environment
+   - Install dependencies: `npm install`
+3. **Make your changes** following our coding standards
+4. **Test your changes:** `npm test`
+5. **Submit a pull request** with a clear description
+
+## Detailed Contribution Process
 
 ### 1. Fork the Repository
 

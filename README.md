@@ -1,179 +1,101 @@
 # QS-Ext-Jump-Start
 
-Qlik Sense Extension Jump Start
+A modern boilerplate for building Qlik Sense extensions with pre-configured tooling, testing, and deployment guides.
 
-## Overview
+## Quick Start
 
-QS-Ext-Jump-Start is a boilerplate project designed to accelerate the development of Qlik Sense extensions by providing a pre-configured environment, testing tools, and deployment guidelines.
+1. **Use this template:** Click "Use this template" on [GitHub](https://github.com/QlikSenseStudios/qs-ext-jump-start)
+2. **Install dependencies:** `npm install`
+3. **Set up Qlik environment:** See [setup guides](./docs/)
+4. **Start developing:** `npm run serve`
+5. **Run tests:** `npm test`
+6. **Deploy:** `npm run package`
 
-## Table of Contents
+## Documentation
 
-- [Overview](#overview)
-- [Features](#features)
-- [Development](#development)
-  - [Prerequisites](#prerequisites)
-  - [Getting Started](#getting-started)
-  - [Making Changes](#making-changes)
-  - [Testing](#testing)
-- [Qlik Cloud Tenant Setup](#qlik-cloud-tenant-setup)
-- [Qlik Sense Enterprise Setup](#qlik-sense-enterprise-setup)
-- [Installation](#installation)
-- [Related Resources](#related-resources)
-- [License](#license)
-- [Knowledge Base](./KNOWLEDGE_BASE.md)
-- [Contributing](./CONTRIBUTING.md)
-- [Project TODOs](./TODO.md)
+| Guide                                 | Description                             |
+| ------------------------------------- | --------------------------------------- |
+| [Development](#development)           | Core development workflow               |
+| [Setup Guides](./docs/)               | Environment-specific setup instructions |
+| [Testing](./docs/TESTING.md)          | Running and writing tests               |
+| [Deployment](./docs/DEPLOYMENT.md)    | Packaging and deploying extensions      |
+| [Knowledge Base](./KNOWLEDGE_BASE.md) | Best practices and AI guidance          |
+| [Contributing](./CONTRIBUTING.md)     | How to contribute to this template      |
+| [Project TODOs](./TODO.md)            | Planned improvements                    |
 
 ## Features
 
-- Pre-configured development environment with Nebula CLI.
-- Built-in testing framework using Playwright.
-- Easy deployment for Qlik Sense SaaS and Enterprise environments.
-- Example load script for testing.
+- ✅ Pre-configured development environment with Nebula CLI
+- ✅ Playwright testing framework with Qlik Sense integration
+- ✅ Example extension structure and load script
+- ✅ Deployment automation and packaging
+- ✅ Comprehensive documentation and guides
 
 ## Development
 
-To develop an extension with this boilerplate, use the GitHub template feature to create a new repository based on this project. Click the "Use this template" button on the [GitHub repository](https://github.com/QlikSenseStudios/qs-ext-jump-start) page, then name your new repository as desired. This is preferred over forking, as it creates a clean project history for your extension.
-
-If you would like to contribute improvements or fixes to this boilerplate, please refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines and instructions. For a list of planned improvements and enhancement ideas, see [TODO.md](./TODO.md). For best practices, common tasks, and AI usage guidance, see [KNOWLEDGE_BASE.md](./KNOWLEDGE_BASE.md).
-
-This Qlik Sense Extension is developed with Nebula CLI tools and tested using Playwright. Documentation is available at [Qlik Sense Extension Documentation](https://qlik.dev/extend/) and [Playwright Documentation](https://playwright.dev/docs/intro).
-
 ### Prerequisites
 
-- Node.js (version 20 or later)
-- npm (Node Package Manager)
-- Access to a Qlik Sense Tenant (SaaS Cloud) or Qlik Sense Enterprise (on-premises installation)
-  - A moderate knowledge of Administration tasks in the Qlik Sense environment you are working with.
-    - Create a test application with the supporting load script provided in the `./test/qlik-sense-app/load-script.qvs` file. (Select this application when prompted by the Nebula CLI served viewer.)
-    - Set up your Qlik Sense environment as described in the [Qlik Cloud Tenant Setup](#qlik-cloud-tenant-setup) or [Qlik Sense Enterprise Setup](#qlik-sense-enterprise-setup) sections below.
+- Node.js 20+
+- npm
+- Access to Qlik Sense (Cloud or Enterprise)
 
 ### Getting Started
 
-1. Click "Use this template" on the [GitHub repository](https://github.com/QlikSenseStudios/qs-ext-jump-start) page to create a new repository for your extension.
-2. Clone your new repository:
+1. **Create your extension repository:**
+
    ```bash
+   # Use GitHub template, then:
    git clone https://github.com/your-username/your-extension-name.git
-   ```
-   This will create a local copy of your new extension project.
-3. Navigate to the project directory:
-   ```bash
    cd your-extension-name
    ```
-4. Install dependencies:
+
+2. **Install dependencies:**
+
    ```bash
    npm install
    ```
-   This will install all required packages listed in the `package.json` file.
-5. Serve the extension:
+
+3. **Set up Qlik environment:**
+   - [Qlik Cloud Setup](./docs/QLIK_CLOUD_SETUP.md)
+   - [Qlik Enterprise Setup](./docs/QLIK_ENTERPRISE_SETUP.md)
+
+4. **Start development server:**
    ```bash
    npm run serve
    ```
-   This will start a local development server. Open your browser and navigate to `http://localhost:8000` (or the port you are using) to connect to your Qlik Sense environment and test application to view the extension.
+   Navigate to `http://localhost:8000` and connect to your Qlik Sense environment.
+
+### Project Structure
+
+```
+src/
+├── index.js              # Main extension entrypoint
+├── ext.js                # Extension configuration
+└── qae/                  # Properties and data sources
+    ├── object-properties.js
+    ├── data.js
+    └── index.js
+test/
+├── qs-ext.e2e.js         # End-to-end tests
+└── qlik-sense-app/       # Test data and load script
+```
 
 ### Making Changes
 
-To make changes to the extension, edit the relevant files in the project directory. Nebula extension documentation can be found at [Nebula Documentation](https://qlik.dev/extend/). Nebula extensions use React style coding conventions for event hooks. You can review the [React Hooks documentation](https://react.dev/reference/react/hooks) for additional guidance on best practices.
+- **Extension logic:** Edit files in `src/`
+- **Properties:** Update `src/qae/object-properties.js`
+- **Data sources:** Modify `src/qae/data.js`
+- **Tests:** Add tests to `test/qs-ext.e2e.js`
 
-As extensions are typically used to visualize data, you may need to modify the load script to create the necessary data model for your visualizations. Update the `./test/qlik-sense-app/load-script.qvs` file as needed. Load scripts are written in Qlik's proprietary scripting language, which is similar to Backus-Naur Form (BNF).
+For detailed guidance, see [Knowledge Base](./KNOWLEDGE_BASE.md).
 
-### Testing
+## Resources
 
-Install the Playwright web testing framework to run tests for this extension. If you haven't installed Playwright yet, run:
-
-```bash
-npx playwright install
-```
-
-Open the Qlik Sense test application you created to complete the prerequisites and get the application ID from the URL. You will need this ID for your `.env` file for Playwright testing.
-
-Create a `.env` file in the root directory of the project with the content described in the [Qlik Cloud Tenant Setup](#qlik-cloud-tenant-setup) or [Qlik Sense Enterprise Setup](#qlik-sense-enterprise-setup) sections below, depending on your environment.
-
-To run the tests for this extension, use:
-
-```bash
-npm test
-```
-
-This will execute the Playwright tests defined in the project. You can view the last test report by running:
-
-```bash
-npm run serve:report
-```
-
-This will serve the report generated by Playwright, allowing you to see the results of your tests in a web browser.
-
-## Qlik Cloud Tenant Setup
-
-Set up a test user and grant access to the test application you created as referenced in the prerequisites step.
-
-In your tenant's administration menu, navigate to the "Web" section. Your Web Integration ID must be set up on your Qlik Sense Tenant with the following allowed origins whitelisted:
-
-- `http://localhost:8000` (or the port you are using to serve the extension for development)
-- `http://localhost:8077` (or the port you are using to serve the extension for testing)
-
-The following environment variables are required in your `.env` file for Playwright testing:
-
-| Variable                | Example Value                        | Description                                |
-| ----------------------- | ------------------------------------ | ------------------------------------------ |
-| QLIK_ENGINE_HOST        | <your-tenant>.<region>.qlikcloud.com | Qlik Cloud tenant host                     |
-| QLIK_WEB_INTEGRATION_ID | tenant-web-integration-id            | Web Integration ID for cross-site requests |
-| QLIK_USERNAME           | username                             | Username for authentication                |
-| QLIK_PASSWORD           | password                             | Password for authentication                |
-| QLIK_APP_ID             | test-app-id                          | The Qlik Sense app ID for testing          |
-
-## Qlik Sense Enterprise Setup
-
-Qlik Sense Enterprise November 2024 or later is required.
-
-In the Qlik Sense Management Console (QMC), set up a Virtual Proxy in your Qlik Sense Enterprise environment with Windows Ticket authentication and whitelist the following URLs:
-
-- `http://localhost:8000` (or the port you are using to serve the extension for development)
-- `http://localhost:8077` (or the port you are using to serve the extension for testing)
-
-Set up a test user by creating a local account on the Qlik Sense Enterprise Windows server. Log in to the Qlik Sense Hub with the new user to create the account in the Qlik Sense environment. With an admin account, update the test user to grant access to the test application you created as referenced in the prerequisites step.
-
-The following environment variables are required in your `.env` file for Playwright testing:
-
-| Variable         | Example Value          | Description                       |
-| ---------------- | ---------------------- | --------------------------------- |
-| QLIK_ENGINE_HOST | qlik-sense-host-origin | Qlik Sense Enterprise host        |
-| QLIK_VP_PREFIX   | virtual-proxy-prefix   | Virtual Proxy prefix              |
-| QLIK_USERNAME    | username               | Username for authentication       |
-| QLIK_PASSWORD    | password               | Password for authentication       |
-| QLIK_APP_ID      | test-app-id            | The Qlik Sense app ID for testing |
-
-## Installation
-
-To install the extension in your Qlik Sense environment, follow these steps:
-
-1. Compile the deployment package using:
-   ```bash
-   npm run package
-   ```
-2. Zip the contents of the `qs-ext-jump-start-ext` directory to create a deployment package.
-
-For Qlik Sense Enterprise:
-
-3. Navigate to the Qlik Sense Management Console (QMC).
-4. Go to the Extensions section.
-5. Click on "Import" and select the generated package file.
-6. Once imported, the extension will be available for use in your Qlik Sense applications.
-
-For Qlik Sense SaaS:
-
-3. Navigate to Qlik Sense SaaS Administration.
-4. Go to the Extensions section.
-5. Click on "Add" and upload the generated package file.
-6. Once uploaded, the extension will be available for use in your Qlik Sense applications.
-
-## Related Resources
-
-- [Qlik Sense Developer Documentation](https://qlik.dev/): Official documentation for Qlik Sense Developers.
-- [Nebula CLI Documentation](https://qlik.dev/extend/): Guide for using Nebula CLI to develop Qlik Sense extensions.
-- [React Hooks Documentation](https://react.dev/reference/react/hooks): Reference for React hooks, commonly used in Nebula extensions.
-- [Playwright Testing Framework](https://playwright.dev/docs/intro): Documentation for Playwright, the testing framework used in this project.
+- [Qlik Developer Portal](https://qlik.dev/) - Official Qlik Sense documentation
+- [Nebula CLI Documentation](https://qlik.dev/extend/) - Extension development guide
+- [Playwright Testing](https://playwright.dev/docs/intro) - Testing framework documentation
+- [React Hooks](https://react.dev/reference/react/hooks) - For extension development patterns
 
 ## License
 
-This project is licensed under the MIT License. See [license.txt](./license.txt) for more details.
+This project is licensed under the MIT License. See [license.txt](./license.txt) for details.
