@@ -1,0 +1,36 @@
+# .aiconfig
+
+project:
+  name: QS-Ext-Jump-Start
+  description: >
+    Boilerplate for Qlik Sense extension development, featuring Nebula CLI, Playwright testing, and deployment guides.
+  language: JavaScript
+  frameworks:
+    - nebula.js
+    - playwright
+  documentation: README.md
+  license: MIT
+
+ai:
+  preferred_model: gpt-4
+  code_style: 
+    lint: eslint
+    format: prettier
+  prompt_templates:
+    - "Summarize this code."
+    - "Suggest improvements for Qlik Sense extension development."
+    - "Generate Playwright tests for this module."
+  exclude_paths:
+    - node_modules/
+    - dist/
+    - test/report/
+    - .git/
+
+contributors:
+  - name: Qlik Professional Services
+  - name: Karthik Burra
+    email: karthik.burra@qlik.com
+  - name: Gabriel Wingard
+    email: gabriel.wingard@qlik.com
+
+# Optionally, you can add more sections for integrations, security, or custom instructions.
