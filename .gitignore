@@ -22,7 +22,8 @@ test/report/
 test/artifacts/
 
 # IDE files
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .idea/
 .DS_Store
 

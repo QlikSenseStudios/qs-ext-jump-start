@@ -20,6 +20,7 @@ QS-Ext-Jump-Start is a boilerplate project designed to accelerate the developmen
 - [Installation](#installation)
 - [Related Resources](#related-resources)
 - [License](#license)
+- [Knowledge Base](./KNOWLEDGE_BASE.md)
 - [Contributing](./CONTRIBUTING.md)
 - [Project TODOs](./TODO.md)
 
@@ -34,7 +35,7 @@ QS-Ext-Jump-Start is a boilerplate project designed to accelerate the developmen
 
 To develop an extension with this boilerplate, use the GitHub template feature to create a new repository based on this project. Click the "Use this template" button on the [GitHub repository](https://github.com/QlikSenseStudios/qs-ext-jump-start) page, then name your new repository as desired. This is preferred over forking, as it creates a clean project history for your extension.
 
-If you would like to contribute improvements or fixes to this boilerplate, please refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines and instructions. For a list of planned improvements and enhancement ideas, see [TODO.md](./TODO.md).
+If you would like to contribute improvements or fixes to this boilerplate, please refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines and instructions. For a list of planned improvements and enhancement ideas, see [TODO.md](./TODO.md). For best practices, common tasks, and AI usage guidance, see [KNOWLEDGE_BASE.md](./KNOWLEDGE_BASE.md).
 
 This Qlik Sense Extension is developed with Nebula CLI tools and tested using Playwright. Documentation is available at [Qlik Sense Extension Documentation](https://qlik.dev/extend/) and [Playwright Documentation](https://playwright.dev/docs/intro).
 
@@ -172,7 +173,6 @@ For Qlik Sense SaaS:
 - [Nebula CLI Documentation](https://qlik.dev/extend/): Guide for using Nebula CLI to develop Qlik Sense extensions.
 - [React Hooks Documentation](https://react.dev/reference/react/hooks): Reference for React hooks, commonly used in Nebula extensions.
 - [Playwright Testing Framework](https://playwright.dev/docs/intro): Documentation for Playwright, the testing framework used in this project.
-
 
 ## License
 

@@ -9,17 +9,18 @@ project:
     - nebula.js
     - playwright
   documentation: README.md
+  knowledge_base: KNOWLEDGE_BASE.md
   license: MIT
 
 ai:
   preferred_model: gpt-4
-  code_style: 
+  code_style:
     lint: eslint
     format: prettier
   prompt_templates:
-    - "Summarize this code."
-    - "Suggest improvements for Qlik Sense extension development."
-    - "Generate Playwright tests for this module."
+    - 'Summarize this code.'
+    - 'Suggest improvements for Qlik Sense extension development.'
+    - 'Generate Playwright tests for this module.'
   exclude_paths:
     - node_modules/
     - dist/
@@ -44,5 +45,4 @@ default_context:
   # Core technology documentation
   - https://react.dev/reference/react/hooks (React Hooks)
   - https://playwright.dev/docs/intro (Playwright Testing Framework)
-
 # Optionally, you can add more sections for integrations, security, or custom instructions.
