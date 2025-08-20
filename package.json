@@ -34,6 +34,7 @@
     "package": "nebula sense --meta src/meta.json"
   },
   "devDependencies": {
+    "@eslint/js": "^9.33.0",
     "@nebula.js/cli": "^5.17.0",
     "@nebula.js/cli-build": "^5.17.0",
     "@nebula.js/cli-sense": "^5.17.0",

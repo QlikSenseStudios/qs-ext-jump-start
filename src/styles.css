@@ -1,0 +1,104 @@
+/**
+ * Basic styles for Qlik Sense Extension
+ * Includes accessibility and responsive design considerations
+ */
+
+.extension-container {
+  font-family: 'Source Sans Pro', Arial, sans-serif;
+  padding: 16px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #404040;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.content h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.5em;
+  font-weight: 600;
+  text-align: center;
+}
+
+.content p {
+  margin: 0;
+  font-size: 1em;
+  text-align: center;
+  opacity: 0.8;
+}
+
+/* State-specific styles */
+.selection-mode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 4px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.no-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+  color: #856404;
+  font-weight: 500;
+}
+
+.error-message {
+  padding: 16px;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  color: #721c24;
+  text-align: center;
+}
+
+.error-message h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.error-message p {
+  margin: 0;
+  font-size: 0.9em;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .extension-container {
+    border: 2px solid;
+  }
+  
+  .selection-mode,
+  .no-data,
+  .error-message {
+    border-width: 2px;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.extension-container:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
