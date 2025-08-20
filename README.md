@@ -19,8 +19,9 @@ QS-Ext-Jump-Start is a boilerplate project designed to accelerate the developmen
 - [Qlik Sense Enterprise Setup](#qlik-sense-enterprise-setup)
 - [Installation](#installation)
 - [Related Resources](#related-resources)
-- [Contributing](#contributing)
 - [License](#license)
+- [Contributing](./CONTRIBUTING.md)
+- [Project TODOs](./TODO.md)
 
 ## Features
 
@@ -33,7 +34,7 @@ QS-Ext-Jump-Start is a boilerplate project designed to accelerate the developmen
 
 To develop an extension with this boilerplate, use the GitHub template feature to create a new repository based on this project. Click the "Use this template" button on the [GitHub repository](https://github.com/QlikSenseStudios/qs-ext-jump-start) page, then name your new repository as desired. This is preferred over forking, as it creates a clean project history for your extension.
 
-If you would like to contribute improvements or fixes to this boilerplate, please refer to the [Contributing](#contributing) section below for guidelines and instructions.
+If you would like to contribute improvements or fixes to this boilerplate, please refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines and instructions. For a list of planned improvements and enhancement ideas, see [TODO.md](./TODO.md).
 
 This Qlik Sense Extension is developed with Nebula CLI tools and tested using Playwright. Documentation is available at [Qlik Sense Extension Documentation](https://qlik.dev/extend/) and [Playwright Documentation](https://playwright.dev/docs/intro).
 
@@ -172,9 +173,6 @@ For Qlik Sense SaaS:
 - [React Hooks Documentation](https://react.dev/reference/react/hooks): Reference for React hooks, commonly used in Nebula extensions.
 - [Playwright Testing Framework](https://playwright.dev/docs/intro): Documentation for Playwright, the testing framework used in this project.
 
-## Contributing
-
-Contributions to keep this jump start guide up-to-date are welcome! Please follow the [contribution guidelines](./CONTRIBUTING.md) to submit issues or pull requests.
 
 ## License
 

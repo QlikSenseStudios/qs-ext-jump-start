@@ -2,6 +2,8 @@
 
 Thank you for considering contributing to QS-Ext-Jump-Start! Contributions are welcome and appreciated. By contributing, you help improve this project for everyone.
 
+For a list of planned improvements and enhancement ideas, please see [TODO.md](./TODO.md).
+
 ## How to Contribute
 
 ### 1. Fork the Repository
