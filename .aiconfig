@@ -33,4 +33,16 @@ contributors:
   - name: Gabriel Wingard
     email: gabriel.wingard@qlik.com
 
+default_context:
+  # Qlik Sense and Nebula.js official resources
+  - https://qlik.dev/ (Qlik Sense Developer Documentation)
+  - https://qlik.dev/extend/ (Nebula CLI Documentation)
+
+  # Qlik open source reference implementations
+  - All repositories from https://github.com/qlik-oss with names starting with sn-
+
+  # Core technology documentation
+  - https://react.dev/reference/react/hooks (React Hooks)
+  - https://playwright.dev/docs/intro (Playwright Testing Framework)
+
 # Optionally, you can add more sections for integrations, security, or custom instructions.
