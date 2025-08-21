@@ -1,18 +1,27 @@
 const { expect } = require('@playwright/test');
 
 /**
- * Common test utilities for all states
+ * Common Test Utilities Module
+ * Provides shared functionality for extension state detection and validation
+ * Used across all test modules to maintain consistency
  */
 module.exports = {
+  /**
+   * Detects the current state of the extension by checking for state-specific CSS classes
+   * @param {Page} page - Playwright page object
+   * @param {string} content - Extension content selector
+   * @returns {Promise<string>} Current state name or 'unknown' if undetected
+   */
   async getExtensionState(page, content) {
     await page.waitForSelector(content, { visible: true });
 
-    const states = ['extension-container', 'no-data', 'selection-mode', 'error-message'];
+    // Define state hierarchy - check in order of specificity
+    const stateClasses = ['extension-container', 'no-data', 'selection-mode', 'error-message'];
 
-    for (const state of states) {
-      const element = await page.$(content + ` .${state}`);
+    for (const stateClass of stateClasses) {
+      const element = await page.$(content + ` .${stateClass}`);
       if (element) {
-        return state;
+        return stateClass;
       }
     }
 

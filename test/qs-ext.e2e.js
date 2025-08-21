@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { getNebulaQueryString, getQlikServerAuthenticatedContext } = require('./qs-ext.connect');
 
-// Import state-specific tests
+// Import modular state-specific test suites
 const noDataTests = require('./states/no-data.test');
 const dataTests = require('./states/data.test');
 const selectionTests = require('./states/selection.test');
@@ -9,21 +9,24 @@ const errorTests = require('./states/error.test');
 const commonTests = require('./states/common.test');
 
 test.describe('Qlik Sense Extension E2E Tests', () => {
+  // Test configuration constants
   const nebulaQueryString = getNebulaQueryString();
-  const content = '.njs-viz[data-render-count]';
-  const viewports = [
-    { width: 1920, height: 1080 }, // Desktop
-    { width: 768, height: 1024 }, // Tablet
-    { width: 375, height: 667 }, // Mobile
+  const content = '.njs-viz[data-render-count]'; // Keep original name for compatibility
+  const viewports = [ // Keep original name for compatibility
+    { width: 1920, height: 1080, name: 'Desktop' },
+    { width: 768, height: 1024, name: 'Tablet' },
+    { width: 375, height: 667, name: 'Mobile' },
   ];
 
   let context;
   let page;
 
+  // Global test setup - establish authenticated Qlik context
   test.beforeAll(async ({ browser }) => {
     context = await getQlikServerAuthenticatedContext({ browser });
   });
 
+  // Global test teardown - cleanup resources
   test.afterAll(async ({ browser }) => {
     await context.close();
     await browser.close();
@@ -36,6 +39,12 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
   });
 
   test.afterEach(async () => {
+    // Clean up any configuration before closing
+    try {
+      await dataTests.cleanupConfiguration(page);
+    } catch {
+      // Silently handle cleanup failures
+    }
     await page.close();
   });
 

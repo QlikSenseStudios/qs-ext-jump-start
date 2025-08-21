@@ -1,28 +1,50 @@
 const { expect } = require('@playwright/test');
-const { configureExtension } = require('../helpers/test-utils');
+const { configureExtension, cleanupExtensionConfiguration } = require('../helpers/test-utils');
 
 /**
- * Tests for data state
- * This state may not always be reachable in E2E testing due to configuration dependencies
+ * Data State Test Module
+ * Tests extension behavior when successfully configured with dimensions and measures
+ * Validates data rendering, accessibility, and interaction capabilities
  */
 module.exports = {
+  /**
+   * Attempts to configure the extension with test dimensions and measures
+   * Uses Nebula hub interface to add Dim1 dimension and Expression1 measure with Sum aggregation
+   * @param {Page} page - Playwright page object
+   * @param {string} _content - Extension content selector (unused, for interface consistency)
+   * @returns {Promise<boolean>} True if configuration successful
+   */
   async attemptConfiguration(page, _content) {
-    // Attempt to configure the extension
     const configured = await configureExtension(page, {
       dimensions: ['Dim1'],
-      measures: ['Sum(Expression1)'],
+      measures: [{ field: 'Expression1', aggregation: 'Sum' }],
     });
 
     return configured;
   },
 
+  /**
+   * Performs targeted cleanup of configured dimensions and measures
+   * Removes only the items that were successfully added during configuration
+   * @param {Page} page - Playwright page object  
+   * @param {string} _content - Extension content selector (unused, for interface consistency)
+   * @returns {Promise<boolean>} True if cleanup successful
+   */
+  async cleanupConfiguration(page, _content) {
+    return await cleanupExtensionConfiguration(page);
+  },
+
+  /**
+   * Validates that the extension renders properly in data state
+   * Checks for main container and basic accessibility attributes
+   * @param {Page} page - Playwright page object
+   * @param {string} content - Extension content selector
+   */
   async shouldRenderDataState(page, content) {
-    // This test assumes successful configuration
     const mainContainer = await page.$(content + ' .extension-container');
 
-    // If main container exists, validate it
+    // Validate main container exists with proper accessibility
     if (mainContainer) {
-      // Verify main content accessibility
       const role = await mainContainer.getAttribute('role');
       const ariaLabel = await mainContainer.getAttribute('aria-label');
       expect(role).toBe('main');
@@ -65,7 +87,7 @@ module.exports = {
 
       // Verify focus
       const activeElement = await page.evaluateHandle(() => document.activeElement);
-      const isFocused = await page.evaluate((main, active) => main === active, mainContainer, activeElement);
+      const isFocused = await page.evaluate(({ main, active }) => main === active, { main: mainContainer, active: activeElement });
       expect(isFocused).toBe(true);
 
       // Verify tabindex
