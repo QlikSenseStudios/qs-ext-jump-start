@@ -1,6 +1,6 @@
 # Support
 
-For help and support with QS-Ext-Jump-Start:
+For help and support with your extension or contributing to the QS-Ext-Jump-Start template:
 
 ## Getting Started
 

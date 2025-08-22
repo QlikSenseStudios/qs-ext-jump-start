@@ -2,7 +2,12 @@ import pkg from '../../package.json';
 
 /**
  * Qlik Sense extension properties configuration
- * Defines the property panel structure and hypercube setup
+ * - Controls the property panel (what users can configure)
+ * - Defines the hypercube (dimensions/measures) via qHyperCubeDef
+ *
+ * Where to edit:
+ * - Add/remove properties in this file
+ * - For data targets and advanced data hooks, see `src/qae/data.js`
  */
 const properties = {
   title: `${pkg.name} v${pkg.version}`,
@@ -38,6 +43,7 @@ const properties = {
   */
 
   // Add additional property configurations here if needed
+  // Example: custom section with toggles, colors, and expressions
 };
 
 export default properties;

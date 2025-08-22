@@ -1,8 +1,15 @@
 {
   "name": "qs-ext-jump-start",
-  "description": "A Qlik Sense extension for pixel-perfect design.",
-  "keywords": [],
-  "version": "0.1.0",
+  "description": "Template for Qlik Sense extension development with Nebula CLI and Playwright.",
+  "keywords": [
+    "qlik",
+    "qlik-sense",
+    "extension",
+    "nebula",
+    "playwright",
+    "template"
+  ],
+  "version": "0.2.0",
   "license": "SEE LICENSE IN license.txt",
   "repository": {
     "type": "git",
@@ -32,6 +39,9 @@
     "test": "playwright test",
     "serve:report": "playwright show-report test/report",
     "package": "nebula sense --meta src/meta.json"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

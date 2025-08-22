@@ -1,10 +1,12 @@
 # Qlik Sense Enterprise Setup Guide
 
+This guide describes how to set up Qlik Sense Enterprise for use developing an extension based on the QS-Ext-Jump-Start template. For technical details, see code files in `src/` and `test/` folders, including a data load script for a Qlik Sense app in `test/qlik-sense-app/`.
+
 ## Prerequisites
 
 - Qlik Sense Enterprise November 2024 or later
 - Administrator access to the Qlik Sense Management Console (QMC)
-- A test application created with the load script from `./test/qlik-sense-app/load-script.qvs`
+- A test application created using the load script in `test/qlik-sense-app/load-script.qvs`
 
 ## Setup Steps
 

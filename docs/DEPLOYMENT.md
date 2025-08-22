@@ -1,32 +1,34 @@
-# Deployment Guide
+# Deployment Guide (Template Project)
+
+This guide describes how to package and deploy a Qlik Sense extension based on the QS-Ext-Jump-Start template.
 
 ## Building the Extension
 
-Compile the deployment package:
+To compile the deployment package, run:
 
 ```bash
 npm run package
 ```
 
-This creates a `qs-ext-jump-start-ext` directory with the packaged extension.
+This places the compiled files in a folder using your extension name and appending `-ext`.
 
 ## Creating the Deployment Package
 
-Zip the contents of the `qs-ext-jump-start-ext` directory to create a deployment package.
+Zip the contents of the `<your extension name>-ext` directory to create a deployment package for Qlik Sense.
 
-## Qlik Sense Enterprise
+## Deploying to Qlik Sense Enterprise
 
-1. Navigate to the Qlik Sense Management Console (QMC)
-2. Go to the Extensions section
-3. Click "Import" and select the generated package file
-4. Once imported, the extension will be available in your applications
+1. Open the Qlik Sense Management Console (QMC)
+2. Go to Extensions
+3. Click "Import" and select your zipped package file
+4. The extension will be available in your Qlik Sense apps
 
-## Qlik Sense SaaS
+## Deploying to your Qlik Sense Cloud tenant
 
-1. Navigate to Qlik Sense SaaS Administration
-2. Go to the Extensions section
-3. Click "Add" and upload the generated package file
-4. Once uploaded, the extension will be available in your applications
+1. Navigate to your Qlik Sense Cloud Tenant Administration section
+2. Go to Extensions
+3. Click "Add" and upload your package file
+4. The extension will be available in your Qlik Sense apps
 
 ## Troubleshooting
 

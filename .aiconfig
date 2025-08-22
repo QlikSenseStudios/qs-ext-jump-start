@@ -10,17 +10,22 @@ project:
     - playwright
   documentation: README.md
   knowledge_base: KNOWLEDGE_BASE.md
+  project_structure: docs/PROJECT_STRUCTURE.md
+  workflows: docs/WORKFLOWS.md
   license: MIT
 
 ai:
-  preferred_model: gpt-4
+  preferred_model: gpt-4o-mini
   code_style:
     lint: eslint
     format: prettier
   prompt_templates:
     - 'Summarize this code.'
+    - 'Update this template into a new project per docs/WORKFLOWS.md (Workflow B) and the Rename & Rebrand checklist, without changing runtime behavior.'
     - 'Suggest improvements for Qlik Sense extension development.'
     - 'Generate Playwright tests for this module.'
+    - 'List files related to QAE configuration.'
+    - 'Create documentation for a new property panel section.'
   exclude_paths:
     - node_modules/
     - dist/

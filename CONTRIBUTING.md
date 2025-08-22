@@ -2,97 +2,29 @@
 
 Thank you for considering contributing to QS-Ext-Jump-Start! Contributions help improve this template for everyone.
 
-For a list of planned improvements and enhancement ideas, please see [TODO.md](./TODO.md).
+See [TODO.md](./TODO.md) for planned improvements and ideas.
 
 ## Quick Start for Contributors
 
-1. **Fork and clone** the repository
-2. **Set up development environment:**
-   - Follow [setup guides](./docs/) for your Qlik environment
+1. Fork and clone this repository
+2. Set up your development environment:
+   - Follow [docs/](./docs/) for environment setup
    - Install dependencies: `npm install`
-3. **Make your changes** following our coding standards
-4. **Test your changes:** `npm test`
-5. **Submit a pull request** with a clear description
-
-## Detailed Contribution Process
-
-### 1. Fork the Repository
-
-1. Navigate to the [repository](https://github.com/QlikSenseStudios/qs-ext-jump-start).
-2. Click the "Fork" button in the top-right corner to create your own copy of the repository.
-
-### 2. Clone Your Fork
-
-Clone your forked repository to your local machine:
-
-```bash
-git clone https://github.com/your-forked-repo/qs-ext-jump-start.git
-```
-
-Navigate to the project directory:
-
-```bash
-cd qs-ext-jump-start
-```
-
-### 3. Create a Branch
-
-Create a new branch for your changes:
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-### 4. Make Changes
-
-Make your changes to the codebase. Ensure your changes follow the project's coding standards and best practices.
-
-### 5. Test Your Changes
-
-Run the tests to ensure your changes do not break existing functionality:
-
-```bash
-npm test
-```
-
-### 6. Commit Your Changes
-
-Commit your changes with a descriptive commit message:
-
-```bash
-git add .
-git commit -m "Add a brief description of your changes"
-```
-
-### 7. Push Your Changes
-
-Push your changes to your forked repository:
-
-```bash
-git push origin feature/your-feature-name
-```
-
-### 8. Open a Pull Request
-
-1. Go to the original repository on GitHub.
-2. Click the "Pull Requests" tab.
-3. If you see a "Compare & pull request" button for your branch, click it to start your pull request. Otherwise, click the "New Pull Request" button.
-4. Select your branch and provide a clear description of your changes.
-5. Submit the pull request.
+3. Make changes following the project's code style described in the [KNOWLEDGE_BASE.md](./KNOWLEDGE_BASE.md)
+4. Run tests: `npm test` and ensure all tests pass
+5. Open a pull request to QlikSenseStudios/qs-ext-jump-start with a clear description
 
 ## Guidelines for Contributions
 
-- **Code Style**: Follow the coding conventions used in the project. Use consistent formatting and meaningful variable names.
-- **Commit Messages**: Write clear and concise commit messages that describe your changes.
-- **Testing**: Ensure all tests pass before submitting your pull request. Add new tests if applicable.
-- **Documentation**: Update documentation (e.g., README.md) if your changes affect usage or functionality.
+- Follow the code style and organization in [KNOWLEDGE_BASE.md](./KNOWLEDGE_BASE.md). Review current code in `src/` and `test/` for more examples.
+- Write clear commit messages
+- Ensure all tests pass before submitting a pull request
+- Update documentation if your changes affect usage or functionality
 
 ## Reporting Issues
 
-If you find a bug or have a feature request, please open an issue in the [Issues](https://github.com/QlikSenseStudios/qs-ext-jump-start/issues) section. Provide as much detail as possible, including steps to reproduce the issue if applicable.
+If you find a bug or have a feature request, open an issue in [GitHub Issues](https://github.com/QlikSenseStudios/qs-ext-jump-start/issues) with details and steps to reproduce if possible.
 
 ## Questions?
 
-If you have any questions, feel free to open an issue or reach out to the maintainers.
-
-Thank you for contributing!
+If you have questions, open an issue or reach out to the maintainers.

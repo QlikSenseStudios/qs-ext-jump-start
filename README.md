@@ -1,101 +1,182 @@
 # QS-Ext-Jump-Start
 
-A modern boilerplate for building Qlik Sense extensions with pre-configured tooling, testing, and deployment guides.
+QS-Ext-Jump-Start is a template project designed to help you quickly start building Qlik Sense extensions. It includes example code, testing tools, and setup guides to streamline development and testing.
 
-## Quick Start
+See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates.
 
-1. **Use this template:** Click "Use this template" on [GitHub](https://github.com/QlikSenseStudios/qs-ext-jump-start)
-2. **Install dependencies:** `npm install`
-3. **Set up Qlik environment:** See [setup guides](./docs/)
-4. **Start developing:** `npm run serve`
-5. **Run tests:** `npm test`
-6. **Deploy:** `npm run package`
+## Two Usage Modes
 
-## Documentation
+- Contribute as a fork: Prepare focused pull requests back to the source template to improve it. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+- Use as a starter template: Rename the extension, update your repository origin, and remove references to the original template as needed. See [Workflows & Tasks](./docs/WORKFLOWS.md).
 
-| Guide                                 | Description                             |
-| ------------------------------------- | --------------------------------------- |
-| [Development](#development)           | Core development workflow               |
-| [Setup Guides](./docs/)               | Environment-specific setup instructions |
-| [Testing](./docs/TESTING.md)          | Running and writing tests               |
-| [Deployment](./docs/DEPLOYMENT.md)    | Packaging and deploying extensions      |
-| [Knowledge Base](./KNOWLEDGE_BASE.md) | Best practices and AI guidance          |
-| [Contributing](./CONTRIBUTING.md)     | How to contribute to this template      |
-| [Project TODOs](./TODO.md)            | Planned improvements                    |
+## ⚡ Quick Start for Creating a New Extension
 
-## Features
+1. Click "Use this template" on [GitHub](https://github.com/QlikSenseStudios/qs-ext-jump-start)
+2. Clone your repository and install dependencies: `git clone <your-repo> && cd <your-repo> && npm install`
+3. Follow the setup guide for your environment in [docs/](./docs/)
+4. Start the development server: `npm run serve`
+5. Run tests: `npm test`
+6. Package for deployment: `npm run package`
 
-- ✅ Pre-configured development environment with Nebula CLI
-- ✅ Playwright testing framework with Qlik Sense integration
-- ✅ Example extension structure and load script
-- ✅ Deployment automation and packaging
-- ✅ Comprehensive documentation and guides
+## 🚀 What You Get
 
-## Development
+| Feature                   | Status   | Description                            |
+| ------------------------- | -------- | -------------------------------------- |
+| Modern Extension Template | ✅ Ready | Nebula.js Stardust hooks architecture  |
+| Playwright Testing        | ✅ Ready | Nebula hub integration with Playwright |
+| Development Server        | ✅ Ready | Hot reload with Nebula CLI             |
+| Packaging                 | ✅ Ready | One-command packaging                  |
+| Documentation             | ✅ Ready | Setup and usage guides                 |
+
+This template provides:
+
+- Example extension code (see `src/`)
+- Playwright-based testing setup (see `test/`)
+- Nebula CLI development server
+- Packaging and deployment scripts
+- Setup guides for Qlik Cloud and Enterprise
+
+## 📖 Documentation
+
+### 🎯 Usage Guides
+
+| Guide                                     | Purpose                        | When to Use                            |
+| ----------------------------------------- | ------------------------------ | -------------------------------------- |
+| [**Setup Guides**](./docs/)               | Environment configuration      | First-time setup, CI/CD integration    |
+| [**Knowledge Base**](./KNOWLEDGE_BASE.md) | Best practices & patterns      | Development questions, troubleshooting |
+| [**Testing Guide**](./docs/TESTING.md)    | How to run and customize tests | Running tests, debugging, extending    |
+
+### 📋 Project Information
+
+| Document                                             | Purpose                    | When to Use                      |
+| ---------------------------------------------------- | -------------------------- | -------------------------------- |
+| [**Project Structure**](./docs/PROJECT_STRUCTURE.md) | File/folder purpose        | Learn where to make changes      |
+| [**Workflows & Tasks**](./docs/WORKFLOWS.md)         | Common tasks and examples  | How to customize and test        |
+| [**CHANGELOG.md**](./docs/CHANGELOG.md)              | Version history & features | Understanding updates, migration |
+| [**CONTRIBUTING.md**](./CONTRIBUTING.md)             | Development guidelines     | Contributing to template         |
+| [**TODO.md**](./TODO.md)                             | Planned improvements       | Roadmap and feature requests     |
+
+## 🛠️ Development Workflow
 
 ### Prerequisites
 
-- Node.js 20+
-- npm
-- Access to Qlik Sense (Cloud or Enterprise)
+- **Node.js 20+** - [Download](https://nodejs.org/)
+- **npm** - Included with Node.js
+- **Qlik Sense access** - Cloud or Enterprise environment
 
-### Getting Started
+### Your Development Loop
 
-1. **Create your extension repository:**
+```bash
+# 1. Start development server (hot reload enabled)
+npm run serve
 
-   ```bash
-   # Use GitHub template, then:
-   git clone https://github.com/your-username/your-extension-name.git
-   cd your-extension-name
-   ```
+# 2. Make changes to your extension in src/
+# 3. See changes instantly at http://localhost:8000
 
-2. **Install dependencies:**
+# 4. Run tests to validate changes
+npm test
 
-   ```bash
-   npm install
-   ```
+# 5. Package for deployment when ready
+npm run package
+```
 
-3. **Set up Qlik environment:**
-   - [Qlik Cloud Setup](./docs/QLIK_CLOUD_SETUP.md)
-   - [Qlik Enterprise Setup](./docs/QLIK_ENTERPRISE_SETUP.md)
-
-4. **Start development server:**
-   ```bash
-   npm run serve
-   ```
-   Navigate to `http://localhost:8000` and connect to your Qlik Sense environment.
-
-### Project Structure
+### Key Files to Edit
 
 ```
 src/
-├── index.js              # Main extension entrypoint
-├── ext.js                # Extension configuration
-└── qae/                  # Properties and data sources
-    ├── object-properties.js
-    ├── data.js
-    └── index.js
+├── index.js              # 🎯 Main extension logic
+├── ext.js                # ⚙️ Extension configuration
+├── qae/
+│   ├── data.js           # 📊 Data processing
+│   └── object-properties.js  # 🎛️ Property panel setup
+├── styles.css            # 🎨 Extension styling
+├── utils.js              # 🔧 Utility functions
+└── meta.json            # 📋 Extension metadata
+
 test/
-├── qs-ext.e2e.js         # End-to-end tests
-└── qlik-sense-app/       # Test data and load script
+├── states/              # 🧪 Add your custom tests here
+└── qlik-sense-app/      # 📂 Test data (load script)
 ```
 
-### Making Changes
+### Testing Your Changes
 
-- **Extension logic:** Edit files in `src/`
-- **Properties:** Update `src/qae/object-properties.js`
-- **Data sources:** Modify `src/qae/data.js`
-- **Tests:** Add tests to `test/qs-ext.e2e.js`
+The framework includes Playwright tests with Nebula hub interactions:
 
-For detailed guidance, see [Knowledge Base](./KNOWLEDGE_BASE.md).
+```bash
+# Run all tests
+npm test
 
-## Resources
+# Watch tests in browser to see interactions
+npx playwright test --headed
 
-- [Qlik Developer Portal](https://qlik.dev/) - Official Qlik Sense documentation
-- [Nebula CLI Documentation](https://qlik.dev/extend/) - Extension development guide
-- [Playwright Testing](https://playwright.dev/docs/intro) - Testing framework documentation
-- [React Hooks](https://react.dev/reference/react/hooks) - For extension development patterns
+# Debug specific functionality
+npx playwright test --grep "your test name" --debug
+```
 
-## License
+See [Testing Guide](./docs/TESTING.md) for detailed usage.
 
-This project is licensed under the MIT License. See [license.txt](./license.txt) for details.
+## 🌐 Environment Setup
+
+Choose your Qlik Sense environment:
+
+Both guides include:
+
+- Prerequisites for Qlik Cloud or Enterprise
+- Step-by-step setup instructions
+- Configuration for development and testing
+
+## 🚀 Deployment
+
+### Local Packaging & Deployment
+
+```bash
+# Create deployment package
+npm run package
+
+# Output: <your-extension>-ext/
+# Zip this folder to upload to Qlik Sense
+```
+
+See deployment guides for your environment.
+
+## 🔧 Extending your extension based on this template
+
+### Adding New Features
+
+1. **New Extension Logic** → Edit `src/index.js`
+2. **Property Panel Changes** → Update `src/qae/object-properties.js`
+3. **Data Processing** → Modify `src/qae/data.js`
+4. **Test Coverage** → Add tests in `test/states/`
+
+See [Testing Guide](./docs/TESTING.md) for more information.
+
+## 🆘 Need Help?
+
+### Quick Troubleshooting
+
+**🔴 Tests failing?** → Check [Testing Guide troubleshooting](./docs/TESTING.md#troubleshooting)  
+**🔴 Development server issues?** → Verify environment setup guides  
+**🔴 Deployment problems?** → See deployment documentation for your platform
+
+### Resources
+
+- [Qlik Sense Developer Documentation](https://qlik.dev/)
+- [Nebula CLI Documentation](https://qlik.dev/extend/)
+- [Playwright Testing Documentation](https://playwright.dev/docs/intro)
+
+## 📄 License
+
+MIT License - see [license.txt](./license.txt) for details.
+
+_For technical implementation details and version history, see [CHANGELOG.md](./docs/CHANGELOG.md). This README focuses on practical usage and getting started quickly._
+
+## 🧩 Recommended VS Code Extensions
+
+Recommended extensions to improve development and testing:
+
+- ESLint (dbaeumer.vscode-eslint)
+- Prettier (esbenp.prettier-vscode)
+- Playwright Test for VSCode (ms-playwright.playwright)
+- EditorConfig (EditorConfig.EditorConfig)
+- Markdown All in One (yzhang.markdown-all-in-one)
+- GitHub Pull Requests and Issues (GitHub.vscode-pull-request-github)

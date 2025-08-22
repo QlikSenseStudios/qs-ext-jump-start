@@ -12,6 +12,11 @@ import './styles.css';
  * @param {object} galaxy.anything Extra environment dependent options
  * @param {object=} galaxy.anything.sense Optional object only present within Sense,
  * see: https://qlik.dev/extend/build-extension/in-qlik-sense
+ *
+ * Component contract:
+ * - Inputs: layout (Hypercube and properties), element (container)
+ * - Behavior: Render different UI for selection mode, no data, and normal states
+ * - Errors: Caught and presented as user-friendly message
  */
 export default function supernova(galaxy) {
   return {
@@ -43,7 +48,7 @@ export default function supernova(galaxy) {
             return;
           }
 
-          // Check for data availability
+          // Check for data availability (edge case: empty hypercube)
           const dataMatrix = safeGet(layout, 'qHyperCube.qDataPages.0.qMatrix', []);
           if (!dataMatrix.length) {
             const noDataDiv = createElement(

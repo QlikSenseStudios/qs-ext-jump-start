@@ -2,39 +2,50 @@
 
 ## 1. Project Overview
 
-- **Purpose:** Boilerplate for building Qlik Sense extensions with modern tooling
-- **Tech Stack:** JavaScript (optionally TypeScript), Nebula.js, Playwright, Node.js
-- **Main Features:** Pre-configured build/test scripts, comprehensive documentation, automated testing
+- **Purpose:** Template project for Qlik Sense extension development. It provides example code, testing setup, and guides to help you get started quickly.
+- **Tech Stack:** JavaScript, Nebula.js, Playwright, Node.js
+- **Main Features:** Real Nebula hub testing, comprehensive documentation, automated deployment
 
 ## 2. Key Concepts
 
 ### Qlik Sense Extension
+
 - Custom visualization or analytics component for Qlik Sense
 - Uses Nebula.js for integration and lifecycle management
 
 ### Nebula.js
+
 - Qlik's open-source framework for building extensions
 - Provides hooks (`useElement`, `useLayout`, etc.) and lifecycle methods
 
-### Playwright
-- End-to-end testing framework for automated UI and integration tests
+### Playwright Testing Framework
+
+- End-to-end testing framework with Nebula hub integration
+- Real dropdown interactions for dimensions/measures
+- Dynamic tracking and intelligent cleanup system
 
 ## 3. Project Structure
 
 ```
 src/
-├── index.js              # Main extension entrypoint
-├── ext.js                # Extension configuration
-└── qae/                  # Properties and data sources
-    ├── object-properties.js
-    ├── data.js
-    └── index.js
+├── index.js                  # Main extension entrypoint
+├── ext.js                    # Extension configuration
+├── qae/
+│   ├── data.js               # Data processing
+│   └── object-properties.js  # Property panel setup
+├── styles.css                # Extension styling
+├── utils.js                  # Utility functions
+└── meta.json                 # Extension metadata
 test/
-├── qs-ext.e2e.js         # Playwright E2E tests
-├── qs-ext.connect.js     # Qlik connection utilities
-├── qs-ext.fixture.js     # Test fixtures
-└── qlik-sense-app/       # Test data and load script
-docs/                     # Detailed setup and deployment guides
+├── states/                   # State-specific test modules
+├── helpers/                  # Nebula interaction utilities
+├── artifacts/                # Test screenshots and traces
+├── report/                   # HTML test reports
+├── qlik-sense-app/           # Test data and load script
+├── qs-ext.e2e.js             # Main test orchestration
+├── qs-ext.connect.js         # Qlik connection utilities
+└── qs-ext.fixture.js         # Test fixtures and setup
+docs/                         # Setup and deployment guides
 ```
 
 ## 4. Development Workflow
@@ -61,21 +72,21 @@ See [README.md](./README.md) for detailed quick start instructions.
 
 - **Add a new property:** Edit `src/qae/object-properties.js`
 - **Change data source:** Edit `src/qae/data.js`
-- **Write a new test:** Add tests to `test/qs-ext.e2e.js`
+- **Write a new test:** Add tests to `test/states/` modules
 - **Update documentation:** Edit relevant files in `docs/` or root
 
 ## 7. Reference Resources
 
 - [Qlik Developer Portal](https://qlik.dev/)
 - [Nebula CLI Documentation](https://qlik.dev/extend/)
-- [Qlik OSS sn-* Repositories](https://github.com/qlik-oss)
+- [Qlik OSS sn-\* Repositories](https://github.com/qlik-oss)
 - [React Hooks Documentation](https://react.dev/reference/react/hooks)
 - [Playwright Testing Framework](https://playwright.dev/docs/intro)
 
 ## 8. AI Usage Guidance
 
 - Use this knowledge base and referenced documentation for context
-- For code generation, prefer patterns from sn-* Qlik OSS projects
+- For code generation, prefer patterns from sn-\* Qlik OSS projects
 - Follow [TODO.md](./TODO.md) for improvement ideas and best practices
 - Use [.aiconfig](./.aiconfig) for project metadata and context
 
@@ -89,6 +100,7 @@ See [README.md](./README.md) for detailed quick start instructions.
 ---
 
 **Documentation Structure:**
+
 - [README.md](./README.md) - Quick start and overview
 - [docs/](./docs/) - Detailed setup and deployment guides
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Contribution guidelines
