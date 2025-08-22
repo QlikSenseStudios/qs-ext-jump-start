@@ -51,7 +51,7 @@
     "@nebula.js/cli-serve": "^5.17.0",
     "@playwright/test": "^1.54.2",
     "dotenv": "^17.2.1",
-    "eslint": "^9.32.0",
+    "eslint": "^9.33.0",
     "prettier": "^3.6.2"
   },
   "peerDependencies": {
