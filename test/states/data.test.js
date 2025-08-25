@@ -26,7 +26,7 @@ module.exports = {
   /**
    * Performs targeted cleanup of configured dimensions and measures
    * Removes only the items that were successfully added during configuration
-   * @param {Page} page - Playwright page object  
+   * @param {Page} page - Playwright page object
    * @param {string} _content - Extension content selector (unused, for interface consistency)
    * @returns {Promise<boolean>} True if cleanup successful
    */
@@ -50,12 +50,9 @@ module.exports = {
       expect(role).toBe('main');
       expect(ariaLabel).toBe('Qlik Sense Extension Content');
 
-      // Check for data count display
-      const dataCountElement = await mainContainer.$('p');
-      if (dataCountElement) {
-        const dataCountText = await dataCountElement.textContent();
-        expect(dataCountText).toMatch(/Data rows: \d+/);
-      }
+      // Check that table exists
+      const table = await mainContainer.$('table.data-table');
+      expect(table).toBeTruthy();
 
       return true;
     }
@@ -87,7 +84,10 @@ module.exports = {
 
       // Verify focus
       const activeElement = await page.evaluateHandle(() => document.activeElement);
-      const isFocused = await page.evaluate(({ main, active }) => main === active, { main: mainContainer, active: activeElement });
+      const isFocused = await page.evaluate(({ main, active }) => main === active, {
+        main: mainContainer,
+        active: activeElement,
+      });
       expect(isFocused).toBe(true);
 
       // Verify tabindex
@@ -104,19 +104,12 @@ module.exports = {
       const contentDiv = await mainContainer.$('.content');
       expect(contentDiv).toBeTruthy();
 
-      // Check for heading
-      const heading = await contentDiv.$('h2');
-      if (heading) {
-        const headingText = await heading.textContent();
-        expect(headingText).toBe('Hello World!');
-      }
-
-      // Check for data information
-      const dataInfo = await contentDiv.$('p');
-      if (dataInfo) {
-        const dataText = await dataInfo.textContent();
-        expect(dataText).toMatch(/Data rows: \d+/);
-      }
+      // Table should have header cells for Dimension and Measure
+      const headers = await contentDiv.$$('table.data-table thead th');
+      expect(headers.length).toBe(2);
+      const headerTexts = await Promise.all(headers.map(async (h) => (await h.textContent()).trim()));
+      expect(headerTexts[0].length).toBeGreaterThan(0); // Dimension title exists
+      expect(headerTexts[1].length).toBeGreaterThan(0); // Measure title exists (or default)
     }
   },
 };

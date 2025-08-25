@@ -45,14 +45,20 @@
 
 .no-data {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100px;
+  min-height: 160px;
   background-color: #fff3cd;
   border: 1px solid #ffeaa7;
   border-radius: 4px;
   color: #856404;
   font-weight: 500;
+  text-align: center;
+}
+
+.no-data .no-data-hint {
+  margin-top: 8px;
 }
 
 .error-message {
@@ -89,7 +95,7 @@
   .extension-container {
     border: 2px solid;
   }
-  
+
   .selection-mode,
   .no-data,
   .error-message {
@@ -101,4 +107,57 @@
 .extension-container:focus-visible {
   outline: 2px solid #0066cc;
   outline-offset: 2px;
+}
+
+/* Data table presentation */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #e0e0e0;
+  padding: 6px 8px;
+}
+
+.data-table th {
+  text-align: left;
+  background: #f7f7f7;
+}
+
+.dim-cell.selectable-item {
+  cursor: pointer;
+}
+
+.dim-cell.selectable-item:hover,
+.dim-cell.selectable-item:focus-visible {
+  /* Use a translucent overlay to preserve underlying background state */
+  background-image: linear-gradient(rgba(0, 102, 204, 0.12), rgba(0, 102, 204, 0.12));
+}
+
+/* qState visual cues (only when actively selecting) */
+.in-selection .state-S {
+  /* Selected */
+  background-color: #d1e7dd;
+  color: #0f5132;
+  font-weight: 600;
+}
+.in-selection .local-selected {
+  background-color: #d1e7dd;
+  color: #0f5132;
+  font-weight: 600;
+}
+.in-selection .state-XS {
+  /* Excluded */
+  opacity: 0.5;
+}
+.in-selection .state-A {
+  /* Alternative */
+  background-color: #fff3cd;
+}
+.in-selection .state-L {
+  /* Locked */
+  border-left: 3px solid #6c757d;
 }

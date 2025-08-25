@@ -16,7 +16,7 @@ module.exports = {
 
     // Check content
     const text = await noDataContainer.textContent();
-    expect(text).toBe('No data to display');
+    expect(text).toContain('No data to display');
   },
 
   async shouldHaveProperAccessibility(page, content) {

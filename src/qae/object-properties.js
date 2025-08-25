@@ -12,6 +12,7 @@ import pkg from '../../package.json';
 const properties = {
   title: `${pkg.name} v${pkg.version}`,
   qHyperCubeDef: {
+    // One dimension and optional one measure => width 2 is sufficient
     qInitialDataFetch: [{ qWidth: 2, qHeight: 50 }],
     qDimensions: [],
     qMeasures: [],

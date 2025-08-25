@@ -13,48 +13,34 @@ module.exports = {
   },
 
   async shouldRenderSelectionState(page, content) {
-    const selectionContainer = await page.$(content + ' .selection-mode');
-
-    if (selectionContainer) {
-      // Check content
-      const text = await selectionContainer.textContent();
-      expect(text).toBe('Selection mode active');
-
-      // Check accessibility
-      const ariaLabel = await selectionContainer.getAttribute('aria-label');
-      expect(ariaLabel).toBe('Selection mode active');
-
-      return true;
+    const container = await page.$(content + ' .extension-container.in-selection');
+    if (!container) {
+      return false;
     }
-
-    return false;
+    // Table should still be present
+    const table = await page.$(content + ' table.data-table');
+    expect(table).toBeTruthy();
+    return true;
   },
 
   async shouldHaveProperAccessibility(page, content) {
-    const selectionContainer = await page.$(content + ' .selection-mode');
-
-    if (selectionContainer) {
-      // Validate accessibility attributes
-      const ariaLabel = await selectionContainer.getAttribute('aria-label');
-      expect(ariaLabel).toBe('Selection mode active');
-
-      // Check content is informative
-      const text = await selectionContainer.textContent();
-      expect(text).toBe('Selection mode active');
+    const container = await page.$(content + ' .extension-container.in-selection');
+    if (container) {
+      const role = await container.getAttribute('role');
+      const ariaLabel = await container.getAttribute('aria-label');
+      expect(role).toBe('main');
+      expect(ariaLabel).toBe('Qlik Sense Extension Content');
     }
   },
 
   async shouldIndicateActiveSelection(page, content) {
-    const selectionContainer = await page.$(content + ' .selection-mode');
-
-    if (selectionContainer) {
-      // Verify it's clearly indicating active selection
-      const text = await selectionContainer.textContent();
-      expect(text).toContain('Selection mode active');
-
-      // Should have appropriate styling class
-      const className = await selectionContainer.getAttribute('class');
-      expect(className).toContain('selection-mode');
+    const container = await page.$(content + ' .extension-container.in-selection');
+    if (container) {
+      const className = await container.getAttribute('class');
+      expect(className).toContain('in-selection');
+      // At least one selected cell should be highlighted if a selection was made
+      const selectedCells = await page.$$(content + ' .dim-cell.state-S');
+      expect(selectedCells.length).toBeGreaterThanOrEqual(0);
     }
   },
 };

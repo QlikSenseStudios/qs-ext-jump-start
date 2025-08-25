@@ -1,9 +1,71 @@
-import { useElement, useLayout, useEffect } from '@nebula.js/stardust';
+import { useElement, useLayout, useEffect, useSelections } from '@nebula.js/stardust';
 
 import { properties, data } from './qae';
 import ext from './ext';
 import { createElement, safeGet } from './utils';
 import './styles.css';
+
+// Helpers and constants for readability and DRY
+const HYPERCUBE_PATH = '/qHyperCubeDef';
+const DIM_COL_IDX = 0;
+
+function getCounts(layout) {
+  const dimCount = (safeGet(layout, 'qHyperCube.qDimensionInfo', []) || []).length;
+  const measCount = (safeGet(layout, 'qHyperCube.qMeasureInfo', []) || []).length;
+  return { dimCount, measCount };
+}
+
+function isInvalidConfig({ dimCount, measCount }) {
+  return dimCount !== 1 || measCount > 1;
+}
+
+function createNoDataDiv(dimCount, measCount) {
+  const noDataDiv = createElement(
+    'div',
+    {
+      className: 'no-data',
+      'aria-label': 'No data available',
+      'data-dim-count': String(dimCount ?? ''),
+      'data-meas-count': String(measCount ?? ''),
+    },
+    'No data to display'
+  );
+
+  if (isInvalidConfig({ dimCount, measCount })) {
+    const hint = createElement(
+      'div',
+      { className: 'no-data-hint', role: 'note', 'aria-live': 'polite' },
+      `
+      <p>Configure this visualization with exactly 1 dimension and at most 1 measure (optional).</p>
+      <ul>
+        <li>Required: Add 1 dimension in the Data panel.</li>
+        <li>Optional: Add 0 or 1 measure.</li>
+      </ul>
+    `
+    );
+    noDataDiv.appendChild(hint);
+  }
+
+  return noDataDiv;
+}
+
+function appendError(element, error) {
+  const errorDiv = createElement(
+    'div',
+    {
+      className: 'error-message',
+      role: 'alert',
+      'aria-live': 'polite',
+    },
+    `
+    <h3>Unable to load extension</h3>
+    <p>Please check your data configuration and try again.</p>
+  `
+  );
+  element.appendChild(errorDiv);
+  // eslint-disable-next-line no-console
+  console.error('Extension rendering error:', error);
+}
 
 /**
  * Entrypoint for your sense visualization
@@ -28,79 +90,230 @@ export default function supernova(galaxy) {
     component() {
       const element = useElement();
       const layout = useLayout();
+      const selections = useSelections();
+
+      // Persist local selection state across renders
+      const selectionState = (function () {
+        // Attach to component function scope once
+        if (!supernova.__selectionState) {
+          supernova.__selectionState = {
+            data: [],
+            pendingByElem: new Set(), // clicks made out of selection mode
+            sessionByElem: new Set(), // selections within current selection mode session
+            lastInSelection: false,
+          };
+        }
+        return supernova.__selectionState;
+      })();
 
       useEffect(() => {
         // Clear previous content
         element.innerHTML = '';
 
         try {
-          // Skip rendering when in selection mode
-          if (safeGet(layout, 'qSelectionInfo.qInSelections', false)) {
-            const selectionDiv = createElement(
-              'div',
-              {
-                className: 'selection-mode',
-                'aria-label': 'Selection mode active',
-              },
-              'Selection mode active'
-            );
-            element.appendChild(selectionDiv);
+          const inSelection = Boolean(safeGet(layout, 'qSelectionInfo.qInSelections', false));
+
+          // Handle transitions to keep selection sessions discrete
+          const wasInSelection = !!selectionState.lastInSelection;
+          if (!wasInSelection && inSelection) {
+            // Entering selection mode: start a fresh session from pending clicks
+            selectionState.sessionByElem = new Set(selectionState.pendingByElem);
+            selectionState.pendingByElem.clear();
+          }
+
+          // Validate configuration: exactly 1 dimension and 0 or 1 measure
+          const { dimCount, measCount } = getCounts(layout);
+          if (isInvalidConfig({ dimCount, measCount })) {
+            element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
 
           // Check for data availability (edge case: empty hypercube)
           const dataMatrix = safeGet(layout, 'qHyperCube.qDataPages.0.qMatrix', []);
           if (!dataMatrix.length) {
-            const noDataDiv = createElement(
-              'div',
-              {
-                className: 'no-data',
-                'aria-label': 'No data available',
-              },
-              'No data to display'
-            );
-            element.appendChild(noDataDiv);
+            element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
 
           // Render main content with accessibility attributes
           const container = createElement('div', {
-            className: 'extension-container',
+            className: inSelection ? 'extension-container in-selection' : 'extension-container',
             role: 'main',
             'aria-label': 'Qlik Sense Extension Content',
             tabindex: '0',
           });
 
-          const content = createElement(
-            'div',
-            {
-              className: 'content',
-            },
-            `
-            <h2>Hello World!</h2>
-            <p>Data rows: ${dataMatrix.length}</p>
-          `
-          );
+          const content = createElement('div', { className: 'content' });
 
+          // Title retained
+          const heading = createElement('h2', {}, 'Hello World!');
+          content.appendChild(heading);
+
+          // No separate selection banner; selection is indicated via container class and cell highlights
+
+          // Build a simple 2-column table for [Dimension, Measure]
+          const table = createElement('table', { className: 'data-table', role: 'table' });
+          const thead = createElement('thead');
+          const headerRow = createElement('tr');
+
+          // Derive headers from layout
+          const dimHeader = safeGet(layout, 'qHyperCube.qDimensionInfo.0.qFallbackTitle', 'Dimension');
+          const measHeader = safeGet(layout, 'qHyperCube.qMeasureInfo.0.qFallbackTitle', 'Measure');
+
+          headerRow.appendChild(createElement('th', { scope: 'col' }, dimHeader));
+          headerRow.appendChild(createElement('th', { scope: 'col' }, measHeader));
+          thead.appendChild(headerRow);
+
+          const tbody = createElement('tbody');
+          const tbodyFrag = document.createDocumentFragment();
+          const elemToRowIndex = new Map();
+
+          const prevSelected = inSelection ? new Set(selectionState.sessionByElem) : new Set();
+
+          const localData = [];
+          dataMatrix.forEach((row, rowIndex) => {
+            const tr = createElement('tr', { 'data-row-index': String(rowIndex) });
+
+            // qText is string for display; qElemNumber used for selections in Sense
+            const dimCellText = safeGet(row, '0.qText', '-');
+            const dimElem = safeGet(row, '0.qElemNumber', -1);
+            // Determine local selection from our local store (independent of visual gating)
+            const isSelected = prevSelected.has(dimElem);
+
+            const tdDim = createElement(
+              'td',
+              {
+                className: `dim-cell selectable-item${inSelection && isSelected ? ' local-selected' : ''}`,
+                role: 'button',
+                tabindex: '0',
+                'data-q-elem': String(dimElem),
+                'aria-label': `Select ${dimCellText}`,
+              },
+              dimCellText
+            );
+
+            // Optional measure
+            const measCellText = safeGet(row, '1.qText', '-');
+            const tdMeas = createElement('td', { className: 'meas-cell' }, measCellText);
+
+            tr.appendChild(tdDim);
+            tr.appendChild(tdMeas);
+            tbodyFrag.appendChild(tr);
+
+            // Map elem -> rowIndex for fast updates
+            if (Number.isFinite(dimElem) && dimElem >= 0) {
+              elemToRowIndex.set(dimElem, rowIndex);
+            }
+
+            // Track local selection state
+            localData.push({
+              row: rowIndex,
+              dim: { text: dimCellText, elem: dimElem, selected: isSelected },
+              meas: { text: measCellText },
+            });
+          });
+
+          table.appendChild(thead);
+          tbody.appendChild(tbodyFrag);
+          table.appendChild(tbody);
+          content.appendChild(table);
           container.appendChild(content);
+          // Update persisted local selection state and expose current data
+          selectionState.data = localData;
+          selectionState.lastInSelection = inSelection;
+          selectionState.elemToRowIndex = elemToRowIndex;
+          container.__localData = localData;
           element.appendChild(container);
+
+          // Event delegation: attach once on tbody
+          const getRowEntry = (elem) => {
+            const idx = selectionState.elemToRowIndex?.get(elem);
+            return Number.isInteger(idx)
+              ? selectionState.data[idx]
+              : (selectionState.data || []).find((r) => r.dim.elem === elem);
+          };
+
+          const activateFromCell = async (cell) => {
+            const elem = Number(cell.getAttribute('data-q-elem'));
+            if (Number.isNaN(elem)) {
+              return;
+            }
+            try {
+              if (selections && typeof selections.select === 'function') {
+                if (!inSelection && typeof selections.begin === 'function') {
+                  selectionState.sessionByElem.clear();
+                  selectionState.data = [];
+                  await selections.begin(HYPERCUBE_PATH);
+                }
+                await selections.select({
+                  method: 'selectHyperCubeValues',
+                  params: [HYPERCUBE_PATH, DIM_COL_IDX, [elem], inSelection],
+                });
+              }
+
+              const rowEntry = getRowEntry(elem);
+
+              if (inSelection) {
+                const wasSelected = selectionState.sessionByElem.has(elem);
+                if (wasSelected) {
+                  selectionState.sessionByElem.delete(elem);
+                  if (rowEntry) {
+                    rowEntry.dim.selected = false;
+                  }
+                  cell.classList.remove('local-selected');
+                } else {
+                  selectionState.sessionByElem.add(elem);
+                  if (rowEntry) {
+                    rowEntry.dim.selected = true;
+                  }
+                  cell.classList.add('local-selected');
+                }
+
+                // If no selections remain in this session, exit selection mode
+                if (selectionState.sessionByElem.size === 0) {
+                  try {
+                    if (selections && typeof selections.cancel === 'function') {
+                      await selections.cancel();
+                    }
+                  } catch (e) {
+                    // eslint-disable-next-line no-console
+                    console.warn('Failed to exit selection mode', e);
+                  }
+                }
+              } else {
+                const wasPending = selectionState.pendingByElem.has(elem);
+                if (!wasPending) {
+                  selectionState.pendingByElem.add(elem);
+                  if (rowEntry) {
+                    rowEntry.dim.selected = true;
+                  }
+                }
+              }
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.warn('Selection failed', err);
+            }
+          };
+
+          tbody.addEventListener('click', (e) => {
+            const cell = e.target.closest && e.target.closest('.dim-cell');
+            if (cell && tbody.contains(cell)) {
+              activateFromCell(cell);
+            }
+          });
+          tbody.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') {
+              return;
+            }
+            const cell = e.target.closest && e.target.closest('.dim-cell');
+            if (cell && tbody.contains(cell)) {
+              e.preventDefault();
+              activateFromCell(cell);
+            }
+          });
         } catch (error) {
           // Error handling with user feedback
-          // eslint-disable-next-line no-console
-          console.error('Extension rendering error:', error);
-          const errorDiv = createElement(
-            'div',
-            {
-              className: 'error-message',
-              role: 'alert',
-              'aria-live': 'polite',
-            },
-            `
-            <h3>Unable to load extension</h3>
-            <p>Please check your data configuration and try again.</p>
-          `
-          );
-          element.appendChild(errorDiv);
+          appendError(element, error);
         }
       }, [element, layout]);
     },

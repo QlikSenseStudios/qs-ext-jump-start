@@ -18,7 +18,23 @@ export default function ext(/* galaxy */) {
       type: 'items',
       component: 'accordion',
       items: {
-        // Property panel sections are defined in object-properties.js
+        // Limit to exactly 1 dimension (required) and 0-1 measure (optional)
+        dimensions: {
+          uses: 'dimensions',
+          min: 1,
+          max: 1,
+        },
+        measures: {
+          uses: 'measures',
+          min: 0,
+          max: 1,
+        },
+        sorting: {
+          uses: 'sorting',
+        },
+        addons: {
+          uses: 'addons',
+        },
       },
     },
   };
