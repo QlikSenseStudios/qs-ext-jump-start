@@ -97,12 +97,12 @@ npm run package
 
 ```
 src/
-├── index.js              # 🎯 Main extension logic (includes selections example)
+├── index.js              # 🎯 Main extension logic
 ├── ext.js                # ⚙️ Extension configuration
 ├── qae/
 │   ├── data.js           # 📊 Data processing
 │   └── object-properties.js  # 🎛️ Property panel setup
-├── styles.css            # 🎨 Extension styling (hover overlay, selection cues)
+├── styles.css            # 🎨 Extension styling
 ├── utils.js              # 🔧 Utility functions
 └── meta.json            # 📋 Extension metadata
 
@@ -130,7 +130,7 @@ See [Testing Guide](./docs/TESTING.md) for detailed usage.
 
 Notes for the selections example tests:
 
-- Data state tests now assert the presence of the two-column table and headers.
+- Data state tests assert the presence of the two-column table and headers.
 - No-data tests accept additional guidance text (they check that the message contains “No data to display”).
 - Selection state tests detect the `.extension-container.in-selection` class and verify the table remains interactive.
 

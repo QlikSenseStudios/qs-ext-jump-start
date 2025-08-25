@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
+_No changes yet._
+
+## [0.3.0] - 2025-08-25
+
 ### Added
 
 - Comprehensive documentation review and cleanup

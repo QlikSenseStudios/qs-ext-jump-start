@@ -20,12 +20,17 @@ This file lists suggested improvements and additions and their progress for the 
 - [ ] Expand Playwright tests for edge cases and error states
 - [ ] Add unit test setup (e.g., Jest) for non-UI logic
 - [ ] Optional: Add visual regression tests (screenshots)
+- [ ] Add tests for invalid configuration messaging (1 dim required, 0–1 measure)
+- [ ] Add tests verifying local selection highlight appears only in selection mode
 
 ## Extension Features ✅
 
 - [x] ~~Add more property examples (dimensions, measures, custom settings)~~ → Enhanced properties
 - [x] ~~Improve error handling and user feedback~~ → Comprehensive error handling
 - [x] Add basic styling and theming support
+- [x] Selections example: 2-column table UI and sn-style selection flow
+- [x] No-data guidance when configuration is invalid
+- [ ] Optional: Keyboard shortcuts for confirm/cancel selection session
 
 ## Documentation ✅
 
@@ -36,6 +41,8 @@ This file lists suggested improvements and additions and their progress for the 
 - [x] Add Rename & Rebrand checklist
 - [x] Add VS Code extension recommendations
 - [x] Update AI metadata (.aiconfig)
+- [x] README selections example section
+- [x] Changelog entry for 0.3.0
 
 ## Community & Support ✅
 
@@ -45,10 +52,12 @@ This file lists suggested improvements and additions and their progress for the 
 
 - [ ] Add GitHub Actions workflows for linting, testing, and packaging
 - [ ] Optional: Add release workflow to publish packaged zip as artifact
+- [ ] Optional: Add automatic version bump and changelog verification
 
 ## Build & Tooling
 
 - [ ] Optional: Switch package to ESM (add `"type": "module"`) to align with ESLint flat config
+- [x] Version bump to 0.3.0 for selections example release
 
 ## Reference & Inspiration ✅
 
