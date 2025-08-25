@@ -36,6 +36,19 @@ This template provides:
 - Packaging and deployment scripts
 - Setup guides for Qlik Cloud and Enterprise
 
+### Selections Example (feature branch)
+
+This template includes a simple selections-focused example to demonstrate best practices with Nebula’s `useSelections`:
+
+- Exactly 1 dimension (required) and 0–1 measure (optional)
+- Renders a two-column table: Dimension and Measure
+- Clicking a dimension value starts a selection session and toggles values
+- Highlights apply only in active selection mode; hover uses a translucent overlay to preserve background state
+- Uses Qlik’s selection APIs via `useSelections.begin/select/cancel`
+- Shows a helpful no-data message when the configuration is invalid (pick 1 dim, optional 1 measure)
+
+See `src/index.js` and `src/styles.css` for the implementation, and `test/states/*.test.js` for E2E coverage.
+
 ## 📖 Documentation
 
 ### 🎯 Usage Guides
@@ -84,12 +97,12 @@ npm run package
 
 ```
 src/
-├── index.js              # 🎯 Main extension logic
+├── index.js              # 🎯 Main extension logic (includes selections example)
 ├── ext.js                # ⚙️ Extension configuration
 ├── qae/
 │   ├── data.js           # 📊 Data processing
 │   └── object-properties.js  # 🎛️ Property panel setup
-├── styles.css            # 🎨 Extension styling
+├── styles.css            # 🎨 Extension styling (hover overlay, selection cues)
 ├── utils.js              # 🔧 Utility functions
 └── meta.json            # 📋 Extension metadata
 
@@ -114,6 +127,12 @@ npx playwright test --grep "your test name" --debug
 ```
 
 See [Testing Guide](./docs/TESTING.md) for detailed usage.
+
+Notes for the selections example tests:
+
+- Data state tests now assert the presence of the two-column table and headers.
+- No-data tests accept additional guidance text (they check that the message contains “No data to display”).
+- Selection state tests detect the `.extension-container.in-selection` class and verify the table remains interactive.
 
 ## 🌐 Environment Setup
 

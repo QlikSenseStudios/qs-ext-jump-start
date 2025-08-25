@@ -17,6 +17,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 - New guides: `docs/PROJECT_STRUCTURE.md`, `docs/WORKFLOWS.md`
 - Rename & Rebrand checklist in Workflows
 - Recommended VS Code extensions in README and `.vscode/extensions.json`
+- Selections example: two-column table (Dimension/Measure) and sn-style selection handling via `useSelections`
+- Invalid-configuration no-data guidance (requires exactly 1 dimension and 0–1 measure)
 
 ### Changed
 
@@ -24,6 +26,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 - Fixed references from `reports/` to `report/` across docs
 - Clarified deployment packaging output naming
 - Improved inline JSDoc/context in `src/`
+- UI/UX: Hover uses translucent overlay to preserve background state; `.no-data` uses flex column layout
+- Refactor: Extracted small helpers/constants in `src/index.js`; unified no-data rendering; improved error handling
 
 ### Removed
 
