@@ -8,6 +8,7 @@ const dataTests = require('./states/data.test');
 const selectionTests = require('./states/selection.test');
 const errorTests = require('./states/error.test');
 const commonTests = require('./states/common.test');
+const a11yTests = require('./states/accessibility.test');
 
 test.describe('Qlik Sense Extension E2E Tests', () => {
   // Test configuration constants
@@ -286,6 +287,24 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
         type: 'info',
         description: `State transition: ${initialState} → ${finalState}`,
       });
+    });
+  });
+
+  test.describe('Accessibility Refinements', () => {
+    test('container roles and labels are correct across states', async () => {
+      await a11yTests.verifyContainerRolesAcrossStates(page, content);
+    });
+
+    test('cells expose role/button, aria-labels, and Tab order is predictable', async () => {
+      await a11yTests.verifyCellAccessibilityAndTabOrder(page, content);
+    });
+
+    test('no-data hint uses aria-live polite note region', async () => {
+      await a11yTests.verifyNoDataLiveRegion(page, content);
+    });
+
+    test('table headers have proper scope and labels', async () => {
+      await a11yTests.verifyHeaderScopes(page, content);
     });
   });
 });
