@@ -189,6 +189,14 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     test('should support keyboard toggling (Enter/Space)', async () => {
       await selectionTests.shouldSupportKeyboardToggle(page, content);
     });
+
+    test('should confirm selections by clicking outside and filter rows', async () => {
+      await selectionTests.shouldConfirmSelectionsByClickingOutside(page, content);
+    });
+
+    test('should confirm selections via button and filter rows', async () => {
+      await selectionTests.shouldConfirmSelectionsByButton(page, content);
+    });
   });
 
   test.describe('Error State', () => {
