@@ -228,6 +228,30 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
         });
       }
     });
+
+    test('should not allow selection interactions in error state', async () => {
+      await errorTests.attemptErrorTrigger(page, content);
+      await page.waitForTimeout(500);
+      await errorTests.shouldNotAllowSelectionInError(page, content);
+    });
+
+    test('should avoid rendering duplicate error elements on repeated triggers', async () => {
+      await errorTests.attemptErrorTrigger(page, content);
+      await page.waitForTimeout(500);
+      await errorTests.shouldNotDuplicateErrorsOnRepeatedTrigger(page, content);
+    });
+
+    test('should recover to data state after applying a valid configuration', async () => {
+      await errorTests.attemptErrorTrigger(page, content);
+      await page.waitForTimeout(500);
+      await errorTests.shouldRecoverAfterValidConfiguration(page, content);
+    });
+
+    test('error message should remain visible across viewport changes', async () => {
+      await errorTests.attemptErrorTrigger(page, content);
+      await page.waitForTimeout(500);
+      await errorTests.shouldRemainVisibleOnResize(page, content);
+    });
   });
 
   test.describe('Common Functionality', () => {
