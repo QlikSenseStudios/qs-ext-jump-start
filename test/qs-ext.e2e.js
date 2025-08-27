@@ -124,6 +124,21 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
         });
       }
     });
+
+    test('should render with 1 dimension only (no measure)', async () => {
+      await dataTests.configureOneDimensionOnlyAndValidate(page, content);
+      await dataTests.cleanupConfiguration(page);
+    });
+
+    test('should render with alternate aggregation (Avg)', async () => {
+      await dataTests.configureAlternateAggregationAndValidate(page, content);
+      await dataTests.cleanupConfiguration(page);
+    });
+
+    test('should handle large row count gracefully', async () => {
+      await dataTests.configureLargeRowCountAndValidate(page, content);
+      await dataTests.cleanupConfiguration(page);
+    });
   });
 
   test.describe('Selection State', () => {

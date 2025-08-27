@@ -112,4 +112,85 @@ module.exports = {
       expect(headerTexts[1].length).toBeGreaterThan(0); // Measure title exists (or default)
     }
   },
+
+  /**
+   * Configures exactly 1 dimension and no measure; validates data state renders with fallback measure column content
+   */
+  async configureOneDimensionOnlyAndValidate(page, content) {
+    const configured = await configureExtension(page, { dimensions: ['Dim1'], measures: [] });
+    await page.waitForTimeout(800);
+
+    const mainContainer = await page.$(content + ' .extension-container');
+    expect(mainContainer).toBeTruthy();
+
+    const table = await page.$(content + ' table.data-table');
+    expect(table).toBeTruthy();
+
+    // Headers should exist (Dimension + Measure placeholder)
+    const headers = await page.$$(content + ' table.data-table thead th');
+    expect(headers.length).toBe(2);
+
+    // There should be at least one row (Dim1 has few values but non-zero)
+    const rows = await page.$$(content + ' table.data-table tbody tr');
+    expect(rows.length).toBeGreaterThan(0);
+
+    // Second column should display '-' fallback if no measure
+    const firstMeasCell = await page.$(content + ' table.data-table tbody tr td.meas-cell');
+    const measText = (await firstMeasCell.textContent()).trim();
+    expect(measText.length).toBeGreaterThan(0); // may be '-' or default formatting
+
+    return configured;
+  },
+
+  /**
+   * Configures 1D + measure with alternate aggregation (e.g., Avg)
+   */
+  async configureAlternateAggregationAndValidate(page, content) {
+    await configureExtension(page, {
+      dimensions: ['Dim1'],
+      measures: [{ field: 'Expression1', aggregation: 'Avg' }],
+    });
+    await page.waitForTimeout(800);
+
+    const mainContainer = await page.$(content + ' .extension-container');
+    expect(mainContainer).toBeTruthy();
+
+    const table = await page.$(content + ' table.data-table');
+    expect(table).toBeTruthy();
+
+    // Two headers
+    const headers = await page.$$(content + ' table.data-table thead th');
+    expect(headers.length).toBe(2);
+
+    // At least one row; cells populated
+    const rows = await page.$$(content + ' table.data-table tbody tr');
+    expect(rows.length).toBeGreaterThan(0);
+  },
+
+  /**
+   * Configures a high-cardinality dimension to simulate large row count relative to initial fetch height
+   */
+  async configureLargeRowCountAndValidate(page, content) {
+    await configureExtension(page, { dimensions: ['AsciiAlpha'], measures: [] });
+    await page.waitForTimeout(1000);
+
+    const mainContainer = await page.$(content + ' .extension-container');
+    expect(mainContainer).toBeTruthy();
+
+    const table = await page.$(content + ' table.data-table');
+    expect(table).toBeTruthy();
+
+    // Single header row
+    const headerRows = await page.$$(content + ' table.data-table thead tr');
+    expect(headerRows.length).toBe(1);
+
+    // Many rows should be present (at least 10 to indicate breadth)
+    const rows = await page.$$(content + ' table.data-table tbody tr');
+    expect(rows.length).toBeGreaterThanOrEqual(10);
+
+    // Container still fits viewport
+    const bbox = await (await page.$(content)).boundingBox();
+    const viewport = page.viewportSize();
+    expect(bbox.width).toBeLessThanOrEqual(viewport.width + 50);
+  },
 };
