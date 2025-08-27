@@ -68,6 +68,18 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
         await noDataTests.shouldBeResponsive(page, content, viewport);
       }
     });
+
+    test('should show hint for invalid config: 2 dimensions', async () => {
+      await noDataTests.configureInvalidTwoDimensionsAndValidate(page, content);
+    });
+
+    test('should show hint for invalid config: 1 dimension + 2 measures', async () => {
+      await noDataTests.configureInvalidTwoMeasuresAndValidate(page, content);
+    });
+
+    test('valid-but-empty should not show invalid-config hint (if reachable)', async () => {
+      await noDataTests.attemptValidButEmptyAndValidateOptional(page, content);
+    });
   });
 
   test.describe('Data State', () => {
