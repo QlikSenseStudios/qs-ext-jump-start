@@ -1,0 +1,87 @@
+# Cursor IDE ignore file
+# Optimize indexing by excluding unnecessary files and directories
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+*-ext/
+bundle-analysis.html
+
+# Test artifacts
+test/report/
+test/artifacts/
+.playwright/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output
+
+# IDE specific files (but keep .vscode for compatibility)
+.DS_Store
+.vscode/launch.json
+.vscode/tasks.json
+*.swp
+*.swo
+*~
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+.tmp/
+.temp/
+*.tmp
+*.temp
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Environment files (may contain sensitive data)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git directory (not needed for code analysis)
+.git/
+
+# Documentation that doesn't need constant indexing
+CHANGELOG.md
+LICENSE
+license.txt
+
+# Large or binary files that don't benefit from AI analysis
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.ico
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot

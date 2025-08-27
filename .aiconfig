@@ -15,10 +15,13 @@ project:
   license: MIT
 
 ai:
-  preferred_model: gpt-4o-mini
+  preferred_model: claude-3-5-sonnet-20241022
+  fallback_model: gpt-4o-mini
+  cursor_compatible: true
   code_style:
     lint: eslint
     format: prettier
+    editor: cursor
   prompt_templates:
     - 'Summarize this code.'
     - 'Update this template into a new project per docs/WORKFLOWS.md (Workflow B) and the Rename & Rebrand checklist, without changing runtime behavior.'
@@ -26,11 +29,24 @@ ai:
     - 'Generate Playwright tests for this module.'
     - 'List files related to QAE configuration.'
     - 'Create documentation for a new property panel section.'
+    - 'Explain how this Qlik Sense extension works to a new developer.'
+    - 'Add TypeScript support to this extension.'
+    - 'Optimize this code for performance and accessibility.'
+    - 'Create a new property panel configuration.'
+    - 'Debug this Playwright test failure.'
+    - 'Generate JSDoc comments for this function.'
+  cursor_specific:
+    enable_chat_context: true
+    enable_codebase_analysis: true
+    preferred_completion_style: "contextual"
+    enable_multifile_editing: true
   exclude_paths:
     - node_modules/
     - dist/
     - test/report/
     - .git/
+    - .cursor/
+    - "*.log"
 
 contributors:
   - name: Qlik Professional Services

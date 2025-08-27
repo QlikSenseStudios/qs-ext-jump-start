@@ -189,9 +189,11 @@ MIT License - see [license.txt](./license.txt) for details.
 
 _For technical implementation details and version history, see [CHANGELOG.md](./docs/CHANGELOG.md). This README focuses on practical usage and getting started quickly._
 
-## 🧩 Recommended VS Code Extensions
+## 🧩 Recommended Extensions & Editors
 
-Recommended extensions to improve development and testing:
+### VS Code Extensions
+
+If using VS Code or Cursor's compatibility mode:
 
 - ESLint (dbaeumer.vscode-eslint)
 - Prettier (esbenp.prettier-vscode)
@@ -199,3 +201,12 @@ Recommended extensions to improve development and testing:
 - EditorConfig (EditorConfig.EditorConfig)
 - Markdown All in One (yzhang.markdown-all-in-one)
 - GitHub Pull Requests and Issues (GitHub.vscode-pull-request-github)
+
+### Cursor IDE (Recommended)
+
+For the best AI-powered development experience, we recommend using [Cursor IDE](https://cursor.sh/):
+
+- Built-in AI code completion and chat
+- Contextual codebase understanding
+- Multi-file editing capabilities
+- See [Cursor IDE Setup Guide](./.cursor/CURSOR_IDE_SETUP.md) for configuration
