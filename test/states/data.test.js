@@ -1,5 +1,5 @@
 const { expect } = require('@playwright/test');
-const { configureExtension, cleanupExtensionConfiguration } = require('../helpers/test-utils');
+const { configureExtension, cleanupExtensionConfiguration, clearAllSelections } = require('../helpers/test-utils');
 
 /**
  * Data State Test Module
@@ -117,6 +117,7 @@ module.exports = {
    * Configures exactly 1 dimension and no measure; validates data state renders with fallback measure column content
    */
   async configureOneDimensionOnlyAndValidate(page, content) {
+    await clearAllSelections(page).catch(() => {});
     const configured = await configureExtension(page, { dimensions: ['Dim1'], measures: [] });
     await page.waitForTimeout(800);
 
@@ -146,6 +147,7 @@ module.exports = {
    * Configures 1D + measure with alternate aggregation (e.g., Avg)
    */
   async configureAlternateAggregationAndValidate(page, content) {
+    await clearAllSelections(page).catch(() => {});
     await configureExtension(page, {
       dimensions: ['Dim1'],
       measures: [{ field: 'Expression1', aggregation: 'Avg' }],
@@ -171,6 +173,7 @@ module.exports = {
    * Configures a high-cardinality dimension to simulate large row count relative to initial fetch height
    */
   async configureLargeRowCountAndValidate(page, content) {
+    await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['AsciiAlpha'], measures: [] });
     await page.waitForTimeout(1000);
 

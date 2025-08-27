@@ -1,5 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const { getNebulaQueryString, getQlikServerAuthenticatedContext } = require('./qs-ext.connect');
+const { clearAllSelections } = require('./helpers/test-utils');
 
 // Import modular state-specific test suites
 const noDataTests = require('./states/no-data.test');
@@ -12,7 +13,8 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
   // Test configuration constants
   const nebulaQueryString = getNebulaQueryString();
   const content = '.njs-viz[data-render-count]'; // Keep original name for compatibility
-  const viewports = [ // Keep original name for compatibility
+  const viewports = [
+    // Keep original name for compatibility
     { width: 1920, height: 1080, name: 'Desktop' },
     { width: 768, height: 1024, name: 'Tablet' },
     { width: 375, height: 667, name: 'Mobile' },
@@ -41,6 +43,8 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
   test.afterEach(async () => {
     // Clean up any configuration before closing
     try {
+      // Always clear selections first to avoid bleed between tests
+      await clearAllSelections(page);
       await dataTests.cleanupConfiguration(page);
     } catch {
       // Silently handle cleanup failures
@@ -94,59 +98,55 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     });
 
     test('should validate data state if reachable', async () => {
-      await dataTests.attemptConfiguration(page);
+      const configured = await dataTests.attemptConfiguration(page);
       const state = await commonTests.getExtensionState(page, content);
 
-      // Only run data state tests if we actually reached that state
-      if (state === 'extension-container') {
+      if (configured) {
+        // If configuration reported success, we must be in data state
+        expect(state).toBe('extension-container');
         await dataTests.shouldRenderDataState(page, content);
         await dataTests.shouldHaveProperAccessibility(page, content);
         await dataTests.shouldDisplayDataCorrectly(page, content);
       } else {
-        // Document that data state was not reachable
+        // Document that data state was not reachable due to configuration failure
         test.info().annotations.push({
-          type: 'info',
-          description: `Data state not reached. Current state: ${state}`,
+          type: 'skip',
+          description: `Configuration failed; skipping data validations. Current state: ${state}`,
         });
       }
     });
 
     test('should support keyboard navigation if in data state', async () => {
-      await dataTests.attemptConfiguration(page);
+      const configured = await dataTests.attemptConfiguration(page);
       const state = await commonTests.getExtensionState(page, content);
 
-      if (state === 'extension-container') {
+      if (configured) {
+        expect(state).toBe('extension-container');
         await dataTests.shouldSupportKeyboardNavigation(page, content);
       } else {
         test.info().annotations.push({
           type: 'skip',
-          description: 'Keyboard navigation test skipped - data state not reachable',
+          description: 'Keyboard navigation test skipped - configuration failed',
         });
       }
     });
 
     test('should render with 1 dimension only (no measure)', async () => {
       await dataTests.configureOneDimensionOnlyAndValidate(page, content);
-      await dataTests.cleanupConfiguration(page);
     });
 
     test('should render with alternate aggregation (Avg)', async () => {
       await dataTests.configureAlternateAggregationAndValidate(page, content);
-      await dataTests.cleanupConfiguration(page);
     });
 
     test('should handle large row count gracefully', async () => {
       await dataTests.configureLargeRowCountAndValidate(page, content);
-      await dataTests.cleanupConfiguration(page);
     });
   });
 
   test.describe('Selection State', () => {
     test('should attempt to trigger selection state', async () => {
-      // First try to configure data
-      await dataTests.attemptConfiguration(page);
-
-      // Then attempt selection
+      // Attempt selection directly (helper will configure if needed)
       const selectionAttempted = await selectionTests.attemptSelectionTrigger(page, content);
 
       // Document the attempt
@@ -157,8 +157,7 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     });
 
     test('should validate selection state if reachable', async () => {
-      // Configure and attempt selection
-      await dataTests.attemptConfiguration(page);
+      // Attempt selection (helper will configure if needed)
       await selectionTests.attemptSelectionTrigger(page, content);
 
       const state = await commonTests.getExtensionState(page, content);
@@ -173,6 +172,22 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
           description: `Selection state not reached. Current state: ${state}`,
         });
       }
+    });
+
+    test('should enter selection with plain click (no Ctrl) and highlight cell', async () => {
+      await selectionTests.shouldEnterSelectionWithPlainClick(page, content);
+    });
+
+    test('should toggle same cell off', async () => {
+      await selectionTests.shouldToggleSameCellOff(page, content);
+    });
+
+    test('should multi-select then exit when all deselected', async () => {
+      await selectionTests.shouldMultiSelectAndThenExit(page, content);
+    });
+
+    test('should support keyboard toggling (Enter/Space)', async () => {
+      await selectionTests.shouldSupportKeyboardToggle(page, content);
     });
   });
 
