@@ -1,0 +1,44 @@
+{
+  // Cursor IDE specific settings for QS-Ext-Jump-Start
+  "cursor.general.enableAICompletion": true,
+  "cursor.general.enableAIChat": true,
+  "cursor.general.enableChatHistory": true,
+
+  // Code analysis preferences
+  "cursor.ai.enableCodeAnalysis": true,
+  "cursor.ai.enableContextualSuggestions": true,
+
+  // Project-specific preferences for Qlik Sense extension development
+  "cursor.ai.codebaseIndexing": {
+    "enabled": true,
+    "watchMode": true,
+    "ignorePatterns": [
+      "node_modules/**",
+      "dist/**",
+      "*-ext/**",
+      "test/report/**",
+      "test/artifacts/**"
+    ]
+  },
+
+  // Language-specific settings
+  "cursor.ai.javascript": {
+    "enableSmartCompletion": true,
+    "enableTypeInference": true
+  },
+
+  // Integration with existing tools
+  "cursor.integration.eslint": true,
+  "cursor.integration.prettier": true,
+
+  // Qlik Sense extension specific context
+  "cursor.ai.contextualKeywords": [
+    "nebula.js",
+    "stardust",
+    "qlik",
+    "hypercube",
+    "qae",
+    "playwright",
+    "supernova"
+  ]
+}
