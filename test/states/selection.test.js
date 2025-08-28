@@ -76,7 +76,7 @@ module.exports = {
    * @returns {Promise<void>}
    */
   async shouldEnterSelectionWithPlainClick(page, content) {
-    await clearAllSelections(page).catch(() => {});
+    await clearAllSelections(page).catch((err) => { console.error('Failed to clear selections:', err); });
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
     await page.waitForTimeout(800);
 
