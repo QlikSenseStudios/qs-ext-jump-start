@@ -4,7 +4,7 @@
 
 This guide shows you how to use the Playwright testing framework for your Qlik Sense extension. For project updates and version history, see [CHANGELOG.md](./CHANGELOG.md).
 
-> Status: v0.2.0 — Suite validated with Nebula hub integration
+> Status: v0.4.0 — Expanded coverage (a11y, responsiveness, robustness) with hardened teardown
 
 ### What You Can Test
 
@@ -13,6 +13,7 @@ This guide shows you how to use the Playwright testing framework for your Qlik S
 - ✅ **Accessibility Compliance** - ARIA attributes and keyboard navigation
 - ✅ **Responsive Design** - Multi-viewport testing (mobile, tablet, desktop)
 - ✅ **State Transitions** - No-data, data, selection, and error states
+- ✅ **Robustness & Re-renders** - No duplicate containers/tables, resilient toggles, reload recovery
 
 ## 🏗️ Test Architecture
 
@@ -27,6 +28,9 @@ test/
 │  ├── data.test.js # Data state
 │  ├── selection.test.js # Selection state
 │  ├── error.test.js # Error state
+│  ├── accessibility.test.js # Accessibility refinements
+│  ├── responsiveness.test.js # Responsiveness & layout
+│  └── robustness.test.js # Robustness & re-renders
 │  └── common.test.js # Shared utilities
 ├── helpers/
 │  └── test-utils.js # Nebula configuration & cleanup utilities
@@ -45,9 +49,38 @@ Tests are organized by extension states with intelligent configuration:
 
 - **No-Data State** - Default state, always reachable ✅
 - **Data State** - Real Nebula hub configuration with dimensions/measures ✅
-- **Selection State** - User interaction simulation ⚠️
-- **Error State** - Error condition testing ⚠️
+- **Selection State** - User interaction simulation ✅
+- **Error State** - Error condition testing ✅
 - **Common Functionality** - Universal features across all states ✅
+
+### Helper Utilities and Patterns (v0.4.0)
+
+- Stable selectors and signals
+  - Root: `.njs-viz[data-render-count]`
+  - Container: `.extension-container` and `.extension-container.in-selection`
+  - Cells: `td.dim-cell.selectable-item`, stable ids via `[data-q-elem]`
+  - States: `.no-data`, `.error-message`
+- Shared helpers (see `test/helpers/test-utils.js`)
+  - `configureExtension()`, `configureDimensions()`, `configureMeasures()`, `selectAggregation()`
+  - `cleanupExtensionConfiguration()`, `clearAllSelections()`
+  - `triggerSelectionMode()`
+  - `resetPropertiesToEmptyJson()` — properties dialog → `{}` → Confirm
+  - `clickWithBackdropHandling()` — handles MUI backdrops
+  - WAIT buckets: `TINY/SHORT/MED/LONG/XLONG` for consistent timing
+- Robust interaction patterns
+  - Keyboard-first toggles (Enter/Space) preferred over clicks
+  - Re-query locators after each iteration to avoid stale handles
+  - Use bottom-most targets to avoid toolbar overlays
+  - Selection-mode detection aligned on `.extension-container.in-selection`
+
+### Teardown and Cleanup (v0.4.0)
+
+Each test performs targeted cleanup and a properties reset to avoid state leakage:
+
+1. Remove only items added during configuration (`cleanupExtensionConfiguration`).
+2. Clear all selections via toolbar/button.
+3. Open the properties dialog (gear, title="Modify object properties"), replace JSON with `{}`, and Confirm.
+4. Small waits after text clear and Confirm improve stability in headed runs.
 
 ## 🚀 Running Tests
 
@@ -99,6 +132,9 @@ npx playwright test --grep "Data State"
 
 # Debug mode for troubleshooting
 npx playwright test --debug
+
+# Open the latest HTML report for this repo's path
+npx playwright show-report test/report
 ```
 
 ## 📊 Understanding Test Structure
@@ -178,6 +214,12 @@ npx playwright test --debug
 npx playwright test --headed --slowMo=1000
 ```
 
+Tip: For flake triage, prefer a single worker:
+
+```bash
+npx playwright test --headed --workers=1
+```
+
 ### Performance Testing
 
 Monitor test execution times:
@@ -192,6 +234,13 @@ npx playwright test --reporter=line
 # Profile slow tests
 npx playwright test --max-failures=1 --timeout=60000
 ```
+
+### Common Flakiness Fixes (v0.4.0)
+
+- If a click fails due to overlays, use `clickWithBackdropHandling()` or prefer keyboard toggles
+- Re-query elements after DOM updates to avoid detached handles
+- Use bottom-most cells to avoid overlapping toolbars and popovers
+- Add small waits after confirming modal actions in headed mode
 
 ## 📖 Technical Details
 
