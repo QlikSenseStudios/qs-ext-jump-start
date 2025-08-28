@@ -210,8 +210,7 @@ npx playwright test --headed --grep "Data State"
 # Step-by-step debugging - pause execution
 npx playwright test --debug
 
-# Slow motion - see interactions clearly
-npx playwright test --headed --slowMo=1000
+# Note: slowMo is not supported in this workflow. Prefer --debug or --headed with fewer workers.
 ```
 
 Tip: For flake triage, prefer a single worker:

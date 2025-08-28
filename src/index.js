@@ -104,8 +104,30 @@ function appendError(element, error) {
  * - Errors: Caught and presented as user-friendly message
  */
 // Maintain per-element state without leaking via globals or function properties
+/**
+ * Tracks per-element selection session state to avoid global leakage.
+ * Key: host HTMLElement, Value: { data: Array, pendingByElem: Set<number>, sessionByElem: Set<number>, lastInSelection: boolean, elemToRowIndex: Map<number, number> }
+ */
 const selectionStateByElement = new WeakMap();
+/**
+ * Tracks the stable container node attached under each host element.
+ * Key: host HTMLElement, Value: container HTMLDivElement
+ */
 const containerByElement = new WeakMap();
+
+/**
+ * Removes and forgets a previously attached container for an element.
+ * Used before rendering special states (no-data, error) to prevent duplicates.
+ * @param {HTMLElement} element host root
+ */
+function resetElementContainer(element) {
+  const existing = containerByElement.get(element);
+  if (existing && existing.parentNode) {
+    existing.parentNode.removeChild(existing);
+  }
+  containerByElement.delete(element);
+  clearChildren(element);
+}
 
 export default function supernova(galaxy) {
   return {
@@ -153,12 +175,7 @@ export default function supernova(galaxy) {
           const { dimCount, measCount } = getCounts(layout);
           if (isInvalidConfig({ dimCount, measCount })) {
             // Ensure we don't accumulate multiple .no-data nodes across renders
-            const existing = containerByElement.get(element);
-            if (existing && existing.parentNode) {
-              existing.parentNode.removeChild(existing);
-            }
-            containerByElement.delete(element);
-            clearChildren(element);
+            resetElementContainer(element);
             element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
@@ -166,12 +183,7 @@ export default function supernova(galaxy) {
           // Check for data availability (edge case: empty hypercube)
           const dataMatrix = safeGet(layout, 'qHyperCube.qDataPages.0.qMatrix', []);
           if (!dataMatrix.length) {
-            const existing = containerByElement.get(element);
-            if (existing && existing.parentNode) {
-              existing.parentNode.removeChild(existing);
-            }
-            containerByElement.delete(element);
-            clearChildren(element);
+            resetElementContainer(element);
             element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
@@ -379,12 +391,8 @@ export default function supernova(galaxy) {
         } catch (error) {
           // Error handling with user feedback
           // If a container exists, remove it to prevent overlapping UI
-          const existing = containerByElement.get(element);
-          if (existing && existing.parentNode) {
-            existing.parentNode.removeChild(existing);
-          }
-          // Clear element and show error
-          clearChildren(element);
+          resetElementContainer(element);
+          // Show error UI
           appendError(element, error);
         }
       }, [element, layout]);

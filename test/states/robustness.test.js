@@ -2,6 +2,10 @@ const { expect, test } = require('@playwright/test');
 const { configureExtension, triggerSelectionMode, clearAllSelections } = require('../helpers/test-utils');
 const commonTests = require('./common.test');
 
+// Extract magic numbers as named constants for clarity/maintainability
+const THRASH_ITERATIONS = 5;
+const SHORT_DELAY_MS = 40;
+
 module.exports = {
   /**
    * Asserts re-renders do not duplicate containers/tables or surface errors.
@@ -39,13 +43,13 @@ module.exports = {
     const b = cells.nth(secondIdx);
     await a.scrollIntoViewIfNeeded();
     await b.scrollIntoViewIfNeeded();
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < THRASH_ITERATIONS; i++) {
       await a.focus();
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(40);
+      await page.waitForTimeout(SHORT_DELAY_MS);
       await b.focus();
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(40);
+      await page.waitForTimeout(SHORT_DELAY_MS);
     }
 
     // Validate single container and table, and no error messages
