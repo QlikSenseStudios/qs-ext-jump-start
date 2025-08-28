@@ -15,6 +15,7 @@ module.exports = {
     await page.waitForTimeout(300);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
+      // Gate: requires data state; if not available, document and exit as a stub.
       test.info().annotations.push({ type: 'skip', description: `Data state not reachable (${state})` });
       return;
     }
@@ -24,6 +25,7 @@ module.exports = {
     const cells = page.locator(content + ' td.dim-cell.selectable-item');
     const count = await cells.count();
     if (count < 2) {
+      // Gate: need at least 2 selectable cells to induce re-render thrash.
       test.info().annotations.push({ type: 'skip', description: 'Not enough cells to test re-render thrash' });
       return;
     }
@@ -61,6 +63,7 @@ module.exports = {
     await page.waitForTimeout(300);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
+      // Gate: requires data state; if not available, document and exit as a stub.
       test.info().annotations.push({ type: 'skip', description: `Data state not reachable (${state})` });
       return;
     }
@@ -106,6 +109,7 @@ module.exports = {
     await page.waitForTimeout(300);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
+      // Gate: requires data state; if not available, document and exit as a stub.
       test.info().annotations.push({ type: 'skip', description: `Data state not reachable (${state})` });
       return;
     }

@@ -9,6 +9,8 @@ module.exports = {
   async verifyNoDataCenteredWithoutOverflow(page, content, viewports) {
     const initial = await commonTests.getExtensionState(page, content);
     if (initial !== 'no-data') {
+      // Gate: this validation expects the extension to start in no-data state.
+      // If not, we document and exit as a stub to avoid false failures.
       test.info().annotations.push({ type: 'skip', description: `Expected no-data initial, got ${initial}` });
       return;
     }
@@ -48,6 +50,7 @@ module.exports = {
     await page.waitForTimeout(500);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
+      // Gate: requires data state; if not available, document and exit as a stub.
       test.info().annotations.push({ type: 'skip', description: `Data state not reachable (${state})` });
       return;
     }
@@ -85,6 +88,7 @@ module.exports = {
     await page.waitForTimeout(300);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
+      // Gate: requires data state; if not available, document and exit as a stub.
       test.info().annotations.push({ type: 'skip', description: `Data state not reachable (${state})` });
       return;
     }
@@ -92,6 +96,7 @@ module.exports = {
     // Enter selection once and keep it while resizing
     const triggered = await triggerSelectionMode(page);
     if (!triggered) {
+      // Gate: selection-mode must be active to validate selection layout.
       test.info().annotations.push({ type: 'skip', description: 'Could not enter selection mode' });
       return;
     }

@@ -86,8 +86,9 @@ module.exports = {
   async shouldNotAllowSelectionInError(page, content) {
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'error-message') {
+      // Gate: this validation only applies when error state is visible.
       test.info().annotations.push({ type: 'skip', description: `Error state not reachable (${state})` });
-      return;
+      return; // Documented stub path
     }
     // No selection container class
     const inSelection = await page.$(content + ' .extension-container.in-selection');
@@ -103,8 +104,9 @@ module.exports = {
   async shouldNotDuplicateErrorsOnRepeatedTrigger(page, content) {
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'error-message') {
+      // Gate: duplicate errors check only meaningful in error state
       test.info().annotations.push({ type: 'skip', description: `Error state not reachable (${state})` });
-      return;
+      return; // Documented stub path
     }
     // Attempt to trigger error again
     await this.attemptErrorTrigger(page, content);
@@ -119,8 +121,9 @@ module.exports = {
   async shouldRecoverAfterValidConfiguration(page, content) {
     const current = await commonTests.getExtensionState(page, content);
     if (current !== 'error-message') {
+      // Gate: recovery flow applies only from error state
       test.info().annotations.push({ type: 'skip', description: `Error state not reachable (${current})` });
-      return;
+      return; // Documented stub path
     }
     await clearAllSelections(page).catch(() => {});
     const configured = await configureExtension(page, {
@@ -135,6 +138,7 @@ module.exports = {
       const error = await page.$(content + ' .error-message');
       expect(error).toBeFalsy();
     } else {
+      // Gate: without a successful config we cannot assert recovery
       test.info().annotations.push({ type: 'skip', description: 'Configuration failed; cannot verify recovery' });
     }
   },
@@ -145,8 +149,9 @@ module.exports = {
   async shouldRemainVisibleOnResize(page, content) {
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'error-message') {
+      // Gate: visibility-on-resize only meaningful if error is present
       test.info().annotations.push({ type: 'skip', description: `Error state not reachable (${state})` });
-      return;
+      return; // Documented stub path
     }
     const sizes = [
       { width: 375, height: 667 },

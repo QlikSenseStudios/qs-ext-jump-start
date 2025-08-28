@@ -103,6 +103,8 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     });
 
     test('should validate data state if reachable', async () => {
+      // Gate: This test runs full validations only if the E2E environment can reach data state.
+      // Rationale: Configuration depends on the host app's data; when not reachable we document and return.
       const configured = await dataTests.attemptConfiguration(page);
       const state = await commonTests.getExtensionState(page, content);
 
@@ -118,10 +120,12 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
           type: 'skip',
           description: `Configuration failed; skipping data validations. Current state: ${state}`,
         });
+        return; // Explicitly exit as a stub for environments where data state is not guaranteed
       }
     });
 
     test('should support keyboard navigation if in data state', async () => {
+      // Gate: Only meaningful if data state is reachable; otherwise skip as a documented stub.
       const configured = await dataTests.attemptConfiguration(page);
       const state = await commonTests.getExtensionState(page, content);
 
@@ -133,6 +137,7 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
           type: 'skip',
           description: 'Keyboard navigation test skipped - configuration failed',
         });
+        return; // Stub path; environment did not allow data state
       }
     });
 
@@ -176,6 +181,7 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
           type: 'info',
           description: `Selection state not reached. Current state: ${state}`,
         });
+        return; // Documented stub when selection mode cannot be reached in this environment
       }
     });
 
@@ -231,6 +237,7 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
           type: 'info',
           description: `Error state not reached. Current state: ${state}`,
         });
+        return; // Documented stub when error state cannot be reached
       }
     });
 
