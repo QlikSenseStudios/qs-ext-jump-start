@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 echo "Running pre-commit checks (lint only)..."
 npm run -s lint-staged || {
 	echo "Lint-staged failed. Aborting commit." >&2
