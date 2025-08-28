@@ -9,6 +9,7 @@ const selectionTests = require('./states/selection.test');
 const errorTests = require('./states/error.test');
 const commonTests = require('./states/common.test');
 const a11yTests = require('./states/accessibility.test');
+const responsiveTests = require('./states/responsiveness.test');
 
 test.describe('Qlik Sense Extension E2E Tests', () => {
   // Test configuration constants
@@ -305,6 +306,37 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
 
     test('table headers have proper scope and labels', async () => {
       await a11yTests.verifyHeaderScopes(page, content);
+    });
+  });
+
+  test.describe('Responsiveness and Layout', () => {
+    test('no-data is centered without overflow across viewports', async () => {
+      const viewports = [
+        { width: 1920, height: 1080 },
+        { width: 768, height: 1024 },
+        { width: 375, height: 667 },
+      ];
+      await responsiveTests.verifyNoDataCenteredWithoutOverflow(page, content, viewports);
+    });
+
+    test('data table fits and remains interactable across viewports', async () => {
+      const viewports = [
+        { width: 1920, height: 1080 },
+        { width: 1024, height: 768 },
+        { width: 768, height: 1024 },
+        { width: 375, height: 667 },
+      ];
+      await responsiveTests.verifyDataTableFitsViewport(page, content, viewports);
+    });
+
+    test('selection layout has no overflow and keeps selected cell visible', async () => {
+      const viewports = [
+        { width: 1920, height: 1080 },
+        { width: 1024, height: 768 },
+        { width: 768, height: 1024 },
+        { width: 375, height: 667 },
+      ];
+      await responsiveTests.verifySelectionLayoutAcrossViewports(page, content, viewports);
     });
   });
 });
