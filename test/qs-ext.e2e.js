@@ -10,6 +10,7 @@ const errorTests = require('./states/error.test');
 const commonTests = require('./states/common.test');
 const a11yTests = require('./states/accessibility.test');
 const responsiveTests = require('./states/responsiveness.test');
+const robustTests = require('./states/robustness.test');
 
 test.describe('Qlik Sense Extension E2E Tests', () => {
   // Test configuration constants
@@ -337,6 +338,24 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
         { width: 375, height: 667 },
       ];
       await responsiveTests.verifySelectionLayoutAcrossViewports(page, content, viewports);
+    });
+  });
+
+  test.describe('Robustness and Re-renders', () => {
+    test('should not duplicate containers or tables on re-render', async () => {
+      await robustTests.verifyNoDuplicateContainersOrTablesOnReRender(page, content);
+    });
+
+    test('selection toggles once per click (no duplicate listeners)', async () => {
+      await robustTests.verifySelectionTogglesOncePerClick(page, content);
+    });
+
+    test('selected items persist across re-renders during a session', async () => {
+      await robustTests.verifySelectionPersistsAcrossRenders(page, content);
+    });
+
+    test('page reload recovers to a valid state without errors', async () => {
+      await robustTests.verifyReloadRecovers(page, content);
     });
   });
 });
