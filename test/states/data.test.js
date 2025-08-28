@@ -1,5 +1,5 @@
 const { expect } = require('@playwright/test');
-const { configureExtension, cleanupExtensionConfiguration } = require('../helpers/test-utils');
+const { configureExtension, cleanupExtensionConfiguration, clearAllSelections } = require('../helpers/test-utils');
 
 /**
  * Data State Test Module
@@ -35,10 +35,10 @@ module.exports = {
   },
 
   /**
-   * Validates that the extension renders properly in data state
-   * Checks for main container and basic accessibility attributes
-   * @param {Page} page - Playwright page object
-   * @param {string} content - Extension content selector
+   * Ensures main container and table exist with correct accessibility when in data state.
+   * @param {import('@playwright/test').Page} page Playwright page
+   * @param {string} content Root selector for the extension
+   * @returns {Promise<boolean>} true if validated, false if container missing
    */
   async shouldRenderDataState(page, content) {
     const mainContainer = await page.$(content + ' .extension-container');
@@ -60,6 +60,12 @@ module.exports = {
     return false;
   },
 
+  /**
+   * Verifies role/aria-label/tabindex on the main container in data state.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldHaveProperAccessibility(page, content) {
     const mainContainer = await page.$(content + ' .extension-container');
 
@@ -75,6 +81,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Confirms the container is keyboard-focusable and holds tabindex=0.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldSupportKeyboardNavigation(page, content) {
     const mainContainer = await page.$(content + ' .extension-container');
 
@@ -96,6 +108,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Basic structure checks for data table: headers and at least one row.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldDisplayDataCorrectly(page, content) {
     const mainContainer = await page.$(content + ' .extension-container');
 
@@ -111,5 +129,98 @@ module.exports = {
       expect(headerTexts[0].length).toBeGreaterThan(0); // Dimension title exists
       expect(headerTexts[1].length).toBeGreaterThan(0); // Measure title exists (or default)
     }
+  },
+
+  /**
+   * Configures exactly 1 dimension and no measure; verifies fallback column content.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<boolean>} configuration status
+   */
+  async configureOneDimensionOnlyAndValidate(page, content) {
+    await clearAllSelections(page).catch(() => {});
+    const configured = await configureExtension(page, { dimensions: ['Dim1'], measures: [] });
+    await page.waitForTimeout(800);
+
+    const mainContainer = await page.$(content + ' .extension-container');
+    expect(mainContainer).toBeTruthy();
+
+    const table = await page.$(content + ' table.data-table');
+    expect(table).toBeTruthy();
+
+    // Headers should exist (Dimension + Measure placeholder)
+    const headers = await page.$$(content + ' table.data-table thead th');
+    expect(headers.length).toBe(2);
+
+    // There should be at least one row (Dim1 has few values but non-zero)
+    const rows = await page.$$(content + ' table.data-table tbody tr');
+    expect(rows.length).toBeGreaterThan(0);
+
+    // Second column should display '-' fallback if no measure
+    const firstMeasCell = await page.$(content + ' table.data-table tbody tr td.meas-cell');
+    const measText = (await firstMeasCell.textContent()).trim();
+    expect(measText.length).toBeGreaterThan(0); // may be '-' or default formatting
+
+    return configured;
+  },
+
+  /**
+   * Configures 1D + measure with alternate aggregation (e.g., Avg) and validates table.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
+  async configureAlternateAggregationAndValidate(page, content) {
+    await clearAllSelections(page).catch(() => {});
+    await configureExtension(page, {
+      dimensions: ['Dim1'],
+      measures: [{ field: 'Expression1', aggregation: 'Avg' }],
+    });
+    await page.waitForTimeout(800);
+
+    const mainContainer = await page.$(content + ' .extension-container');
+    expect(mainContainer).toBeTruthy();
+
+    const table = await page.$(content + ' table.data-table');
+    expect(table).toBeTruthy();
+
+    // Two headers
+    const headers = await page.$$(content + ' table.data-table thead th');
+    expect(headers.length).toBe(2);
+
+    // At least one row; cells populated
+    const rows = await page.$$(content + ' table.data-table tbody tr');
+    expect(rows.length).toBeGreaterThan(0);
+  },
+
+  /**
+   * Configures a high-cardinality dimension to simulate large row count relative to initial fetch.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
+  async configureLargeRowCountAndValidate(page, content) {
+    await clearAllSelections(page).catch(() => {});
+    await configureExtension(page, { dimensions: ['AsciiAlpha'], measures: [] });
+    await page.waitForTimeout(1000);
+
+    const mainContainer = await page.$(content + ' .extension-container');
+    expect(mainContainer).toBeTruthy();
+
+    const table = await page.$(content + ' table.data-table');
+    expect(table).toBeTruthy();
+
+    // Single header row
+    const headerRows = await page.$$(content + ' table.data-table thead tr');
+    expect(headerRows.length).toBe(1);
+
+    // Many rows should be present (at least 10 to indicate breadth)
+    const rows = await page.$$(content + ' table.data-table tbody tr');
+    expect(rows.length).toBeGreaterThanOrEqual(10);
+
+    // Container still fits viewport
+    const bbox = await (await page.$(content)).boundingBox();
+    const viewport = page.viewportSize();
+    expect(bbox.width).toBeLessThanOrEqual(viewport.width + 50);
   },
 };

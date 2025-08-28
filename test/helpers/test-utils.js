@@ -1,19 +1,131 @@
 /**
- * Test utilities for Qlik Sense extension E2E testing
- * Provides helper functions for interacting with Nebula.js test environment
+ * Test utilities for Qlik Sense extension E2E testing.
+ * Provides high-level helpers for interacting with a Nebula.js/Qlik Sense
+ * supernova during Playwright runs. Focuses on robust selectors and timing.
  */
 
 /* eslint-disable no-console */
 
+// ---------------------------------------------------------------------------
+// Shared constants & tiny utilities
+// ---------------------------------------------------------------------------
+
+/** CSS selector for the root rendered visualization. */
+const VIZ_SEL = '.njs-viz[data-render-count]';
+
+/** Standardized timing buckets to keep waits consistent and explain intent. */
+const WAIT = Object.freeze({
+  TINY: 150,
+  SHORT: 300,
+  MED: 600,
+  LONG: 1000,
+  XLONG: 2000,
+});
+
 /**
- * Configures the extension with dimensions and measures using Nebula hub interface
- * Implements two-step process: field selection → aggregation selection for measures
- * Tracks successfully added items for targeted cleanup
- * @param {Page} page - Playwright page object
- * @param {object} config - Configuration object
- * @param {string[]} config.dimensions - Array of dimension field names
- * @param {Array<string|object>} config.measures - Array of measures (strings or {field, aggregation} objects)
- * @returns {Promise<boolean>} True if configuration successful, false otherwise
+ * Safely checks visibility on a locator without throwing.
+ * @param {import('@playwright/test').Locator} locator
+ * @returns {Promise<boolean>}
+ */
+async function isVisible(locator) {
+  return locator.isVisible().catch(() => false);
+}
+
+/**
+ * Clicks the first visible element among provided selectors, optionally within a scope.
+ * @param {import('@playwright/test').Page} page
+ * @param {string[]} selectors
+ * @param {import('@playwright/test').Locator=} scope
+ * @returns {Promise<boolean>} True if a click occurred.
+ */
+async function clickFirstVisible(page, selectors, scope) {
+  for (const sel of selectors) {
+    const target = (scope ? scope.locator(sel) : page.locator(sel)).first();
+    if (await isVisible(target)) {
+      await clickWithBackdropHandling(page, target);
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Waits for the viz to be visible and returns its locator.
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<import('@playwright/test').Locator>}
+ */
+async function waitForViz(page) {
+  await page.waitForSelector(VIZ_SEL, { visible: true });
+  return page.locator(VIZ_SEL).first();
+}
+
+/**
+ * Returns the last visible MUI popover/dialog locator if present.
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<import('@playwright/test').Locator|null>}
+ */
+async function getVisibleLayer(page) {
+  const layers = page.locator('.MuiPopover-root, .MuiDialog-root');
+  try {
+    await layers.last().waitFor({ state: 'visible', timeout: 5000 });
+    const layer = layers.last();
+    if (await isVisible(layer)) {
+      return layer;
+    }
+  } catch {
+    // no-op
+  }
+  return null;
+}
+
+/**
+ * If an autocomplete/filter input exists within scope, clear it and type the query.
+ * @param {import('@playwright/test').Locator} scope
+ * @param {string} text
+ */
+async function typeFilterIfPresent(scope, text) {
+  const filterInput = scope.locator('input[type="text"], [role="combobox"] input').first();
+  if (await isVisible(filterInput)) {
+    await filterInput.fill('').catch(() => {});
+    await filterInput.type(text, { delay: 25 }).catch(() => {});
+    // Let list react to filter input
+    await scope.page().waitForTimeout(WAIT.SHORT);
+  }
+}
+
+/**
+ * Within a layer, choose the first visible option matching provided text.
+ * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').Locator} layer
+ * @param {string} text
+ * @returns {Promise<boolean>}
+ */
+async function chooseOption(page, layer, text) {
+  const options = [
+    layer.locator(`[role="option"]:has-text("${text}")`).first(),
+    layer.locator(`li:has-text("${text}")`).first(),
+    layer.locator(`text="${text}"`).first(),
+  ];
+  for (const opt of options) {
+    if (await isVisible(opt)) {
+      await clickWithBackdropHandling(page, opt);
+      return true;
+    }
+  }
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Public helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Configures the extension with dimensions and measures using the Nebula hub UI.
+ * Implements two-step process for measures: field selection → aggregation selection.
+ * Tracks successfully added items for targeted cleanup.
+ * @param {import('@playwright/test').Page} page Playwright page
+ * @param {{dimensions?: string[], measures?: Array<string|{field: string, aggregation?: string}>}} config
+ * @returns {Promise<boolean>} True if configuration succeeded, otherwise false
  */
 async function configureExtension(page, config = {}) {
   const { dimensions = [], measures = [] } = config;
@@ -21,18 +133,17 @@ async function configureExtension(page, config = {}) {
 
   try {
     // Wait for extension to be fully rendered and interactive
-    const content = '.njs-viz[data-render-count]';
-    await page.waitForSelector(content, { visible: true });
-    await page.waitForTimeout(1000);
+    await waitForViz(page);
+    await page.waitForTimeout(WAIT.LONG);
 
     // Configure dimensions via Nebula hub dropdown interface
     await configureDimensions(page, dimensions, addedItems);
-    
+
     // Configure measures via Nebula hub dropdown interface (two-step process)
     await configureMeasures(page, measures, addedItems);
 
     // Allow configuration to settle and re-render
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(WAIT.XLONG);
 
     // Store tracked items for targeted cleanup
     page.addedExtensionItems = addedItems;
@@ -47,46 +158,69 @@ async function configureExtension(page, config = {}) {
 
 /**
  * Configures dimensions using Nebula hub "Add dimension" dropdown
- * @param {Page} page - Playwright page object  
+ * @param {Page} page - Playwright page object
  * @param {string[]} dimensions - Array of dimension field names
  * @param {object} addedItems - Object to track successfully added items
  */
 async function configureDimensions(page, dimensions, addedItems) {
   for (const dimension of dimensions) {
     console.log(`Configuring dimension: ${dimension}`);
-    
+
     // Locate and click "Add dimension" button
-    const addDimensionBtn = await page.locator('button:has-text("Add dimension"), button:has-text("Add dimensions")').first();
-    
-    if (!(await addDimensionBtn.isVisible().catch(() => false))) {
+    const addDimensionBtn = page.locator('button:has-text("Add dimension"), button:has-text("Add dimensions")').first();
+
+    if (!(await isVisible(addDimensionBtn))) {
       console.warn('Add dimension button not found');
       continue;
     }
 
     await addDimensionBtn.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.LONG);
 
-    // Wait for dimension selection dropdown to appear
-    await page.waitForSelector('.MuiPopover-root, .MuiDialog-root, .fields-list', { timeout: 5000 }).catch(() => {});
+    // Wait for dimension selection popover/dialog to appear
+    const layer = await getVisibleLayer(page);
+    if (!layer) {
+      console.warn('No dimension selection layer became visible');
+      continue;
+    }
 
-    // Select the specific dimension from dropdown
-    const dimensionOption = await page.locator(`text="${dimension}"`).first();
-    
-    if (await dimensionOption.isVisible().catch(() => false)) {
-      // Handle potential MUI backdrop interference
-      await clickWithBackdropHandling(page, dimensionOption);
-      
+    // Try filtering in a textbox if present (MUI Autocomplete)
+    await typeFilterIfPresent(layer, dimension);
+
+    // Choose the dimension option inside the visible layer
+    const clicked = await chooseOption(page, layer, dimension);
+    if (!clicked) {
+      console.warn(`Dimension option not visible/clickable: ${dimension}`);
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(WAIT.SHORT);
+      continue;
+    }
+
+    // Confirm that the dimension was actually added (appears in the configured list)
+    let confirmed = false;
+    try {
+      await page.locator(`ul li:has-text("${dimension}")`).first().waitFor({ state: 'visible', timeout: 2500 });
+      confirmed = true;
+    } catch {
+      // Some UIs require Enter to commit; try it once
+      await page.keyboard.press('Enter').catch(() => {});
+      await page.waitForTimeout(WAIT.SHORT);
+      confirmed = await page
+        .locator(`ul li:has-text("${dimension}")`)
+        .first()
+        .isVisible()
+        .catch(() => false);
+    }
+    if (confirmed) {
       console.log(`Successfully configured dimension: ${dimension}`);
       addedItems.dimensions.push(dimension);
-      
-      // Close dropdown
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
     } else {
-      console.warn(`Dimension option not found: ${dimension}`);
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
+      console.warn(`Dimension did not appear as configured: ${dimension}`);
     }
+
+    // Close any open popover to avoid interference
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.waitForTimeout(WAIT.SHORT);
   }
 }
 
@@ -102,42 +236,46 @@ async function configureMeasures(page, measures, addedItems) {
     const fieldName = measure.field || measure;
     const aggregation = measure.aggregation || 'Sum';
     console.log(`Configuring measure: ${fieldName} with ${aggregation} aggregation`);
-    
+
     // Locate and click "Add measures" button
-    const addMeasureBtn = await page.locator('button:has-text("Add measure"), button:has-text("Add measures")').first();
-    
-    if (!(await addMeasureBtn.isVisible().catch(() => false))) {
+    const addMeasureBtn = page.locator('button:has-text("Add measure"), button:has-text("Add measures")').first();
+
+    if (!(await isVisible(addMeasureBtn))) {
       console.warn('Add measure button not found');
       continue;
     }
 
     await addMeasureBtn.click({ force: true });
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.LONG);
 
-    // Wait for field selection dropdown to appear
-    await page.waitForSelector('.MuiPopover-root, .MuiDialog-root, .fields-list', { timeout: 5000 }).catch(() => {});
+    // Wait for field selection popover/dialog to appear
+    const layer = await getVisibleLayer(page);
+    if (!layer) {
+      console.warn('No measure field selection layer became visible');
+      continue;
+    }
 
-    // Step 1: Select field from dropdown
-    const measureOption = await page.locator(`text="${fieldName}"`).first();
-    
-    if (await measureOption.isVisible().catch(() => false)) {
-      await clickWithBackdropHandling(page, measureOption);
-      await page.waitForTimeout(1000);
+    // Step 1: Select field from dropdown (with filtering if available)
+    await typeFilterIfPresent(layer, fieldName);
+    const fieldSelected = await chooseOption(page, layer, fieldName);
+
+    if (fieldSelected) {
+      await page.waitForTimeout(WAIT.LONG);
 
       // Step 2: Select aggregation from second dropdown
       const aggregationSelected = await selectAggregation(page, fieldName, aggregation);
-      
+
       if (aggregationSelected) {
         console.log(`Successfully configured measure: ${fieldName} with ${aggregation} aggregation`);
         addedItems.measures.push({ field: fieldName, aggregation });
       }
-      
+
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.SHORT);
     } else {
       console.warn(`Measure field option not found: ${fieldName}`);
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.SHORT);
     }
   }
 }
@@ -151,27 +289,27 @@ async function configureMeasures(page, measures, addedItems) {
  */
 async function selectAggregation(page, fieldName, aggregation) {
   console.log(`Selecting aggregation: ${aggregation}`);
-  
+
   // Try different aggregation selector formats
-  const aggregationSelectors = [
-    `text="${aggregation.toLowerCase()}(${fieldName})"`,
-    `text="${aggregation}(${fieldName})"`,
-    `text="${aggregation}"`,
-    `text="${aggregation.toLowerCase()}"`,
-    `[data-value*="${aggregation.toLowerCase()}"]`,
-    `button:has-text("${aggregation}")`
+  const scope = (await getVisibleLayer(page)) || page;
+  const aggregationLocators = [
+    scope.locator(`text="${aggregation.toLowerCase()}(${fieldName})"`).first(),
+    scope.locator(`text="${aggregation}(${fieldName})"`).first(),
+    scope.locator(`text="${aggregation}"`).first(),
+    scope.locator(`text="${aggregation.toLowerCase()}"`).first(),
+    scope.locator(`[data-value*="${aggregation.toLowerCase()}"]`).first(),
+    scope.locator(`button:has-text("${aggregation}")`).first(),
+    scope.locator(`[role="option"]:has-text("${aggregation}")`).first(),
   ];
-  
-  for (const selector of aggregationSelectors) {
-    const aggregationOption = await page.locator(selector).first();
-    
-    if (await aggregationOption.isVisible().catch(() => false)) {
+
+  for (const aggregationOption of aggregationLocators) {
+    if (await isVisible(aggregationOption)) {
       await clickWithBackdropHandling(page, aggregationOption);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(WAIT.MED);
       return true;
     }
   }
-  
+
   console.warn(`Aggregation option not found: ${aggregation} for ${fieldName}`);
   return false;
 }
@@ -186,7 +324,10 @@ async function clickWithBackdropHandling(page, element) {
     await element.click({ force: true });
   } catch {
     // Handle MUI backdrop interference
-    await page.locator('.MuiBackdrop-root').click({ force: true }).catch(() => {});
+    await page
+      .locator('.MuiBackdrop-root')
+      .click({ force: true })
+      .catch(() => {});
     await element.click({ force: true });
   }
 }
@@ -200,10 +341,9 @@ async function clickWithBackdropHandling(page, element) {
 async function cleanupExtensionConfiguration(page) {
   try {
     console.log('Starting targeted configuration cleanup...');
-    
-    const content = '.njs-viz[data-render-count]';
-    await page.waitForSelector(content, { visible: true });
-    await page.waitForTimeout(500);
+
+    await waitForViz(page);
+    await page.waitForTimeout(WAIT.SHORT);
 
     // Retrieve tracked items from configuration phase
     const addedItems = page.addedExtensionItems || { dimensions: [], measures: [] };
@@ -211,7 +351,7 @@ async function cleanupExtensionConfiguration(page) {
 
     // Remove configured dimensions by targeting specific names
     await removeConfiguredDimensions(page, addedItems.dimensions);
-    
+
     // Remove configured measures by targeting specific field/aggregation combinations
     await removeConfiguredMeasures(page, addedItems.measures);
 
@@ -221,9 +361,9 @@ async function cleanupExtensionConfiguration(page) {
     // Clear tracking to prevent stale references
     page.addedExtensionItems = { dimensions: [], measures: [] };
 
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(WAIT.LONG);
     console.log('Configuration cleanup completed successfully');
-    
+
     return true;
   } catch (error) {
     console.warn('Configuration cleanup failed:', error.message);
@@ -239,15 +379,15 @@ async function cleanupExtensionConfiguration(page) {
 async function removeConfiguredDimensions(page, dimensionNames) {
   for (const dimensionName of dimensionNames) {
     console.log(`Targeting dimension for removal: ${dimensionName}`);
-    
+
     // Search for dimension item and its remove button in ul structure
     const dimensionSelectors = [
       `ul li:has-text("${dimensionName}") button svg`,
       `ul li:has-text("${dimensionName}") button`,
       `li:has-text("${dimensionName}") + button`,
-      `[data-testid*="dimension"]:has-text("${dimensionName}") button`
+      `[data-testid*="dimension"]:has-text("${dimensionName}") button`,
     ];
-    
+
     const removed = await attemptRemoval(page, dimensionSelectors, `dimension: ${dimensionName}`);
     if (!removed) {
       console.warn(`Could not locate remove button for dimension: ${dimensionName}`);
@@ -257,14 +397,14 @@ async function removeConfiguredDimensions(page, dimensionNames) {
 
 /**
  * Removes configured measures by finding and clicking their remove buttons in ul lists
- * @param {Page} page - Playwright page object  
+ * @param {Page} page - Playwright page object
  * @param {Array<object>} measureItems - Array of measure objects with field and aggregation
  */
 async function removeConfiguredMeasures(page, measureItems) {
   for (const measureItem of measureItems) {
     const measureDisplayName = `${measureItem.aggregation}(${measureItem.field})`;
     console.log(`Targeting measure for removal: ${measureDisplayName}`);
-    
+
     // Search for measure item and its remove button in ul structure
     const measureSelectors = [
       `ul li:has-text("${measureDisplayName}") button svg`,
@@ -272,9 +412,9 @@ async function removeConfiguredMeasures(page, measureItems) {
       `ul li:has-text("${measureItem.field}") button svg`,
       `ul li:has-text("${measureItem.field}") button`,
       `li:has-text("${measureDisplayName}") + button`,
-      `[data-testid*="measure"]:has-text("${measureItem.field}") button`
+      `[data-testid*="measure"]:has-text("${measureItem.field}") button`,
     ];
-    
+
     const removed = await attemptRemoval(page, measureSelectors, `measure: ${measureDisplayName}`);
     if (!removed) {
       console.warn(`Could not locate remove button for measure: ${measureDisplayName}`);
@@ -291,11 +431,11 @@ async function removeConfiguredMeasures(page, measureItems) {
  */
 async function attemptRemoval(page, selectors, itemDescription) {
   for (const selector of selectors) {
-    const removeBtn = await page.locator(selector).first();
-    
-    if (await removeBtn.isVisible().catch(() => false)) {
+    const removeBtn = page.locator(selector).first();
+
+    if (await isVisible(removeBtn)) {
       await removeBtn.click({ force: true });
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(WAIT.SHORT);
       console.log(`Successfully removed configured ${itemDescription}`);
       return true;
     }
@@ -309,13 +449,209 @@ async function attemptRemoval(page, selectors, itemDescription) {
  */
 async function performFallbackCleanup(page) {
   const fallbackSelector = 'ul li button svg, ul li button:has-text("×"), ul li button:has-text("✕")';
-  const anyRemoveBtn = await page.locator(fallbackSelector).first();
-  
-  if (await anyRemoveBtn.isVisible().catch(() => false)) {
+  const anyRemoveBtn = page.locator(fallbackSelector).first();
+
+  if (await isVisible(anyRemoveBtn)) {
     await anyRemoveBtn.click({ force: true });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.SHORT);
     console.log('Performed fallback removal of additional configured item');
   }
+}
+
+/**
+ * Resets extension object properties via the properties (gear) dialog to an empty JSON object {}
+ * This helps avoid configuration artifacts between tests when using Nebula/Sense property panel
+ * @param {Page} page - Playwright page object
+ * @returns {Promise<boolean>} True if a reset was performed
+ */
+async function resetPropertiesToEmptyJson(page) {
+  try {
+    await waitForViz(page);
+    const viz = page.locator(VIZ_SEL).first();
+
+    // Find and click the gear/properties button by title or accessible name
+    const btnSelectors = [
+      '[title="Modify object properties"]',
+      'button[title="Modify object properties"]',
+      'button[aria-label*="Modify object properties"]',
+      'button:has-text("Modify object properties")',
+      // Broader fallbacks and scoped within the viz to avoid unrelated matches
+      `${VIZ_SEL} [title*="properties"]`,
+      `${VIZ_SEL} button[title*="properties"]`,
+      `${VIZ_SEL} button[aria-label*="properties"]`,
+      `${VIZ_SEL} button:has-text("Properties")`,
+      `${VIZ_SEL} [role="button"][aria-label*="properties"]`,
+    ];
+
+    let opened = false;
+    opened = await clickFirstVisible(page, btnSelectors);
+    if (!opened) {
+      // Try revealing toolbar via hover on the viz, then retry
+      await viz.hover().catch(() => {});
+      opened = await clickFirstVisible(page, btnSelectors);
+    }
+    if (!opened) {
+      return false;
+    }
+
+    // Wait for the dialog to appear
+    const dialog = page.locator('.MuiDialog-root [role="dialog"], [role="dialog"]').last();
+    await dialog.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    if (!(await isVisible(dialog))) {
+      return false;
+    }
+    // Allow dialog contents to mount
+    await page.waitForTimeout(WAIT.SHORT);
+
+    // Try to locate a JSON input (textarea or editor)
+    const jsonInputs = [
+      dialog.locator('textarea').first(),
+      dialog.locator('textarea[role="textbox"]').first(),
+      dialog.locator('input[type="text"]').first(),
+      dialog.locator('[contenteditable="true"]').first(),
+      dialog.locator('.cm-content').first(), // CodeMirror content
+      dialog.locator('.monaco-editor').first(), // Monaco editor container
+      dialog.locator('.monaco-editor textarea.inputarea').first(), // Monaco hidden textarea
+    ];
+
+    let inputFound = null;
+    for (const inp of jsonInputs) {
+      if (await isVisible(inp)) {
+        inputFound = inp;
+        break;
+      }
+    }
+
+    if (inputFound) {
+      // Attempt to clear and type {}
+      try {
+        await inputFound.click({ force: true });
+        // Support both CodeMirror/Monaco by sending select-all and backspace
+        await page.keyboard.press('Control+A').catch(() => {});
+        await page.keyboard.press('Meta+A').catch(() => {});
+        await page.keyboard.press('Backspace').catch(() => {});
+        await page.keyboard.type('{}', { delay: 10 });
+        // Brief pause so the change is visible in headed mode
+        await page.waitForTimeout(WAIT.MED);
+      } catch {
+        // Fallback: use fill for input/textarea
+        await inputFound.fill('{}').catch(() => {});
+        // Brief pause so the change is visible in headed mode
+        await page.waitForTimeout(WAIT.MED);
+      }
+
+      // Validate content updated to {}
+      try {
+        const isCodeMirror = await isVisible(dialog.locator('.cm-content').first());
+        const isMonaco = await isVisible(dialog.locator('.monaco-editor').first());
+        if (!isCodeMirror && !isMonaco) {
+          // For textarea/input, ensure value is {}
+          const val = await inputFound.inputValue().catch(() => '');
+          if (val.trim() !== '{}') {
+            await inputFound.fill('{}').catch(() => {});
+            await page.waitForTimeout(WAIT.SHORT);
+          }
+        }
+      } catch {
+        // ignore validation errors, continue
+      }
+    }
+
+    // Confirm/apply changes
+    const confirm = dialog
+      .locator('button:has-text("Confirm"), button:has-text("Apply"), button:has-text("OK"), button:has-text("Save")')
+      .first();
+    // Capture render-count before applying to detect re-render
+    const beforeRender = await viz.getAttribute('data-render-count').catch(() => null);
+    if (await isVisible(confirm)) {
+      await confirm.click({ force: true });
+      // Brief pause so the confirm action is visible in headed mode
+      await page.waitForTimeout(WAIT.MED);
+    } else {
+      // Fallback: close with Escape if no explicit confirm
+      await page.keyboard.press('Escape').catch(() => {});
+    }
+
+    // Wait for dialog to close
+    await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(async () => {
+      // Try Ctrl/Cmd+Enter apply then retry hide
+      await page.keyboard.press('Control+Enter').catch(() => {});
+      await page.keyboard.press('Meta+Enter').catch(() => {});
+      await page.waitForTimeout(WAIT.SHORT + WAIT.TINY);
+      await dialog.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {});
+      // As last resort, click any visible "Close"/"OK" again
+      const closeBtn = dialog.locator('button:has-text("Close"), button:has-text("OK")').first();
+      if (await isVisible(closeBtn)) {
+        await closeBtn.click({ force: true });
+        await page.waitForTimeout(WAIT.SHORT);
+      }
+    });
+    // Wait for a re-render tick if possible
+    if (beforeRender) {
+      await page
+        .waitForFunction(
+          (sel, prev) => {
+            const el = document.querySelector(sel);
+            if (!el) {
+              return true; // viz gone, treat as done
+            }
+            const cur = el.getAttribute('data-render-count');
+            return cur && cur !== prev;
+          },
+          VIZ_SEL,
+          beforeRender,
+          { timeout: 3000 }
+        )
+        .catch(() => {});
+    } else {
+      await page.waitForTimeout(WAIT.SHORT + WAIT.TINY);
+    }
+    return true;
+  } catch (e) {
+    console.warn('resetPropertiesToEmptyJson encountered an issue:', e.message);
+    return false;
+  }
+}
+
+/**
+ * Clears all selections using the toolbar/button control in the app
+ * Looks for a button with title="Clear all selections" or similar accessible names
+ * @param {Page} page - Playwright page object
+ * @returns {Promise<boolean>} True if a clear action was performed
+ */
+async function clearAllSelections(page) {
+  try {
+    // Common selectors for clear selections controls
+    const candidates = [
+      '[title="Clear all selections"]',
+      'button[title*="Clear all selection"]',
+      'button:has-text("Clear all selections")',
+      'button[aria-label*="Clear all selection"]',
+    ];
+
+    for (const sel of candidates) {
+      const btn = page.locator(sel).first();
+      if (await isVisible(btn)) {
+        await btn.click({ force: true });
+        await page.waitForTimeout(WAIT.SHORT + WAIT.TINY);
+        console.log('Cleared selections via control:', sel);
+        return true;
+      }
+    }
+
+    // If no button found, try keyboard escape twice to exit selection mode
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.waitForTimeout(150);
+    await page.keyboard.press('Escape').catch(() => {});
+    const inSelection = await page.$('.extension-container.in-selection');
+    if (!inSelection) {
+      console.log('Cleared selections via keyboard escape');
+      return true;
+    }
+  } catch (e) {
+    console.warn('clearAllSelections encountered an issue:', e.message);
+  }
+  return false;
 }
 
 /**
@@ -325,33 +661,39 @@ async function performFallbackCleanup(page) {
  */
 async function triggerSelectionMode(page) {
   try {
-    const content = '.njs-viz[data-render-count]';
+    await waitForViz(page);
 
-    // Look for selectable elements
-    const selectableElements = await page.$$(
-      '.extension-container .content, .data-point, .selectable-item, .chart-element'
-    );
-
-    if (selectableElements.length > 0) {
-      // Try Ctrl+click to enter selection mode
-      await page.keyboard.down('Control');
-      try {
-        await selectableElements[0].click({ force: true });
-      } catch {
-        // Handle potential MUI backdrop interference
-        await page.locator('.MuiBackdrop-root').click({ force: true }).catch(() => {});
-        await selectableElements[0].click({ force: true });
+    // Prefer clickable dimension cells from our extension
+    const cell = await page.$('.extension-container td.dim-cell.selectable-item');
+    if (!cell) {
+      // Fallback to any selectable element in case of different markup
+      const anySelectable = await page.$('.selectable-item, .data-point, .chart-element');
+      if (!anySelectable) {
+        return false;
       }
-      await page.keyboard.up('Control');
-
-      await page.waitForTimeout(1000);
-
-      // Check if selection mode was triggered
-      const selectionModeElement = await page.$(content + ' .selection-mode');
-      return !!selectionModeElement;
+      await anySelectable.click({ force: true }).catch(async () => {
+        await page
+          .locator('.MuiBackdrop-root')
+          .click({ force: true })
+          .catch(() => {});
+        await anySelectable.click({ force: true });
+      });
+    } else {
+      await cell.click({ force: true }).catch(async () => {
+        await page
+          .locator('.MuiBackdrop-root')
+          .click({ force: true })
+          .catch(() => {});
+        await cell.click({ force: true });
+      });
     }
 
-    return false;
+    await page.waitForTimeout(WAIT.MED + WAIT.TINY);
+
+    // Selection mode in this extension is indicated by in-selection class on container
+    const container = await page.$('.extension-container.in-selection');
+    const anyLocalSelected = await page.$('.extension-container .dim-cell.local-selected');
+    return Boolean(container || anyLocalSelected);
   } catch (error) {
     console.warn('Selection mode trigger failed:', error.message);
     return false;
@@ -361,7 +703,7 @@ async function triggerSelectionMode(page) {
 /**
  * Validates accessibility attributes for a container
  * @param {ElementHandle} container - Container element
- * @param {string} expectedType - Expected container type (extension-container, no-data, etc.)
+ * @param {string} expectedType - Expected container type (extension-container, no-data, selection-mode, error-message)
  * @returns {Promise<object>} Validation results
  */
 async function validateAccessibility(container, expectedType) {
@@ -403,11 +745,19 @@ async function validateAccessibility(container, expectedType) {
     }
 
     if (expectedType === 'selection-mode') {
+      // In selection mode our extension still uses the same container role/label
+      const role = await container.getAttribute('role');
       const ariaLabel = await container.getAttribute('aria-label');
-      results.attributes.ariaLabel = ariaLabel;
-
-      if (ariaLabel !== 'Selection mode active') {
-        results.errors.push(`Expected aria-label="Selection mode active", got "${ariaLabel}"`);
+      const tabindex = await container.getAttribute('tabindex');
+      results.attributes = { role, ariaLabel, tabindex };
+      if (role !== 'main') {
+        results.errors.push(`Expected role="main", got "${role}"`);
+      }
+      if (ariaLabel !== 'Qlik Sense Extension Content') {
+        results.errors.push(`Expected aria-label="Qlik Sense Extension Content", got "${ariaLabel}"`);
+      }
+      if (tabindex !== '0') {
+        results.errors.push(`Expected tabindex="0", got "${tabindex}"`);
       }
     }
 
@@ -440,13 +790,17 @@ async function validateAccessibility(container, expectedType) {
  */
 async function getExtensionState(page) {
   try {
-    const content = '.njs-viz[data-render-count]';
-    await page.waitForSelector(content, { visible: true });
+    await waitForViz(page);
 
-    const states = ['extension-container', 'no-data', 'selection-mode', 'error-message'];
+    // Selection mode appears as 'in-selection' modifier on the extension container
+    const sel = await page.$(VIZ_SEL + ' .extension-container.in-selection');
+    if (sel) {
+      return 'selection-mode';
+    }
 
+    const states = ['extension-container', 'no-data', 'error-message'];
     for (const state of states) {
-      const element = await page.$(content + ` .${state}`);
+      const element = await page.$(VIZ_SEL + ` .${state}`);
       if (element) {
         return state;
       }
@@ -465,4 +819,6 @@ module.exports = {
   triggerSelectionMode,
   validateAccessibility,
   getExtensionState,
+  clearAllSelections,
+  resetPropertiesToEmptyJson,
 };

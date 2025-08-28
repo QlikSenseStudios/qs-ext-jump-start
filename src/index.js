@@ -9,59 +9,82 @@ import './styles.css';
 const HYPERCUBE_PATH = '/qHyperCubeDef';
 const DIM_COL_IDX = 0;
 
+// Small DOM helper
+/**
+ * Removes all child nodes from a container element.
+ * Safe, small utility to avoid repeating while-firstChild clears.
+ * @param {HTMLElement} node Host element whose children will be removed
+ */
+function clearChildren(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild);
+  }
+}
+
+/**
+ * Returns dimension and measure counts from the layout.
+ * @param {object} layout Current layout provided by Stardust
+ * @returns {{ dimCount: number, measCount: number }} Counts used for config validation
+ */
 function getCounts(layout) {
   const dimCount = (safeGet(layout, 'qHyperCube.qDimensionInfo', []) || []).length;
   const measCount = (safeGet(layout, 'qHyperCube.qMeasureInfo', []) || []).length;
   return { dimCount, measCount };
 }
 
+/**
+ * Validates the configuration: requires exactly 1 dimension and at most 1 measure.
+ * @param {{ dimCount: number, measCount: number }} counts
+ * @returns {boolean} True if the configuration is invalid
+ */
 function isInvalidConfig({ dimCount, measCount }) {
   return dimCount !== 1 || measCount > 1;
 }
 
+/**
+ * Builds the no-data UI with an optional hint for invalid configurations.
+ * @param {number} dimCount Number of dimensions
+ * @param {number} measCount Number of measures
+ * @returns {HTMLDivElement} The constructed .no-data element
+ */
 function createNoDataDiv(dimCount, measCount) {
-  const noDataDiv = createElement(
-    'div',
-    {
-      className: 'no-data',
-      'aria-label': 'No data available',
-      'data-dim-count': String(dimCount ?? ''),
-      'data-meas-count': String(measCount ?? ''),
-    },
-    'No data to display'
-  );
+  const noDataDiv = createElement('div', {
+    className: 'no-data',
+    'aria-label': 'No data available',
+    'data-dim-count': String(dimCount ?? ''),
+    'data-meas-count': String(measCount ?? ''),
+  });
+
+  noDataDiv.appendChild(createElement('div', {}, 'No data to display'));
 
   if (isInvalidConfig({ dimCount, measCount })) {
-    const hint = createElement(
-      'div',
-      { className: 'no-data-hint', role: 'note', 'aria-live': 'polite' },
-      `
-      <p>Configure this visualization with exactly 1 dimension and at most 1 measure (optional).</p>
-      <ul>
-        <li>Required: Add 1 dimension in the Data panel.</li>
-        <li>Optional: Add 0 or 1 measure.</li>
-      </ul>
-    `
-    );
+    const hintList = createElement('ul', {}, [
+      createElement('li', {}, 'Required: Add 1 dimension in the Data panel.'),
+      createElement('li', {}, 'Optional: Add 0 or 1 measure.'),
+    ]);
+    const hint = createElement('div', { className: 'no-data-hint', role: 'note', 'aria-live': 'polite' }, [
+      createElement('p', {}, 'Configure this visualization with exactly 1 dimension and at most 1 measure (optional).'),
+      hintList,
+    ]);
     noDataDiv.appendChild(hint);
   }
 
   return noDataDiv;
 }
 
+/**
+ * Appends a standardized error UI to the host element and logs the error.
+ * @param {HTMLElement} element Host container
+ * @param {unknown} error Error object thrown during rendering
+ */
 function appendError(element, error) {
-  const errorDiv = createElement(
-    'div',
-    {
-      className: 'error-message',
-      role: 'alert',
-      'aria-live': 'polite',
-    },
-    `
-    <h3>Unable to load extension</h3>
-    <p>Please check your data configuration and try again.</p>
-  `
-  );
+  const errorDiv = createElement('div', {
+    className: 'error-message',
+    role: 'alert',
+    'aria-live': 'polite',
+  });
+  errorDiv.appendChild(createElement('h3', {}, 'Unable to load extension'));
+  errorDiv.appendChild(createElement('p', {}, 'Please check your data configuration and try again.'));
   element.appendChild(errorDiv);
   // eslint-disable-next-line no-console
   console.error('Extension rendering error:', error);
@@ -80,6 +103,10 @@ function appendError(element, error) {
  * - Behavior: Render different UI for selection mode, no data, and normal states
  * - Errors: Caught and presented as user-friendly message
  */
+// Maintain per-element state without leaking via globals or function properties
+const selectionStateByElement = new WeakMap();
+const containerByElement = new WeakMap();
+
 export default function supernova(galaxy) {
   return {
     qae: {
@@ -92,23 +119,24 @@ export default function supernova(galaxy) {
       const layout = useLayout();
       const selections = useSelections();
 
-      // Persist local selection state across renders
-      const selectionState = (function () {
-        // Attach to component function scope once
-        if (!supernova.__selectionState) {
-          supernova.__selectionState = {
+      // Persist local selection state per element across renders
+      const selectionState = (function ensureState() {
+        let state = selectionStateByElement.get(element);
+        if (!state) {
+          state = {
             data: [],
             pendingByElem: new Set(), // clicks made out of selection mode
             sessionByElem: new Set(), // selections within current selection mode session
             lastInSelection: false,
+            elemToRowIndex: new Map(),
           };
+          selectionStateByElement.set(element, state);
         }
-        return supernova.__selectionState;
+        return state;
       })();
 
       useEffect(() => {
-        // Clear previous content
-        element.innerHTML = '';
+        // Do not clear the root element up-front; we keep a stable container for data/selection
 
         try {
           const inSelection = Boolean(safeGet(layout, 'qSelectionInfo.qInSelections', false));
@@ -124,6 +152,13 @@ export default function supernova(galaxy) {
           // Validate configuration: exactly 1 dimension and 0 or 1 measure
           const { dimCount, measCount } = getCounts(layout);
           if (isInvalidConfig({ dimCount, measCount })) {
+            // Ensure we don't accumulate multiple .no-data nodes across renders
+            const existing = containerByElement.get(element);
+            if (existing && existing.parentNode) {
+              existing.parentNode.removeChild(existing);
+            }
+            containerByElement.delete(element);
+            clearChildren(element);
             element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
@@ -131,17 +166,33 @@ export default function supernova(galaxy) {
           // Check for data availability (edge case: empty hypercube)
           const dataMatrix = safeGet(layout, 'qHyperCube.qDataPages.0.qMatrix', []);
           if (!dataMatrix.length) {
+            const existing = containerByElement.get(element);
+            if (existing && existing.parentNode) {
+              existing.parentNode.removeChild(existing);
+            }
+            containerByElement.delete(element);
+            clearChildren(element);
             element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
 
-          // Render main content with accessibility attributes
-          const container = createElement('div', {
-            className: inSelection ? 'extension-container in-selection' : 'extension-container',
-            role: 'main',
-            'aria-label': 'Qlik Sense Extension Content',
-            tabindex: '0',
-          });
+          // Acquire or create a stable container per element for data/selection states
+          let container = containerByElement.get(element);
+          if (!container) {
+            container = createElement('div');
+            containerByElement.set(element, container);
+            // Remove any existing children before first attach
+            clearChildren(element);
+            element.appendChild(container);
+          }
+          // Update container accessibility and state classes
+          container.setAttribute('class', inSelection ? 'extension-container in-selection' : 'extension-container');
+          container.setAttribute('role', 'main');
+          container.setAttribute('aria-label', 'Qlik Sense Extension Content');
+          container.setAttribute('tabindex', '0');
+
+          // Clear and rebuild inner content each render
+          clearChildren(container);
 
           const content = createElement('div', { className: 'content' });
 
@@ -222,10 +273,19 @@ export default function supernova(galaxy) {
           selectionState.data = localData;
           selectionState.lastInSelection = inSelection;
           selectionState.elemToRowIndex = elemToRowIndex;
+          // Expose current data (used in tests) without leaking handlers
           container.__localData = localData;
-          element.appendChild(container);
+          // Ensure container remains attached (append only if not already present)
+          if (!container.parentNode) {
+            element.appendChild(container);
+          }
 
           // Event delegation: attach once on tbody
+          /**
+           * Finds the cached data row entry for a given qElemNumber.
+           * @param {number} elem qElemNumber for the dimension cell
+           * @returns {{row:number, dim:{text:string, elem:number, selected:boolean}, meas:{text:string}}|undefined}
+           */
           const getRowEntry = (elem) => {
             const idx = selectionState.elemToRowIndex?.get(elem);
             return Number.isInteger(idx)
@@ -233,6 +293,11 @@ export default function supernova(galaxy) {
               : (selectionState.data || []).find((r) => r.dim.elem === elem);
           };
 
+          /**
+           * Handles click/keyboard activation from a dimension cell.
+           * Updates Sense selections and local selection session state.
+           * @param {HTMLElement} cell The clicked/focused dimension cell
+           */
           const activateFromCell = async (cell) => {
             const elem = Number(cell.getAttribute('data-q-elem'));
             if (Number.isNaN(elem)) {
@@ -313,6 +378,13 @@ export default function supernova(galaxy) {
           });
         } catch (error) {
           // Error handling with user feedback
+          // If a container exists, remove it to prevent overlapping UI
+          const existing = containerByElement.get(element);
+          if (existing && existing.parentNode) {
+            existing.parentNode.removeChild(existing);
+          }
+          // Clear element and show error
+          clearChildren(element);
           appendError(element, error);
         }
       }, [element, layout]);

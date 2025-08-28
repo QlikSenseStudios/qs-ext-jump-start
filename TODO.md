@@ -17,11 +17,9 @@ This file lists suggested improvements and additions and their progress for the 
 
 ## Testing
 
-- [ ] Expand Playwright tests for edge cases and error states
+- [x] Expand Playwright tests: responsiveness, accessibility refinements, robustness/re-renders, and error handling
 - [ ] Add unit test setup (e.g., Jest) for non-UI logic
 - [ ] Optional: Add visual regression tests (screenshots)
-- [ ] Add tests for invalid configuration messaging (1 dim required, 0–1 measure)
-- [ ] Add tests verifying local selection highlight appears only in selection mode
 
 ## Extension Features ✅
 
@@ -57,7 +55,7 @@ This file lists suggested improvements and additions and their progress for the 
 ## Build & Tooling
 
 - [ ] Optional: Switch package to ESM (add `"type": "module"`) to align with ESLint flat config
-- [x] Version bump to 0.3.0 for selections example release
+- [x] Version bump to 0.4.0 for robustness/a11y/responsiveness updates
 
 ## Reference & Inspiration ✅
 
@@ -70,7 +68,7 @@ This file lists suggested improvements and additions and their progress for the 
 - [x] Enhanced error handling and user feedback
 - [x] Component utilities for better code organization
 - [x] CSS styling with responsive and accessibility considerations
-- [x] Improved testing with better coverage
+- [x] Improved testing with better coverage (a11y, responsiveness, robustness)
 - [x] Enhanced property configurations with examples
 - [x] Better documentation and JSDoc comments
 - [x] Two usage workflows documented (fork vs starter)

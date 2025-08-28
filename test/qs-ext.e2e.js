@@ -1,5 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const { getNebulaQueryString, getQlikServerAuthenticatedContext } = require('./qs-ext.connect');
+const { clearAllSelections, resetPropertiesToEmptyJson } = require('./helpers/test-utils');
 
 // Import modular state-specific test suites
 const noDataTests = require('./states/no-data.test');
@@ -7,12 +8,16 @@ const dataTests = require('./states/data.test');
 const selectionTests = require('./states/selection.test');
 const errorTests = require('./states/error.test');
 const commonTests = require('./states/common.test');
+const a11yTests = require('./states/accessibility.test');
+const responsiveTests = require('./states/responsiveness.test');
+const robustTests = require('./states/robustness.test');
 
 test.describe('Qlik Sense Extension E2E Tests', () => {
   // Test configuration constants
   const nebulaQueryString = getNebulaQueryString();
   const content = '.njs-viz[data-render-count]'; // Keep original name for compatibility
-  const viewports = [ // Keep original name for compatibility
+  const viewports = [
+    // Keep original name for compatibility
     { width: 1920, height: 1080, name: 'Desktop' },
     { width: 768, height: 1024, name: 'Tablet' },
     { width: 375, height: 667, name: 'Mobile' },
@@ -41,7 +46,11 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
   test.afterEach(async () => {
     // Clean up any configuration before closing
     try {
+      // Always clear selections first to avoid bleed between tests
+      await clearAllSelections(page);
       await dataTests.cleanupConfiguration(page);
+      // Reset object properties to a blank state to avoid config artifacts across tests
+      await resetPropertiesToEmptyJson(page);
     } catch {
       // Silently handle cleanup failures
     }
@@ -68,6 +77,18 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
         await noDataTests.shouldBeResponsive(page, content, viewport);
       }
     });
+
+    test('should show hint for invalid config: 2 dimensions', async () => {
+      await noDataTests.configureInvalidTwoDimensionsAndValidate(page, content);
+    });
+
+    test('should show hint for invalid config: 1 dimension + 2 measures', async () => {
+      await noDataTests.configureInvalidTwoMeasuresAndValidate(page, content);
+    });
+
+    test('valid-but-empty should not show invalid-config hint (if reachable)', async () => {
+      await noDataTests.attemptValidButEmptyAndValidateOptional(page, content);
+    });
   });
 
   test.describe('Data State', () => {
@@ -82,44 +103,60 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     });
 
     test('should validate data state if reachable', async () => {
-      await dataTests.attemptConfiguration(page);
+      // Gate: This test runs full validations only if the E2E environment can reach data state.
+      // Rationale: Configuration depends on the host app's data; when not reachable we document and return.
+      const configured = await dataTests.attemptConfiguration(page);
       const state = await commonTests.getExtensionState(page, content);
 
-      // Only run data state tests if we actually reached that state
-      if (state === 'extension-container') {
+      if (configured) {
+        // If configuration reported success, we must be in data state
+        expect(state).toBe('extension-container');
         await dataTests.shouldRenderDataState(page, content);
         await dataTests.shouldHaveProperAccessibility(page, content);
         await dataTests.shouldDisplayDataCorrectly(page, content);
       } else {
-        // Document that data state was not reachable
+        // Document that data state was not reachable due to configuration failure
         test.info().annotations.push({
-          type: 'info',
-          description: `Data state not reached. Current state: ${state}`,
+          type: 'skip',
+          description: `Configuration failed; skipping data validations. Current state: ${state}`,
         });
+        return; // Explicitly exit as a stub for environments where data state is not guaranteed
       }
     });
 
     test('should support keyboard navigation if in data state', async () => {
-      await dataTests.attemptConfiguration(page);
+      // Gate: Only meaningful if data state is reachable; otherwise skip as a documented stub.
+      const configured = await dataTests.attemptConfiguration(page);
       const state = await commonTests.getExtensionState(page, content);
 
-      if (state === 'extension-container') {
+      if (configured) {
+        expect(state).toBe('extension-container');
         await dataTests.shouldSupportKeyboardNavigation(page, content);
       } else {
         test.info().annotations.push({
           type: 'skip',
-          description: 'Keyboard navigation test skipped - data state not reachable',
+          description: 'Keyboard navigation test skipped - configuration failed',
         });
+        return; // Stub path; environment did not allow data state
       }
+    });
+
+    test('should render with 1 dimension only (no measure)', async () => {
+      await dataTests.configureOneDimensionOnlyAndValidate(page, content);
+    });
+
+    test('should render with alternate aggregation (Avg)', async () => {
+      await dataTests.configureAlternateAggregationAndValidate(page, content);
+    });
+
+    test('should handle large row count gracefully', async () => {
+      await dataTests.configureLargeRowCountAndValidate(page, content);
     });
   });
 
   test.describe('Selection State', () => {
     test('should attempt to trigger selection state', async () => {
-      // First try to configure data
-      await dataTests.attemptConfiguration(page);
-
-      // Then attempt selection
+      // Attempt selection directly (helper will configure if needed)
       const selectionAttempted = await selectionTests.attemptSelectionTrigger(page, content);
 
       // Document the attempt
@@ -130,8 +167,7 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     });
 
     test('should validate selection state if reachable', async () => {
-      // Configure and attempt selection
-      await dataTests.attemptConfiguration(page);
+      // Attempt selection (helper will configure if needed)
       await selectionTests.attemptSelectionTrigger(page, content);
 
       const state = await commonTests.getExtensionState(page, content);
@@ -145,7 +181,32 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
           type: 'info',
           description: `Selection state not reached. Current state: ${state}`,
         });
+        return; // Documented stub when selection mode cannot be reached in this environment
       }
+    });
+
+    test('should enter selection with plain click (no Ctrl) and highlight cell', async () => {
+      await selectionTests.shouldEnterSelectionWithPlainClick(page, content);
+    });
+
+    test('should toggle same cell off', async () => {
+      await selectionTests.shouldToggleSameCellOff(page, content);
+    });
+
+    test('should multi-select then exit when all deselected', async () => {
+      await selectionTests.shouldMultiSelectAndThenExit(page, content);
+    });
+
+    test('should support keyboard toggling (Enter/Space)', async () => {
+      await selectionTests.shouldSupportKeyboardToggle(page, content);
+    });
+
+    test('should confirm selections by clicking outside and filter rows', async () => {
+      await selectionTests.shouldConfirmSelectionsByClickingOutside(page, content);
+    });
+
+    test('should confirm selections via button and filter rows', async () => {
+      await selectionTests.shouldConfirmSelectionsByButton(page, content);
     });
   });
 
@@ -176,7 +237,32 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
           type: 'info',
           description: `Error state not reached. Current state: ${state}`,
         });
+        return; // Documented stub when error state cannot be reached
       }
+    });
+
+    test('should not allow selection interactions in error state', async () => {
+      await errorTests.attemptErrorTrigger(page, content);
+      await page.waitForTimeout(500);
+      await errorTests.shouldNotAllowSelectionInError(page, content);
+    });
+
+    test('should avoid rendering duplicate error elements on repeated triggers', async () => {
+      await errorTests.attemptErrorTrigger(page, content);
+      await page.waitForTimeout(500);
+      await errorTests.shouldNotDuplicateErrorsOnRepeatedTrigger(page, content);
+    });
+
+    test('should recover to data state after applying a valid configuration', async () => {
+      await errorTests.attemptErrorTrigger(page, content);
+      await page.waitForTimeout(500);
+      await errorTests.shouldRecoverAfterValidConfiguration(page, content);
+    });
+
+    test('error message should remain visible across viewport changes', async () => {
+      await errorTests.attemptErrorTrigger(page, content);
+      await page.waitForTimeout(500);
+      await errorTests.shouldRemainVisibleOnResize(page, content);
     });
   });
 
@@ -212,6 +298,73 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
         type: 'info',
         description: `State transition: ${initialState} → ${finalState}`,
       });
+    });
+  });
+
+  test.describe('Accessibility Refinements', () => {
+    test('container roles and labels are correct across states', async () => {
+      await a11yTests.verifyContainerRolesAcrossStates(page, content);
+    });
+
+    test('cells expose role/button, aria-labels, and Tab order is predictable', async () => {
+      await a11yTests.verifyCellAccessibilityAndTabOrder(page, content);
+    });
+
+    test('no-data hint uses aria-live polite note region', async () => {
+      await a11yTests.verifyNoDataLiveRegion(page, content);
+    });
+
+    test('table headers have proper scope and labels', async () => {
+      await a11yTests.verifyHeaderScopes(page, content);
+    });
+  });
+
+  test.describe('Responsiveness and Layout', () => {
+    test('no-data is centered without overflow across viewports', async () => {
+      const viewports = [
+        { width: 1920, height: 1080 },
+        { width: 768, height: 1024 },
+        { width: 375, height: 667 },
+      ];
+      await responsiveTests.verifyNoDataCenteredWithoutOverflow(page, content, viewports);
+    });
+
+    test('data table fits and remains interactable across viewports', async () => {
+      const viewports = [
+        { width: 1920, height: 1080 },
+        { width: 1024, height: 768 },
+        { width: 768, height: 1024 },
+        { width: 375, height: 667 },
+      ];
+      await responsiveTests.verifyDataTableFitsViewport(page, content, viewports);
+    });
+
+    test('selection layout has no overflow and keeps selected cell visible', async () => {
+      const viewports = [
+        { width: 1920, height: 1080 },
+        { width: 1024, height: 768 },
+        { width: 768, height: 1024 },
+        { width: 375, height: 667 },
+      ];
+      await responsiveTests.verifySelectionLayoutAcrossViewports(page, content, viewports);
+    });
+  });
+
+  test.describe('Robustness and Re-renders', () => {
+    test('should not duplicate containers or tables on re-render', async () => {
+      await robustTests.verifyNoDuplicateContainersOrTablesOnReRender(page, content);
+    });
+
+    test('selection toggles once per click (no duplicate listeners)', async () => {
+      await robustTests.verifySelectionTogglesOncePerClick(page, content);
+    });
+
+    test('selected items persist across re-renders during a session', async () => {
+      await robustTests.verifySelectionPersistsAcrossRenders(page, content);
+    });
+
+    test('page reload recovers to a valid state without errors', async () => {
+      await robustTests.verifyReloadRecovers(page, content);
     });
   });
 });

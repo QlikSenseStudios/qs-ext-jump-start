@@ -68,6 +68,26 @@ See [README.md](./README.md) for detailed quick start instructions.
 - **Internationalization:** Support multiple languages if possible
 - **Testing:** Cover edge cases, error states, and user interactions
 
+### Safe DOM and State Patterns
+
+- Prefer `createElement` and `textContent` (avoid `innerHTML` unless explicitly required)
+- Keep a stable container across renders; clear children (e.g., `clearChildren`) instead of replacing roots
+- Use per-element `WeakMap` for state instead of attaching data to functions or globals
+- Prevent duplicate stateful nodes (like `.no-data`) across renders
+
+### Selection Mode Detection
+
+- Treat selection mode as a modifier class on the container: `.extension-container.in-selection`
+- Keep container role/label stable across modes (role="main", aria-label="Qlik Sense Extension Content")
+
+### Robust Tests
+
+- Re-query locators after interactions to avoid stale handles
+- Prefer keyboard-first interactions where possible (Enter/Space), use bottom-most items to avoid overlays
+- Add small waits after modal confirmations in headed mode for visibility stability
+
+See also: [Testing Guide](./docs/TESTING.md) for practical examples of these patterns.
+
 ## 6. Common Tasks
 
 - **Add a new property:** Edit `src/qae/object-properties.js`
@@ -95,6 +115,8 @@ See [README.md](./README.md) for detailed quick start instructions.
 - "Generate a Qlik Sense extension property for a custom KPI"
 - "Write a Playwright test for selection behavior in the extension"
 - "Suggest improvements for error handling in the extension's data fetch logic"
+- "Refactor to use per-element WeakMap state and stable container across renders"
+- "Add Playwright tests for responsiveness and re-render robustness"
 - "How do I add accessibility features to my Qlik Sense extension?"
 
 ---

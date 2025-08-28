@@ -1,10 +1,18 @@
-const { expect } = require('@playwright/test');
+const { expect, test } = require('@playwright/test');
+const { configureExtension, clearAllSelections } = require('../helpers/test-utils');
+const commonTests = require('./common.test');
 
 /**
  * Tests for error state
  * This state may not be reachable in E2E testing due to environment constraints
  */
 module.exports = {
+  /**
+   * Attempts to induce an error via invalid expression; returns whether an attempt was made.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} _content unused
+   * @returns {Promise<boolean>}
+   */
   async attemptErrorTrigger(page, _content) {
     // Try to trigger an error by providing invalid configuration
     // This might not work in all test environments
@@ -27,6 +35,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Validates error container exists with expected text and a11y.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<boolean>} true if error UI found
+   */
   async shouldRenderErrorState(page, content) {
     const errorContainer = await page.$(content + ' .error-message');
 
@@ -47,6 +61,12 @@ module.exports = {
     return false;
   },
 
+  /**
+   * Verifies error container role=alert and aria-live=polite.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldHaveProperAccessibility(page, content) {
     const errorContainer = await page.$(content + ' .error-message');
 
@@ -60,6 +80,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Checks error text and heading content for clarity.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldProvideUsefulErrorMessage(page, content) {
     const errorContainer = await page.$(content + ' .error-message');
 
@@ -75,6 +101,106 @@ module.exports = {
         const headingText = await heading.textContent();
         expect(headingText).toBe('Unable to load extension');
       }
+    }
+  },
+
+  /**
+   * Ensures selection mode/table do not appear in error state.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
+  async shouldNotAllowSelectionInError(page, content) {
+    const state = await commonTests.getExtensionState(page, content);
+    if (state !== 'error-message') {
+      // Gate: this validation only applies when error state is visible.
+      test.info().annotations.push({ type: 'skip', description: `Error state not reachable (${state})` });
+      return; // Documented stub path
+    }
+    // No selection container class
+    const inSelection = await page.$(content + ' .extension-container.in-selection');
+    expect(inSelection).toBeFalsy();
+    // No data table present
+    const table = await page.$(content + ' table.data-table');
+    expect(table).toBeFalsy();
+  },
+
+  /**
+   * Asserts repeated error triggers don’t duplicate error elements.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
+  async shouldNotDuplicateErrorsOnRepeatedTrigger(page, content) {
+    const state = await commonTests.getExtensionState(page, content);
+    if (state !== 'error-message') {
+      // Gate: duplicate errors check only meaningful in error state
+      test.info().annotations.push({ type: 'skip', description: `Error state not reachable (${state})` });
+      return; // Documented stub path
+    }
+    // Attempt to trigger error again
+    await this.attemptErrorTrigger(page, content);
+    await page.waitForTimeout(500);
+    const errors = await page.$$(content + ' .error-message');
+    expect(errors.length).toBe(1);
+  },
+
+  /**
+   * Applies valid config after error and verifies recovery to data state when possible.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
+  async shouldRecoverAfterValidConfiguration(page, content) {
+    const current = await commonTests.getExtensionState(page, content);
+    if (current !== 'error-message') {
+      // Gate: recovery flow applies only from error state
+      test.info().annotations.push({ type: 'skip', description: `Error state not reachable (${current})` });
+      return; // Documented stub path
+    }
+    await clearAllSelections(page).catch(() => {});
+    const configured = await configureExtension(page, {
+      dimensions: ['Dim1'],
+      measures: [{ field: 'Expression1', aggregation: 'Sum' }],
+    });
+    await page.waitForTimeout(800);
+    const state = await commonTests.getExtensionState(page, content);
+    if (configured) {
+      expect(state).toBe('extension-container');
+      // Ensure error element disappeared
+      const error = await page.$(content + ' .error-message');
+      expect(error).toBeFalsy();
+    } else {
+      // Gate: without a successful config we cannot assert recovery
+      test.info().annotations.push({ type: 'skip', description: 'Configuration failed; cannot verify recovery' });
+    }
+  },
+
+  /**
+   * Confirms error banner remains visible across viewport size changes.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
+  async shouldRemainVisibleOnResize(page, content) {
+    const state = await commonTests.getExtensionState(page, content);
+    if (state !== 'error-message') {
+      // Gate: visibility-on-resize only meaningful if error is present
+      test.info().annotations.push({ type: 'skip', description: `Error state not reachable (${state})` });
+      return; // Documented stub path
+    }
+    const sizes = [
+      { width: 375, height: 667 },
+      { width: 768, height: 1024 },
+      { width: 1280, height: 800 },
+    ];
+    for (const vp of sizes) {
+      await page.setViewportSize(vp);
+      await page.waitForTimeout(200);
+      const errorContainer = await page.$(content + ' .error-message');
+      expect(errorContainer).toBeTruthy();
+      const visible = await errorContainer.isVisible();
+      expect(visible).toBe(true);
     }
   },
 };

@@ -15,8 +15,14 @@ module.exports = {
   async getExtensionState(page, content) {
     await page.waitForSelector(content, { visible: true });
 
-    // Define state hierarchy - check in order of specificity
-    const stateClasses = ['extension-container', 'no-data', 'selection-mode', 'error-message'];
+    // Define state classes. Selection mode is indicated by 'in-selection' on extension-container.
+    const stateClasses = ['extension-container', 'no-data', 'error-message'];
+
+    // Selection mode check first for accuracy
+    const inSelection = await page.$(content + ' .extension-container.in-selection');
+    if (inSelection) {
+      return 'selection-mode';
+    }
 
     for (const stateClass of stateClasses) {
       const element = await page.$(content + ` .${stateClass}`);
@@ -28,17 +34,37 @@ module.exports = {
     return 'unknown';
   },
 
+  /**
+   * Waits for the extension root to render and adds a small delay for layout stabilization.
+   * @param {Page} page - Playwright page object
+   * @param {string} content - Extension content selector
+   * @returns {Promise<void>}
+   */
   async waitForExtensionRender(page, content) {
     await page.waitForSelector(content, { visible: true });
     await page.waitForTimeout(500); // Allow for render completion
   },
 
+  /**
+   * Asserts the current state is one of the expected states and returns it.
+   * @param {Page} page - Playwright page object
+   * @param {string} content - Extension content selector
+   * @param {string[]} expectedStates - Allowed states
+   * @returns {Promise<string>} The detected current state
+   */
   async validateStateExists(page, content, expectedStates) {
     const currentState = await this.getExtensionState(page, content);
     expect(expectedStates).toContain(currentState);
     return currentState;
   },
 
+  /**
+   * Simple responsive smoke: resizes viewport and ensures content stays visible and within width tolerance.
+   * @param {Page} page - Playwright page object
+   * @param {string} content - Extension content selector
+   * @param {{width:number,height:number}[]} viewports - List of viewport sizes to test
+   * @returns {Promise<void>}
+   */
   async testResponsiveDesign(page, content, viewports) {
     for (const viewport of viewports) {
       await page.setViewportSize(viewport);
@@ -57,6 +83,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Minimal a11y baseline: root exists, is visible, and contains some content.
+   * @param {Page} page - Playwright page object
+   * @param {string} content - Extension content selector
+   * @returns {Promise<void>}
+   */
   async validateBasicAccessibility(page, content) {
     // Basic accessibility check that applies to all states
     const container = await page.$(content);

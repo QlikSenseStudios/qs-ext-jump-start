@@ -10,6 +10,32 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 _No changes yet._
 
+## [0.4.0] - 2025-08-28
+
+### Added
+
+- E2E suites expanded: Responsiveness & Layout, Robustness & Re-renders, and Accessibility refinements
+- Test helpers: backdrop-safe clicks, consistent wait buckets, stable selectors, and selection-mode detection alignment
+- Test teardown hardening: properties dialog reset to {} and confirm; small visibility waits to stabilize headed runs
+
+### Changed
+
+- src/index.js: safer DOM creation (no innerHTML by default), per-element WeakMap for state, stable container across renders
+- src/index.js: DRY DOM clearing via `clearChildren()`, prevent duplicate `.no-data` elements, improved error UI
+- test/helpers: keyboard-first interactions, bottom-most targets, per-iteration re-queries to avoid stale handles
+- Documentation: clarified workspace settings, added notes on testing strategy and patterns
+
+### Fixed
+
+- Reduced flakiness due to MUI overlays and detached handles during rerenders
+- Standardized selection-mode detection across code/tests
+- Removed stray NUL file from repository root
+
+### Misc
+
+- Dedupe JSDoc/comment blocks across test state files
+- Version bump to 0.4.0
+
 ## [0.3.0] - 2025-08-25
 
 ### Added
