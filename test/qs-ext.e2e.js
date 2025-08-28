@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const { getNebulaQueryString, getQlikServerAuthenticatedContext } = require('./qs-ext.connect');
-const { clearAllSelections } = require('./helpers/test-utils');
+const { clearAllSelections, resetPropertiesToEmptyJson } = require('./helpers/test-utils');
 
 // Import modular state-specific test suites
 const noDataTests = require('./states/no-data.test');
@@ -49,6 +49,8 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
       // Always clear selections first to avoid bleed between tests
       await clearAllSelections(page);
       await dataTests.cleanupConfiguration(page);
+      // Reset object properties to a blank state to avoid config artifacts across tests
+      await resetPropertiesToEmptyJson(page);
     } catch {
       // Silently handle cleanup failures
     }

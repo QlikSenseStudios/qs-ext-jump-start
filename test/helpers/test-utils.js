@@ -386,6 +386,186 @@ async function performFallbackCleanup(page) {
 }
 
 /**
+ * Resets extension object properties via the properties (gear) dialog to an empty JSON object {}
+ * This helps avoid configuration artifacts between tests when using Nebula/Sense property panel
+ * @param {Page} page - Playwright page object
+ * @returns {Promise<boolean>} True if a reset was performed
+ */
+async function resetPropertiesToEmptyJson(page) {
+  try {
+    const content = '.njs-viz[data-render-count]';
+    await page.waitForSelector(content, { visible: true });
+    const viz = page.locator(content).first();
+
+    // Find and click the gear/properties button by title or accessible name
+    const btnSelectors = [
+      '[title="Modify object properties"]',
+      'button[title="Modify object properties"]',
+      'button[aria-label*="Modify object properties"]',
+      'button:has-text("Modify object properties")',
+      // Broader fallbacks and scoped within the viz to avoid unrelated matches
+      `${content} [title*="properties"]`,
+      `${content} button[title*="properties"]`,
+      `${content} button[aria-label*="properties"]`,
+      `${content} button:has-text("Properties")`,
+      `${content} [role="button"][aria-label*="properties"]`,
+    ];
+
+    let opened = false;
+    for (const sel of btnSelectors) {
+      const btn = page.locator(sel).first();
+      if (await btn.isVisible().catch(() => false)) {
+        console.log('Opening properties via selector:', sel);
+        await btn.click({ force: true });
+        opened = true;
+        break;
+      }
+    }
+    if (!opened) {
+      // Try revealing toolbar via hover on the viz, then retry
+      await viz.hover().catch(() => {});
+      for (const sel of btnSelectors) {
+        const btn = page.locator(sel).first();
+        if (await btn.isVisible().catch(() => false)) {
+          console.log('Opening properties after hover via selector:', sel);
+          await btn.click({ force: true });
+          opened = true;
+          break;
+        }
+      }
+    }
+    if (!opened) {
+      return false;
+    }
+
+    // Wait for the dialog to appear
+    const dialog = page.locator('.MuiDialog-root [role="dialog"], [role="dialog"]').last();
+    await dialog.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    if (!(await dialog.isVisible().catch(() => false))) {
+      return false;
+    }
+    // Allow dialog contents to mount
+    await page.waitForTimeout(300);
+
+    // Try to locate a JSON input (textarea or editor)
+    const jsonInputs = [
+      dialog.locator('textarea').first(),
+      dialog.locator('textarea[role="textbox"]').first(),
+      dialog.locator('input[type="text"]').first(),
+      dialog.locator('[contenteditable="true"]').first(),
+      dialog.locator('.cm-content').first(), // CodeMirror content
+      dialog.locator('.monaco-editor').first(), // Monaco editor container
+      dialog.locator('.monaco-editor textarea.inputarea').first(), // Monaco hidden textarea
+    ];
+
+    let inputFound = null;
+    for (const inp of jsonInputs) {
+      if (await inp.isVisible().catch(() => false)) {
+        inputFound = inp;
+        break;
+      }
+    }
+
+    if (inputFound) {
+      // Attempt to clear and type {}
+      try {
+        await inputFound.click({ force: true });
+        // Support both CodeMirror/Monaco by sending select-all and backspace
+        await page.keyboard.press('Control+A').catch(() => {});
+        await page.keyboard.press('Meta+A').catch(() => {});
+        await page.keyboard.press('Backspace').catch(() => {});
+        await page.keyboard.type('{}', { delay: 10 });
+        // Brief pause so the change is visible in headed mode
+        await page.waitForTimeout(600);
+      } catch {
+        // Fallback: use fill for input/textarea
+        await inputFound.fill('{}').catch(() => {});
+        // Brief pause so the change is visible in headed mode
+        await page.waitForTimeout(600);
+      }
+
+      // Validate content updated to {}
+      try {
+        const isCodeMirror = await dialog
+          .locator('.cm-content')
+          .first()
+          .isVisible()
+          .catch(() => false);
+        const isMonaco = await dialog
+          .locator('.monaco-editor')
+          .first()
+          .isVisible()
+          .catch(() => false);
+        if (!isCodeMirror && !isMonaco) {
+          // For textarea/input, ensure value is {}
+          const val = await inputFound.inputValue().catch(() => '');
+          if (val.trim() !== '{}') {
+            await inputFound.fill('{}').catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      } catch {
+        // ignore validation errors, continue
+      }
+    }
+
+    // Confirm/apply changes
+    const confirm = dialog
+      .locator('button:has-text("Confirm"), button:has-text("Apply"), button:has-text("OK"), button:has-text("Save")')
+      .first();
+    // Capture render-count before applying to detect re-render
+    const beforeRender = await viz.getAttribute('data-render-count').catch(() => null);
+    if (await confirm.isVisible().catch(() => false)) {
+      await confirm.click({ force: true });
+      // Brief pause so the confirm action is visible in headed mode
+      await page.waitForTimeout(600);
+    } else {
+      // Fallback: close with Escape if no explicit confirm
+      await page.keyboard.press('Escape').catch(() => {});
+    }
+
+    // Wait for dialog to close
+    await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(async () => {
+      // Try Ctrl/Cmd+Enter apply then retry hide
+      await page.keyboard.press('Control+Enter').catch(() => {});
+      await page.keyboard.press('Meta+Enter').catch(() => {});
+      await page.waitForTimeout(400);
+      await dialog.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {});
+      // As last resort, click any visible "Close"/"OK" again
+      const closeBtn = dialog.locator('button:has-text("Close"), button:has-text("OK")').first();
+      if (await closeBtn.isVisible().catch(() => false)) {
+        await closeBtn.click({ force: true });
+        await page.waitForTimeout(300);
+      }
+    });
+    // Wait for a re-render tick if possible
+    if (beforeRender) {
+      await page
+        .waitForFunction(
+          (sel, prev) => {
+            const el = document.querySelector(sel);
+            if (!el) {
+              return true; // viz gone, treat as done
+            }
+            const cur = el.getAttribute('data-render-count');
+            return cur && cur !== prev;
+          },
+          content,
+          beforeRender,
+          { timeout: 3000 }
+        )
+        .catch(() => {});
+    } else {
+      await page.waitForTimeout(500);
+    }
+    return true;
+  } catch (e) {
+    console.warn('resetPropertiesToEmptyJson encountered an issue:', e.message);
+    return false;
+  }
+}
+
+/**
  * Clears all selections using the toolbar/button control in the app
  * Looks for a button with title="Clear all selections" or similar accessible names
  * @param {Page} page - Playwright page object
@@ -581,4 +761,5 @@ module.exports = {
   validateAccessibility,
   getExtensionState,
   clearAllSelections,
+  resetPropertiesToEmptyJson,
 };
