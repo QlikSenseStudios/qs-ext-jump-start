@@ -22,6 +22,13 @@ ai:
     lint: eslint
     format: prettier
     editor: cursor
+  policies:
+    - name: pre-commit-validation
+      description: 'All changes must pass lint and tests before committing.'
+      steps:
+        - run: npm run -s lint
+        - run: npm test
+      required: true
   prompt_templates:
     - 'Summarize this code.'
     - 'Update this template into a new project per docs/WORKFLOWS.md (Workflow B) and the Rename & Rebrand checklist, without changing runtime behavior.'
@@ -38,7 +45,7 @@ ai:
   cursor_specific:
     enable_chat_context: true
     enable_codebase_analysis: true
-    preferred_completion_style: "contextual"
+    preferred_completion_style: 'contextual'
     enable_multifile_editing: true
   exclude_paths:
     - node_modules/
@@ -46,7 +53,7 @@ ai:
     - test/report/
     - .git/
     - .cursor/
-    - "*.log"
+    - '*.log'
 
 contributors:
   - name: Qlik Professional Services

@@ -2,7 +2,7 @@
 
 QS-Ext-Jump-Start is a template project designed to help you quickly start building Qlik Sense extensions. It includes example code, testing tools, and setup guides to streamline development and testing.
 
-See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates.
+See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: 0.4.0).
 
 ## Two Usage Modes
 
@@ -47,7 +47,7 @@ This template includes a simple selections-focused example to demonstrate best p
 - Uses Qlik’s selection APIs via `useSelections.begin/select/cancel`
 - Shows a helpful no-data message when the configuration is invalid (pick 1 dim, optional 1 measure)
 
-See `src/index.js` and `src/styles.css` for the implementation, and `test/states/*.test.js` for E2E coverage.
+See `src/index.js` and `src/styles.css` for the implementation, and `test/states/*.test.js` for E2E coverage. The suite covers no-data, data, selection behavior, error handling, accessibility, responsiveness, and robustness/re-renders.
 
 ## 📖 Documentation
 
@@ -124,6 +124,9 @@ npx playwright test --headed
 
 # Debug specific functionality
 npx playwright test --grep "your test name" --debug
+
+# Open the latest HTML report
+npx playwright show-report test/report
 ```
 
 See [Testing Guide](./docs/TESTING.md) for detailed usage.
@@ -173,7 +176,7 @@ See [Testing Guide](./docs/TESTING.md) for more information.
 
 ### Quick Troubleshooting
 
-**🔴 Tests failing?** → Check [Testing Guide troubleshooting](./docs/TESTING.md#troubleshooting)  
+**🔴 Tests failing?** → Check [Testing Guide troubleshooting](./docs/TESTING.md#troubleshooting). Consider running headed and single-worker for investigation.  
 **🔴 Development server issues?** → Verify environment setup guides  
 **🔴 Deployment problems?** → See deployment documentation for your platform
 
