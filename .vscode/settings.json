@@ -4,28 +4,27 @@
     "source.fixAll.eslint": "explicit"
   },
   "eslint.enable": true,
-  "eslint.validate": ["javascript", "javascriptreact"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact"
+  ],
   "prettier.requireConfig": true,
   "prettier.configPath": ".prettierrc",
-
   // Enhanced IntelliSense for Qlik Sense development
   "typescript.suggest.autoImports": true,
   "javascript.suggest.autoImports": true,
   "javascript.preferences.includePackageJsonAutoImports": "auto",
-
   // Cursor IDE compatibility
   "editor.inlineSuggest.enabled": true,
   "editor.suggestOnTriggerCharacters": true,
   "editor.quickSuggestionsDelay": 10,
   "editor.acceptSuggestionOnCommitCharacter": true,
   "editor.wordBasedSuggestions": "matchingDocuments",
-
   // File associations for Qlik Sense files
   "files.associations": {
     "*.qvs": "sql",
     "*.qlikview": "javascript"
   },
-
   // Workspace specific settings
   "search.exclude": {
     "node_modules": true,
@@ -35,7 +34,6 @@
     "test/artifacts": true,
     ".git": true
   },
-
   // File watchers optimization
   "files.watcherExclude": {
     "**/node_modules/**": true,
@@ -44,21 +42,29 @@
     "**/test/report/**": true,
     "**/test/artifacts/**": true
   },
-
   // Emmet for better HTML/CSS development
   "emmet.includeLanguages": {
     "javascript": "javascriptreact"
   },
-
   // Git integration
   "git.ignoreLimitWarning": true,
-
-  // Terminal integration
-  "terminal.integrated.defaultProfile.windows": "PowerShell",
-  "terminal.integrated.profiles.windows": {
-    "PowerShell": {
-      "source": "PowerShell",
-      "args": ["-NoLogo"]
-    }
-  }
+  // Terminal integration (workspace-agnostic)
+  // We intentionally do NOT set a workspace default terminal. Team members use different shells
+  // (PowerShell, Git Bash, bash.exe, WSL). To avoid noisy diffs/merge conflicts, keep shell
+  // preferences in your User settings rather than committing them here.
+  // If you want a default locally, copy one of the examples below into your User settings:
+  // PowerShell:
+  // "terminal.integrated.defaultProfile.windows": "PowerShell"
+  // "terminal.integrated.profiles.windows": {
+  //   "PowerShell": { "source": "PowerShell", "args": ["-NoLogo"] }
+  // }
+  // Git Bash (adjust path if your Git install differs):
+  // "terminal.integrated.defaultProfile.windows": "Git Bash"
+  // "terminal.integrated.profiles.windows": {
+  //   "Git Bash": {
+  //     "path": "C:\\Program Files\\Git\\bin\\bash.exe",
+  //     "args": ["-l", "-i"]
+  //   }
+  // }
+  // Tip: VS Code will detect available shells and use your User default automatically.
 }
