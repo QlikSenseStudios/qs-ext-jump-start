@@ -20,29 +20,24 @@ function isInvalidConfig({ dimCount, measCount }) {
 }
 
 function createNoDataDiv(dimCount, measCount) {
-  const noDataDiv = createElement(
-    'div',
-    {
-      className: 'no-data',
-      'aria-label': 'No data available',
-      'data-dim-count': String(dimCount ?? ''),
-      'data-meas-count': String(measCount ?? ''),
-    },
-    'No data to display'
-  );
+  const noDataDiv = createElement('div', {
+    className: 'no-data',
+    'aria-label': 'No data available',
+    'data-dim-count': String(dimCount ?? ''),
+    'data-meas-count': String(measCount ?? ''),
+  });
+
+  noDataDiv.appendChild(createElement('div', {}, 'No data to display'));
 
   if (isInvalidConfig({ dimCount, measCount })) {
-    const hint = createElement(
-      'div',
-      { className: 'no-data-hint', role: 'note', 'aria-live': 'polite' },
-      `
-      <p>Configure this visualization with exactly 1 dimension and at most 1 measure (optional).</p>
-      <ul>
-        <li>Required: Add 1 dimension in the Data panel.</li>
-        <li>Optional: Add 0 or 1 measure.</li>
-      </ul>
-    `
-    );
+    const hintList = createElement('ul', {}, [
+      createElement('li', {}, 'Required: Add 1 dimension in the Data panel.'),
+      createElement('li', {}, 'Optional: Add 0 or 1 measure.'),
+    ]);
+    const hint = createElement('div', { className: 'no-data-hint', role: 'note', 'aria-live': 'polite' }, [
+      createElement('p', {}, 'Configure this visualization with exactly 1 dimension and at most 1 measure (optional).'),
+      hintList,
+    ]);
     noDataDiv.appendChild(hint);
   }
 
@@ -50,18 +45,13 @@ function createNoDataDiv(dimCount, measCount) {
 }
 
 function appendError(element, error) {
-  const errorDiv = createElement(
-    'div',
-    {
-      className: 'error-message',
-      role: 'alert',
-      'aria-live': 'polite',
-    },
-    `
-    <h3>Unable to load extension</h3>
-    <p>Please check your data configuration and try again.</p>
-  `
-  );
+  const errorDiv = createElement('div', {
+    className: 'error-message',
+    role: 'alert',
+    'aria-live': 'polite',
+  });
+  errorDiv.appendChild(createElement('h3', {}, 'Unable to load extension'));
+  errorDiv.appendChild(createElement('p', {}, 'Please check your data configuration and try again.'));
   element.appendChild(errorDiv);
   // eslint-disable-next-line no-console
   console.error('Extension rendering error:', error);
@@ -80,6 +70,9 @@ function appendError(element, error) {
  * - Behavior: Render different UI for selection mode, no data, and normal states
  * - Errors: Caught and presented as user-friendly message
  */
+// Maintain per-element state without leaking via globals or function properties
+const selectionStateByElement = new WeakMap();
+
 export default function supernova(galaxy) {
   return {
     qae: {
@@ -92,23 +85,27 @@ export default function supernova(galaxy) {
       const layout = useLayout();
       const selections = useSelections();
 
-      // Persist local selection state across renders
-      const selectionState = (function () {
-        // Attach to component function scope once
-        if (!supernova.__selectionState) {
-          supernova.__selectionState = {
+      // Persist local selection state per element across renders
+      const selectionState = (function ensureState() {
+        let state = selectionStateByElement.get(element);
+        if (!state) {
+          state = {
             data: [],
             pendingByElem: new Set(), // clicks made out of selection mode
             sessionByElem: new Set(), // selections within current selection mode session
             lastInSelection: false,
+            elemToRowIndex: new Map(),
           };
+          selectionStateByElement.set(element, state);
         }
-        return supernova.__selectionState;
+        return state;
       })();
 
       useEffect(() => {
-        // Clear previous content
-        element.innerHTML = '';
+        // Clear previous content safely
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
 
         try {
           const inSelection = Boolean(safeGet(layout, 'qSelectionInfo.qInSelections', false));
@@ -222,6 +219,7 @@ export default function supernova(galaxy) {
           selectionState.data = localData;
           selectionState.lastInSelection = inSelection;
           selectionState.elemToRowIndex = elemToRowIndex;
+          // Expose current data (used in tests) without leaking handlers
           container.__localData = localData;
           element.appendChild(container);
 
