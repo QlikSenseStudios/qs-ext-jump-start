@@ -11,7 +11,7 @@ See [TODO.md](./TODO.md) for planned improvements and ideas.
    - Follow [docs/](./docs/) for environment setup
    - Install dependencies: `npm install`
 3. Make changes following the project's code style described in the [KNOWLEDGE_BASE.md](./KNOWLEDGE_BASE.md)
-4. Run tests: `npm test` and ensure all tests pass
+4. Run tests: `npm test` and ensure all tests pass (see [Testing Guide](./docs/TESTING.md))
 5. Open a pull request to QlikSenseStudios/qs-ext-jump-start with a clear description
 
 ## Guidelines for Contributions

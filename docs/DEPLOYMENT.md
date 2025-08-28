@@ -23,9 +23,9 @@ Zip the contents of the `<your extension name>-ext` directory to create a deploy
 3. Click "Import" and select your zipped package file
 4. The extension will be available in your Qlik Sense apps
 
-## Deploying to your Qlik Sense Cloud tenant
+## Deploying to Qlik Cloud
 
-1. Navigate to your Qlik Sense Cloud Tenant Administration section
+1. Navigate to your Qlik Cloud Tenant Administration section
 2. Go to Extensions
 3. Click "Add" and upload your package file
 4. The extension will be available in your Qlik Sense apps

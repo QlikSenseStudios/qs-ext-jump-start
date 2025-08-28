@@ -86,6 +86,8 @@ See [README.md](./README.md) for detailed quick start instructions.
 - Prefer keyboard-first interactions where possible (Enter/Space), use bottom-most items to avoid overlays
 - Add small waits after modal confirmations in headed mode for visibility stability
 
+See also: [Testing Guide](./docs/TESTING.md) for practical examples of these patterns.
+
 ## 6. Common Tasks
 
 - **Add a new property:** Edit `src/qae/object-properties.js`

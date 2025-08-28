@@ -11,6 +11,7 @@ This guide shows two primary workflows and common tasks with examples.
 5. Open a pull request with a clear description and references
 
 Tips:
+
 - Keep PRs small and cohesive
 - Update docs when behavior changes
 - Reference code: `src/`, `test/`
@@ -25,7 +26,7 @@ Tips:
    - Point Git remote to your project repository
 4. Remove references to the original template if needed (README sections, links)
 5. Customize code under `src/` and tests in `test/`
-6. Run and validate: `npm run serve`, `npm test`
+6. Run and validate locally: `npm run serve`, `npm test`
 7. Package when ready: `npm run package`
 
 ### Rename & Rebrand Checklist (optional)
@@ -39,23 +40,29 @@ Tips:
 ## Common Tasks
 
 ### Add a Property to the Property Panel
+
 - Edit `src/qae/object-properties.js`
 - Example: add a boolean toggle under a `settings` section
 
 ### Configure Dimensions and Measures
+
 - Update `src/qae/data.js` targets or extend `qHyperCubeDef` in `object-properties.js`
 
 ### Render Custom UI
+
 - Edit `src/index.js`; use `useElement`, `useLayout`, and helpers in `src/utils.js`
 
 ### Write a New Test
+
 - Add a file in `test/states/`
 - See existing tests for patterns and fixtures
 
 ### Qlik Cloud/Enterprise Setup
+
 - Follow `docs/QLIK_CLOUD_SETUP.md` or `docs/QLIK_ENTERPRISE_SETUP.md`
 
 ### Deployment
+
 - Build package: `npm run package`
 - Upload zip to Qlik Sense (see `docs/DEPLOYMENT.md`)
 

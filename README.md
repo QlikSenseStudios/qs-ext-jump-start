@@ -141,6 +141,9 @@ Notes for the selections example tests:
 
 Choose your Qlik Sense environment:
 
+- Qlik Cloud: see `docs/QLIK_CLOUD_SETUP.md`
+- Qlik Sense Enterprise: see `docs/QLIK_ENTERPRISE_SETUP.md`
+
 Both guides include:
 
 - Prerequisites for Qlik Cloud or Enterprise
