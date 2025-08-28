@@ -9,16 +9,44 @@ import './styles.css';
 const HYPERCUBE_PATH = '/qHyperCubeDef';
 const DIM_COL_IDX = 0;
 
+// Small DOM helper
+/**
+ * Removes all child nodes from a container element.
+ * Safe, small utility to avoid repeating while-firstChild clears.
+ * @param {HTMLElement} node Host element whose children will be removed
+ */
+function clearChildren(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild);
+  }
+}
+
+/**
+ * Returns dimension and measure counts from the layout.
+ * @param {object} layout Current layout provided by Stardust
+ * @returns {{ dimCount: number, measCount: number }} Counts used for config validation
+ */
 function getCounts(layout) {
   const dimCount = (safeGet(layout, 'qHyperCube.qDimensionInfo', []) || []).length;
   const measCount = (safeGet(layout, 'qHyperCube.qMeasureInfo', []) || []).length;
   return { dimCount, measCount };
 }
 
+/**
+ * Validates the configuration: requires exactly 1 dimension and at most 1 measure.
+ * @param {{ dimCount: number, measCount: number }} counts
+ * @returns {boolean} True if the configuration is invalid
+ */
 function isInvalidConfig({ dimCount, measCount }) {
   return dimCount !== 1 || measCount > 1;
 }
 
+/**
+ * Builds the no-data UI with an optional hint for invalid configurations.
+ * @param {number} dimCount Number of dimensions
+ * @param {number} measCount Number of measures
+ * @returns {HTMLDivElement} The constructed .no-data element
+ */
 function createNoDataDiv(dimCount, measCount) {
   const noDataDiv = createElement('div', {
     className: 'no-data',
@@ -44,6 +72,11 @@ function createNoDataDiv(dimCount, measCount) {
   return noDataDiv;
 }
 
+/**
+ * Appends a standardized error UI to the host element and logs the error.
+ * @param {HTMLElement} element Host container
+ * @param {unknown} error Error object thrown during rendering
+ */
 function appendError(element, error) {
   const errorDiv = createElement('div', {
     className: 'error-message',
@@ -119,6 +152,13 @@ export default function supernova(galaxy) {
           // Validate configuration: exactly 1 dimension and 0 or 1 measure
           const { dimCount, measCount } = getCounts(layout);
           if (isInvalidConfig({ dimCount, measCount })) {
+            // Ensure we don't accumulate multiple .no-data nodes across renders
+            const existing = containerByElement.get(element);
+            if (existing && existing.parentNode) {
+              existing.parentNode.removeChild(existing);
+            }
+            containerByElement.delete(element);
+            clearChildren(element);
             element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
@@ -126,6 +166,12 @@ export default function supernova(galaxy) {
           // Check for data availability (edge case: empty hypercube)
           const dataMatrix = safeGet(layout, 'qHyperCube.qDataPages.0.qMatrix', []);
           if (!dataMatrix.length) {
+            const existing = containerByElement.get(element);
+            if (existing && existing.parentNode) {
+              existing.parentNode.removeChild(existing);
+            }
+            containerByElement.delete(element);
+            clearChildren(element);
             element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
@@ -136,9 +182,7 @@ export default function supernova(galaxy) {
             container = createElement('div');
             containerByElement.set(element, container);
             // Remove any existing children before first attach
-            while (element.firstChild) {
-              element.removeChild(element.firstChild);
-            }
+            clearChildren(element);
             element.appendChild(container);
           }
           // Update container accessibility and state classes
@@ -148,9 +192,7 @@ export default function supernova(galaxy) {
           container.setAttribute('tabindex', '0');
 
           // Clear and rebuild inner content each render
-          while (container.firstChild) {
-            container.removeChild(container.firstChild);
-          }
+          clearChildren(container);
 
           const content = createElement('div', { className: 'content' });
 
@@ -239,6 +281,11 @@ export default function supernova(galaxy) {
           }
 
           // Event delegation: attach once on tbody
+          /**
+           * Finds the cached data row entry for a given qElemNumber.
+           * @param {number} elem qElemNumber for the dimension cell
+           * @returns {{row:number, dim:{text:string, elem:number, selected:boolean}, meas:{text:string}}|undefined}
+           */
           const getRowEntry = (elem) => {
             const idx = selectionState.elemToRowIndex?.get(elem);
             return Number.isInteger(idx)
@@ -246,6 +293,11 @@ export default function supernova(galaxy) {
               : (selectionState.data || []).find((r) => r.dim.elem === elem);
           };
 
+          /**
+           * Handles click/keyboard activation from a dimension cell.
+           * Updates Sense selections and local selection session state.
+           * @param {HTMLElement} cell The clicked/focused dimension cell
+           */
           const activateFromCell = async (cell) => {
             const elem = Number(cell.getAttribute('data-q-elem'));
             if (Number.isNaN(elem)) {
@@ -332,9 +384,7 @@ export default function supernova(galaxy) {
             existing.parentNode.removeChild(existing);
           }
           // Clear element and show error
-          while (element.firstChild) {
-            element.removeChild(element.firstChild);
-          }
+          clearChildren(element);
           appendError(element, error);
         }
       }, [element, layout]);

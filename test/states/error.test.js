@@ -7,6 +7,12 @@ const commonTests = require('./common.test');
  * This state may not be reachable in E2E testing due to environment constraints
  */
 module.exports = {
+  /**
+   * Attempts to induce an error via invalid expression; returns whether an attempt was made.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} _content unused
+   * @returns {Promise<boolean>}
+   */
   async attemptErrorTrigger(page, _content) {
     // Try to trigger an error by providing invalid configuration
     // This might not work in all test environments
@@ -29,6 +35,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Validates error container exists with expected text and a11y.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<boolean>} true if error UI found
+   */
   async shouldRenderErrorState(page, content) {
     const errorContainer = await page.$(content + ' .error-message');
 
@@ -49,6 +61,12 @@ module.exports = {
     return false;
   },
 
+  /**
+   * Verifies error container role=alert and aria-live=polite.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldHaveProperAccessibility(page, content) {
     const errorContainer = await page.$(content + ' .error-message');
 
@@ -62,6 +80,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Checks error text and heading content for clarity.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldProvideUsefulErrorMessage(page, content) {
     const errorContainer = await page.$(content + ' .error-message');
 
@@ -81,7 +105,10 @@ module.exports = {
   },
 
   /**
-   * Ensure selection mode cannot be entered while in error state
+   * Ensures selection mode/table do not appear in error state.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldNotAllowSelectionInError(page, content) {
     const state = await commonTests.getExtensionState(page, content);
@@ -99,7 +126,10 @@ module.exports = {
   },
 
   /**
-   * Trigger error twice should not render duplicate error elements
+   * Asserts repeated error triggers don’t duplicate error elements.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldNotDuplicateErrorsOnRepeatedTrigger(page, content) {
     const state = await commonTests.getExtensionState(page, content);
@@ -116,7 +146,10 @@ module.exports = {
   },
 
   /**
-   * After an error, applying a valid configuration should recover to data state
+   * Applies valid config after error and verifies recovery to data state when possible.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldRecoverAfterValidConfiguration(page, content) {
     const current = await commonTests.getExtensionState(page, content);
@@ -144,7 +177,10 @@ module.exports = {
   },
 
   /**
-   * Error banner stays stable on viewport changes
+   * Confirms error banner remains visible across viewport size changes.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldRemainVisibleOnResize(page, content) {
     const state = await commonTests.getExtensionState(page, content);

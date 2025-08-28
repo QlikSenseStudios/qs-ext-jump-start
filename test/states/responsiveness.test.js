@@ -4,7 +4,11 @@ const commonTests = require('./common.test');
 
 module.exports = {
   /**
-   * No-data layout should be centered and without horizontal overflow across viewports
+   * No-data layout should be centered and without horizontal overflow across viewports.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @param {{width:number,height:number}[]} viewports
+   * @returns {Promise<void>}
    */
   async verifyNoDataCenteredWithoutOverflow(page, content, viewports) {
     const initial = await commonTests.getExtensionState(page, content);
@@ -39,7 +43,11 @@ module.exports = {
   },
 
   /**
-   * Data table should fit within container/viewport and remain interactable across viewports
+   * Data table should fit and remain interactable across viewports.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @param {{width:number,height:number}[]} viewports
+   * @returns {Promise<void>}
    */
   async verifyDataTableFitsViewport(page, content, viewports) {
     await clearAllSelections(page).catch(() => {});
@@ -77,7 +85,11 @@ module.exports = {
   },
 
   /**
-   * Selection layout (in-selection) should not overflow and keep selected cell visible across viewports
+   * Selection layout should avoid overflow and keep selected cell visible during resizes.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @param {{width:number,height:number}[]} viewports
+   * @returns {Promise<void>}
    */
   async verifySelectionLayoutAcrossViewports(page, content, viewports) {
     await clearAllSelections(page).catch(() => {});

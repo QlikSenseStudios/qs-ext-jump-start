@@ -7,12 +7,24 @@ const commonTests = require('./common.test');
  * This state may not be reachable in E2E testing without proper data interaction
  */
 module.exports = {
+  /**
+   * Tries to enter selection mode; returns whether mode was entered or selection indicated.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} _content unused
+   * @returns {Promise<boolean>}
+   */
   async attemptSelectionTrigger(page, _content) {
     // Attempt to trigger selection mode
     const selectionTriggered = await triggerSelectionMode(page);
     return selectionTriggered;
   },
 
+  /**
+   * Validates selection state container and table presence.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<boolean>}
+   */
   async shouldRenderSelectionState(page, content) {
     const container = await page.$(content + ' .extension-container.in-selection');
     if (!container) {
@@ -24,6 +36,12 @@ module.exports = {
     return true;
   },
 
+  /**
+   * Confirms selection-mode keeps container role/label stable.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldHaveProperAccessibility(page, content) {
     const container = await page.$(content + ' .extension-container.in-selection');
     if (container) {
@@ -34,6 +52,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Checks selection container class and that selected cells are highlighted when applicable.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldIndicateActiveSelection(page, content) {
     const container = await page.$(content + ' .extension-container.in-selection');
     if (container) {
@@ -46,7 +70,10 @@ module.exports = {
   },
 
   /**
-   * Click without Ctrl should enter selection mode and toggle a single cell
+   * Enters selection mode with a plain click and validates highlight on the clicked cell.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldEnterSelectionWithPlainClick(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -77,7 +104,10 @@ module.exports = {
   },
 
   /**
-   * Clicking same cell twice toggles selection off
+   * Clicks the same cell twice to toggle off and exit selection if last selection.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldToggleSameCellOff(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -108,7 +138,10 @@ module.exports = {
   },
 
   /**
-   * Multi-select two cells then deselect all should exit selection mode
+   * Multi-selects two cells then deselects both, asserting selection mode exits.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldMultiSelectAndThenExit(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -151,7 +184,10 @@ module.exports = {
   },
 
   /**
-   * Keyboard toggling (Enter/Space) mirrors click behavior
+   * Uses Enter/Space to toggle selection state mirroring click behavior.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldSupportKeyboardToggle(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -194,7 +230,10 @@ module.exports = {
   },
 
   /**
-   * Confirm selections by clicking outside the extension; verify table is filtered to selected value(s)
+   * Confirms selections by clicking outside, then verifies filtered rows.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldConfirmSelectionsByClickingOutside(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -237,7 +276,10 @@ module.exports = {
   },
 
   /**
-   * Confirm selections via the Confirm selection button; verify table is filtered to selected value(s)
+   * Confirms selections via toolbar button, then verifies filtered rows.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldConfirmSelectionsByButton(page, content) {
     await clearAllSelections(page).catch(() => {});

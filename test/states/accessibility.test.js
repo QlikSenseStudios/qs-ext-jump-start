@@ -4,7 +4,10 @@ const commonTests = require('./common.test');
 
 module.exports = {
   /**
-   * Verify container roles/labels across states (no-data → data → selection → exit)
+   * Walks through states and validates container roles/labels remain correct.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async verifyContainerRolesAcrossStates(page, content) {
     // No-data by default
@@ -33,25 +36,28 @@ module.exports = {
     expect(await container.getAttribute('aria-label')).toBe('Qlik Sense Extension Content');
     expect(await container.getAttribute('tabindex')).toBe('0');
 
-  // Enter selection and verify attributes persist
-  const firstCellHandle = await page.$(content + ' td.dim-cell.selectable-item');
-  expect(firstCellHandle).toBeTruthy();
-  const elem0 = await firstCellHandle.getAttribute('data-q-elem');
-  await firstCellHandle.click({ force: true });
+    // Enter selection and verify attributes persist
+    const firstCellHandle = await page.$(content + ' td.dim-cell.selectable-item');
+    expect(firstCellHandle).toBeTruthy();
+    const elem0 = await firstCellHandle.getAttribute('data-q-elem');
+    await firstCellHandle.click({ force: true });
     await page.waitForSelector(content + ' .extension-container.in-selection', { timeout: 3000 });
     const selectionContainer = await page.$(content + ' .extension-container.in-selection');
     expect(selectionContainer).toBeTruthy();
     expect(await selectionContainer.getAttribute('role')).toBe('main');
     expect(await selectionContainer.getAttribute('aria-label')).toBe('Qlik Sense Extension Content');
 
-  // Toggle the same cell off to exit selection (session becomes empty triggers cancel)
-  const firstCell = page.locator(`${content} [data-q-elem="${elem0}"]`);
-  await firstCell.click({ force: true });
-  await expect(page.locator(content + ' .extension-container.in-selection')).toHaveCount(0);
+    // Toggle the same cell off to exit selection (session becomes empty triggers cancel)
+    const firstCell = page.locator(`${content} [data-q-elem="${elem0}"]`);
+    await firstCell.click({ force: true });
+    await expect(page.locator(content + ' .extension-container.in-selection')).toHaveCount(0);
   },
 
   /**
-   * Cells expose role=button, tabindex=0, and aria-label="Select <value>"; Tab moves to next cell
+   * Ensures cells expose role/button, labels, tabindex, and Tab order progresses predictably.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async verifyCellAccessibilityAndTabOrder(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -90,7 +96,10 @@ module.exports = {
   },
 
   /**
-   * No-data hint uses aria-live=polite role=note in the hint region
+   * Asserts no-data hint uses aria-live polite role=note region.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async verifyNoDataLiveRegion(page, content) {
     const initial = await commonTests.getExtensionState(page, content);
@@ -105,7 +114,10 @@ module.exports = {
   },
 
   /**
-   * Table headers are accessible and properly scoped
+   * Confirms table headers are scoped as columns and labeled.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async verifyHeaderScopes(page, content) {
     await clearAllSelections(page).catch(() => {});

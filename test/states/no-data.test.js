@@ -6,6 +6,12 @@ const { configureExtension, cleanupExtensionConfiguration } = require('../helper
  * This state is always reachable as it's the default state
  */
 module.exports = {
+  /**
+   * Validates default no-data state rendering, a11y attributes, and hint text.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldRenderNoDataState(page, content) {
     // Should show no-data state initially
     const noDataContainer = await page.$(content + ' .no-data');
@@ -20,6 +26,12 @@ module.exports = {
     expect(text).toContain('No data to display');
   },
 
+  /**
+   * Checks no-data container aria-label and visible content.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldHaveProperAccessibility(page, content) {
     const noDataContainer = await page.$(content + ' .no-data');
     expect(noDataContainer).toBeTruthy();
@@ -33,6 +45,13 @@ module.exports = {
     expect(textContent).toContain('No data to display');
   },
 
+  /**
+   * Ensures no-data layout remains visible and within viewport bounds on resize.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @param {{width:number,height:number}} viewport
+   * @returns {Promise<void>}
+   */
   async shouldBeResponsive(page, content, viewport) {
     // Set viewport
     await page.setViewportSize(viewport);
@@ -51,8 +70,10 @@ module.exports = {
   },
 
   /**
-   * Verifies that the invalid configuration hint is shown in no-data state
-   * Applies to cases like 0 dimensions, 2+ dimensions, or >1 measures
+   * Verifies invalid-config hint presence in no-data state.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async shouldShowInvalidConfigHint(page, content) {
     const hint = await page.$(content + ' .no-data .no-data-hint');
@@ -64,7 +85,10 @@ module.exports = {
   },
 
   /**
-   * Configures 2 dimensions (invalid), expects no-data with hint
+   * Applies 2D invalid config and validates hint; cleans up.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async configureInvalidTwoDimensionsAndValidate(page, content) {
     try {
@@ -81,7 +105,10 @@ module.exports = {
   },
 
   /**
-   * Configures 1 dimension + 2 measures (invalid), expects no-data with hint
+   * Applies 1D+2M invalid config and validates hint; cleans up.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async configureInvalidTwoMeasuresAndValidate(page, content) {
     try {
@@ -102,9 +129,10 @@ module.exports = {
   },
 
   /**
-   * Attempts to reach a valid-but-empty state (1D, optional 1M, zero rows).
-   * If reached, verifies that no invalid-config hint is shown.
-   * If not reachable in this environment, records an info annotation and returns.
+   * Attempts a valid-but-empty scenario; if reached, ensures no invalid-config hint.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async attemptValidButEmptyAndValidateOptional(page, content) {
     try {

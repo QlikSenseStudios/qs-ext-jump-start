@@ -35,10 +35,10 @@ module.exports = {
   },
 
   /**
-   * Validates that the extension renders properly in data state
-   * Checks for main container and basic accessibility attributes
-   * @param {Page} page - Playwright page object
-   * @param {string} content - Extension content selector
+   * Ensures main container and table exist with correct accessibility when in data state.
+   * @param {import('@playwright/test').Page} page Playwright page
+   * @param {string} content Root selector for the extension
+   * @returns {Promise<boolean>} true if validated, false if container missing
    */
   async shouldRenderDataState(page, content) {
     const mainContainer = await page.$(content + ' .extension-container');
@@ -60,6 +60,12 @@ module.exports = {
     return false;
   },
 
+  /**
+   * Verifies role/aria-label/tabindex on the main container in data state.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldHaveProperAccessibility(page, content) {
     const mainContainer = await page.$(content + ' .extension-container');
 
@@ -75,6 +81,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Confirms the container is keyboard-focusable and holds tabindex=0.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldSupportKeyboardNavigation(page, content) {
     const mainContainer = await page.$(content + ' .extension-container');
 
@@ -96,6 +108,12 @@ module.exports = {
     }
   },
 
+  /**
+   * Basic structure checks for data table: headers and at least one row.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
+   */
   async shouldDisplayDataCorrectly(page, content) {
     const mainContainer = await page.$(content + ' .extension-container');
 
@@ -114,7 +132,10 @@ module.exports = {
   },
 
   /**
-   * Configures exactly 1 dimension and no measure; validates data state renders with fallback measure column content
+   * Configures exactly 1 dimension and no measure; verifies fallback column content.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<boolean>} configuration status
    */
   async configureOneDimensionOnlyAndValidate(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -144,7 +165,10 @@ module.exports = {
   },
 
   /**
-   * Configures 1D + measure with alternate aggregation (e.g., Avg)
+   * Configures 1D + measure with alternate aggregation (e.g., Avg) and validates table.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async configureAlternateAggregationAndValidate(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -170,7 +194,10 @@ module.exports = {
   },
 
   /**
-   * Configures a high-cardinality dimension to simulate large row count relative to initial fetch height
+   * Configures a high-cardinality dimension to simulate large row count relative to initial fetch.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async configureLargeRowCountAndValidate(page, content) {
     await clearAllSelections(page).catch(() => {});

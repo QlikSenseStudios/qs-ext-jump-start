@@ -703,7 +703,7 @@ async function triggerSelectionMode(page) {
 /**
  * Validates accessibility attributes for a container
  * @param {ElementHandle} container - Container element
- * @param {string} expectedType - Expected container type (extension-container, no-data, etc.)
+ * @param {string} expectedType - Expected container type (extension-container, no-data, selection-mode, error-message)
  * @returns {Promise<object>} Validation results
  */
 async function validateAccessibility(container, expectedType) {
@@ -745,11 +745,19 @@ async function validateAccessibility(container, expectedType) {
     }
 
     if (expectedType === 'selection-mode') {
+      // In selection mode our extension still uses the same container role/label
+      const role = await container.getAttribute('role');
       const ariaLabel = await container.getAttribute('aria-label');
-      results.attributes.ariaLabel = ariaLabel;
-
-      if (ariaLabel !== 'Selection mode active') {
-        results.errors.push(`Expected aria-label="Selection mode active", got "${ariaLabel}"`);
+      const tabindex = await container.getAttribute('tabindex');
+      results.attributes = { role, ariaLabel, tabindex };
+      if (role !== 'main') {
+        results.errors.push(`Expected role="main", got "${role}"`);
+      }
+      if (ariaLabel !== 'Qlik Sense Extension Content') {
+        results.errors.push(`Expected aria-label="Qlik Sense Extension Content", got "${ariaLabel}"`);
+      }
+      if (tabindex !== '0') {
+        results.errors.push(`Expected tabindex="0", got "${tabindex}"`);
       }
     }
 
@@ -784,8 +792,13 @@ async function getExtensionState(page) {
   try {
     await waitForViz(page);
 
-    const states = ['extension-container', 'no-data', 'selection-mode', 'error-message'];
+    // Selection mode appears as 'in-selection' modifier on the extension container
+    const sel = await page.$(VIZ_SEL + ' .extension-container.in-selection');
+    if (sel) {
+      return 'selection-mode';
+    }
 
+    const states = ['extension-container', 'no-data', 'error-message'];
     for (const state of states) {
       const element = await page.$(VIZ_SEL + ` .${state}`);
       if (element) {

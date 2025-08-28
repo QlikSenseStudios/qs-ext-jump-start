@@ -4,7 +4,10 @@ const commonTests = require('./common.test');
 
 module.exports = {
   /**
-   * Ensure re-renders do not duplicate containers/tables or produce errors
+   * Asserts re-renders do not duplicate containers/tables or surface errors.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async verifyNoDuplicateContainersOrTablesOnReRender(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -52,7 +55,10 @@ module.exports = {
   },
 
   /**
-   * Ensure one click toggles selection once (no duplicate listeners across renders)
+   * Ensures one click toggles selection once (no duplicate listeners across renders).
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async verifySelectionTogglesOncePerClick(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -98,7 +104,10 @@ module.exports = {
   },
 
   /**
-   * Selected items remain highlighted across subsequent re-renders during selection session
+   * Verifies selections remain highlighted across subsequent re-renders during a session.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async verifySelectionPersistsAcrossRenders(page, content) {
     await clearAllSelections(page).catch(() => {});
@@ -189,7 +198,10 @@ module.exports = {
   },
 
   /**
-   * Page reload should recover the extension without errors
+   * After reload, the extension recovers to a valid state without error banners.
+   * @param {import('@playwright/test').Page} page
+   * @param {string} content
+   * @returns {Promise<void>}
    */
   async verifyReloadRecovers(page, content) {
     // Try entering selection once before reload
