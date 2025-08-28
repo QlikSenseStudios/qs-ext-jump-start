@@ -72,6 +72,7 @@ function appendError(element, error) {
  */
 // Maintain per-element state without leaking via globals or function properties
 const selectionStateByElement = new WeakMap();
+const containerByElement = new WeakMap();
 
 export default function supernova(galaxy) {
   return {
@@ -102,10 +103,7 @@ export default function supernova(galaxy) {
       })();
 
       useEffect(() => {
-        // Clear previous content safely
-        while (element.firstChild) {
-          element.removeChild(element.firstChild);
-        }
+        // Do not clear the root element up-front; we keep a stable container for data/selection
 
         try {
           const inSelection = Boolean(safeGet(layout, 'qSelectionInfo.qInSelections', false));
@@ -132,13 +130,27 @@ export default function supernova(galaxy) {
             return;
           }
 
-          // Render main content with accessibility attributes
-          const container = createElement('div', {
-            className: inSelection ? 'extension-container in-selection' : 'extension-container',
-            role: 'main',
-            'aria-label': 'Qlik Sense Extension Content',
-            tabindex: '0',
-          });
+          // Acquire or create a stable container per element for data/selection states
+          let container = containerByElement.get(element);
+          if (!container) {
+            container = createElement('div');
+            containerByElement.set(element, container);
+            // Remove any existing children before first attach
+            while (element.firstChild) {
+              element.removeChild(element.firstChild);
+            }
+            element.appendChild(container);
+          }
+          // Update container accessibility and state classes
+          container.setAttribute('class', inSelection ? 'extension-container in-selection' : 'extension-container');
+          container.setAttribute('role', 'main');
+          container.setAttribute('aria-label', 'Qlik Sense Extension Content');
+          container.setAttribute('tabindex', '0');
+
+          // Clear and rebuild inner content each render
+          while (container.firstChild) {
+            container.removeChild(container.firstChild);
+          }
 
           const content = createElement('div', { className: 'content' });
 
@@ -221,7 +233,10 @@ export default function supernova(galaxy) {
           selectionState.elemToRowIndex = elemToRowIndex;
           // Expose current data (used in tests) without leaking handlers
           container.__localData = localData;
-          element.appendChild(container);
+          // Ensure container remains attached (append only if not already present)
+          if (!container.parentNode) {
+            element.appendChild(container);
+          }
 
           // Event delegation: attach once on tbody
           const getRowEntry = (elem) => {
@@ -311,6 +326,15 @@ export default function supernova(galaxy) {
           });
         } catch (error) {
           // Error handling with user feedback
+          // If a container exists, remove it to prevent overlapping UI
+          const existing = containerByElement.get(element);
+          if (existing && existing.parentNode) {
+            existing.parentNode.removeChild(existing);
+          }
+          // Clear element and show error
+          while (element.firstChild) {
+            element.removeChild(element.firstChild);
+          }
           appendError(element, error);
         }
       }, [element, layout]);
