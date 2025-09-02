@@ -55,7 +55,7 @@ This file lists suggested improvements and additions and their progress for the 
 ## Build & Tooling
 
 - [ ] Optional: Switch package to ESM (add `"type": "module"`) to align with ESLint flat config
-- [x] Version bump to 0.4.0 for robustness/a11y/responsiveness updates
+- [x] Version bump to 0.4.1 (test wait normalization, lint gate in .aiconfig)
 
 ## Reference & Inspiration ✅
 

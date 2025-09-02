@@ -42,7 +42,7 @@ ai:
         - assert: last-ran('npm run -s lint')
       required: true
     - name: no-commit-without-tests
-      description: 'Block committing if tests have not been executed in this session.'
+      description: 'Block committing if tests have not been executed in this session (list reporter).'
       steps:
         - assert: last-ran('npm test -s -- --reporter=list')
       required: true
