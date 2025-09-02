@@ -36,6 +36,11 @@ ai:
         - run: npm install --no-audit --no-fund
         - run: git add package-lock.json
       required: true
+    - name: no-commit-without-lint
+      description: 'Block committing if lint has not been executed in this session.'
+      steps:
+        - assert: last-ran('npm run -s lint')
+      required: true
     - name: no-commit-without-tests
       description: 'Block committing if tests have not been executed in this session.'
       steps:
