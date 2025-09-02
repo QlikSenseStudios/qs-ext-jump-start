@@ -116,6 +116,12 @@ const selectionStateByElement = new WeakMap();
 const containerByElement = new WeakMap();
 
 /**
+ * Associates current local data with a container without attaching properties to DOM nodes.
+ * Key: container HTMLDivElement, Value: Array<{row:number, dim:{text:string, elem:number, selected:boolean}, meas:{text:string}}>
+ */
+const localDataByContainer = new WeakMap();
+
+/**
  * Removes and forgets a previously attached container for an element.
  * Used before rendering special states (no-data, error) to prevent duplicates.
  * @param {HTMLElement} element host root
@@ -281,12 +287,12 @@ export default function supernova(galaxy) {
           table.appendChild(tbody);
           content.appendChild(table);
           container.appendChild(content);
-          // Update persisted local selection state and expose current data
+          // Update persisted local selection state and record current data
           selectionState.data = localData;
           selectionState.lastInSelection = inSelection;
           selectionState.elemToRowIndex = elemToRowIndex;
-          // Expose current data (used in tests) without leaking handlers
-          container.__localData = localData;
+          // Store current data externally without attaching properties to DOM nodes
+          localDataByContainer.set(container, localData);
           // Ensure container remains attached (append only if not already present)
           if (!container.parentNode) {
             element.appendChild(container);
@@ -316,20 +322,8 @@ export default function supernova(galaxy) {
               return;
             }
             try {
-              if (selections && typeof selections.select === 'function') {
-                if (!inSelection && typeof selections.begin === 'function') {
-                  selectionState.sessionByElem.clear();
-                  selectionState.data = [];
-                  await selections.begin(HYPERCUBE_PATH);
-                }
-                await selections.select({
-                  method: 'selectHyperCubeValues',
-                  params: [HYPERCUBE_PATH, DIM_COL_IDX, [elem], inSelection],
-                });
-              }
-
               const rowEntry = getRowEntry(elem);
-
+              // Update local state first to avoid races with re-render
               if (inSelection) {
                 const wasSelected = selectionState.sessionByElem.has(elem);
                 if (wasSelected) {
@@ -345,18 +339,6 @@ export default function supernova(galaxy) {
                   }
                   cell.classList.add('local-selected');
                 }
-
-                // If no selections remain in this session, exit selection mode
-                if (selectionState.sessionByElem.size === 0) {
-                  try {
-                    if (selections && typeof selections.cancel === 'function') {
-                      await selections.cancel();
-                    }
-                  } catch (e) {
-                    // eslint-disable-next-line no-console
-                    console.warn('Failed to exit selection mode', e);
-                  }
-                }
               } else {
                 const wasPending = selectionState.pendingByElem.has(elem);
                 if (!wasPending) {
@@ -364,6 +346,31 @@ export default function supernova(galaxy) {
                   if (rowEntry) {
                     rowEntry.dim.selected = true;
                   }
+                }
+              }
+
+              // Then call backend selection API
+              if (selections && typeof selections.select === 'function') {
+                if (!inSelection && typeof selections.begin === 'function') {
+                  selectionState.sessionByElem.clear();
+                  selectionState.data = [];
+                  await selections.begin(HYPERCUBE_PATH);
+                }
+                await selections.select({
+                  method: 'selectHyperCubeValues',
+                  params: [HYPERCUBE_PATH, DIM_COL_IDX, [elem], inSelection],
+                });
+              }
+
+              // If no selections remain in this session, exit selection mode (after select)
+              if (inSelection && selectionState.sessionByElem.size === 0) {
+                try {
+                  if (selections && typeof selections.cancel === 'function') {
+                    await selections.cancel();
+                  }
+                } catch (e) {
+                  // eslint-disable-next-line no-console
+                  console.warn('Failed to exit selection mode', e);
                 }
               }
             } catch (err) {
