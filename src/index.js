@@ -16,13 +16,8 @@ import {
   processLayoutData,
   getSelectionInfo,
 } from './state';
-import {
-  createNoDataComponent,
-  appendErrorToElement,
-  createHeaderComponent,
-  createTableComponent,
-  attachSelectionHandlers,
-} from './components';
+import { createNoDataComponent, attachSelectionHandlers } from './components';
+import { createExtensionStateTemplate } from './templates';
 import './styles.css';
 
 /**
@@ -78,7 +73,14 @@ export default function supernova(galaxy) {
           // Check for data availability (edge case: empty hypercube)
           if (!processedData.hasData) {
             resetElementContainer(element);
-            element.appendChild(createNoDataComponent(processedData.counts.dimCount, processedData.counts.measCount));
+
+            // Use state template for no-data scenario
+            const noDataTemplate = createExtensionStateTemplate('no-data', {
+              dimCount: processedData.counts.dimCount,
+              measCount: processedData.counts.measCount,
+            });
+
+            element.appendChild(noDataTemplate);
             return;
           }
 
@@ -94,19 +96,25 @@ export default function supernova(galaxy) {
           // Update local data state with current selection information
           const localData = updateLocalDataState(selectionState, processedData.dataMatrix, inSelection);
 
-          // Create header component
-          const content = createHeaderComponent();
+          // Use data state template for rendering the table with header
+          const dataTemplate = createExtensionStateTemplate(
+            'data',
+            {
+              tableConfig: {
+                dimHeader: processedData.dimHeader,
+                measHeader: processedData.measHeader,
+                localData,
+                inSelection,
+              },
+            },
+            { inSelection }
+          );
 
-          // Create and configure table component
-          const { table, tbody } = createTableComponent({
-            dimHeader: processedData.dimHeader,
-            measHeader: processedData.measHeader,
-            localData,
-            inSelection,
-          });
+          // Replace container content with template
+          container.appendChild(dataTemplate.container.firstChild);
 
-          content.appendChild(table);
-          container.appendChild(content);
+          // Get the table body for selection handlers
+          const tbody = dataTemplate.tbody;
 
           // Update persisted local selection state and record current data
           updateLastSelectionState(selectionState, inSelection);
@@ -127,8 +135,14 @@ export default function supernova(galaxy) {
           // Error handling with user feedback
           // If a container exists, remove it to prevent overlapping UI
           resetElementContainer(element);
-          // Show error UI
-          appendErrorToElement(element, error);
+
+          // Use error state template instead of direct error component
+          const errorTemplate = createExtensionStateTemplate('error', {
+            title: 'Extension Error',
+            message: error.message || 'An unexpected error occurred',
+          });
+
+          element.appendChild(errorTemplate);
         }
       }, [element, layout]);
     },
