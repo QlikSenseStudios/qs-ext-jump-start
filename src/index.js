@@ -2,44 +2,28 @@ import { useElement, useLayout, useEffect, useSelections } from '@nebula.js/star
 
 import { properties, data } from './qae';
 import ext from './ext';
-import { createElement, safeGet } from './utils';
+import { createElement } from './utils';
+import {
+  ensureSelectionState,
+  enterSelectionMode,
+  toggleElementSelection,
+  updateLocalDataState,
+  getRowEntry,
+  isSelectionSessionEmpty,
+  updateLastSelectionState,
+  ensureContainer,
+  resetElementContainer,
+  updateContainerState,
+  setContainerData,
+  ensureContainerAttached,
+  clearChildren,
+  processLayoutData,
+  getSelectionInfo,
+  getHypercubePath,
+  getDimensionColumnIndex,
+  isInvalidConfig,
+} from './state';
 import './styles.css';
-
-// Helpers and constants for readability and DRY
-const HYPERCUBE_PATH = '/qHyperCubeDef';
-const DIM_COL_IDX = 0;
-
-// Small DOM helper
-/**
- * Removes all child nodes from a container element.
- * Safe, small utility to avoid repeating while-firstChild clears.
- * @param {HTMLElement} node Host element whose children will be removed
- */
-function clearChildren(node) {
-  while (node.firstChild) {
-    node.removeChild(node.firstChild);
-  }
-}
-
-/**
- * Returns dimension and measure counts from the layout.
- * @param {object} layout Current layout provided by Stardust
- * @returns {{ dimCount: number, measCount: number }} Counts used for config validation
- */
-function getCounts(layout) {
-  const dimCount = (safeGet(layout, 'qHyperCube.qDimensionInfo', []) || []).length;
-  const measCount = (safeGet(layout, 'qHyperCube.qMeasureInfo', []) || []).length;
-  return { dimCount, measCount };
-}
-
-/**
- * Validates the configuration: requires exactly 1 dimension and at most 1 measure.
- * @param {{ dimCount: number, measCount: number }} counts
- * @returns {boolean} True if the configuration is invalid
- */
-function isInvalidConfig({ dimCount, measCount }) {
-  return dimCount !== 1 || measCount > 1;
-}
 
 /**
  * Builds the no-data UI with an optional hint for invalid configurations.
@@ -103,38 +87,6 @@ function appendError(element, error) {
  * - Behavior: Render different UI for selection mode, no data, and normal states
  * - Errors: Caught and presented as user-friendly message
  */
-// Maintain per-element state without leaking via globals or function properties
-/**
- * Tracks per-element selection session state to avoid global leakage.
- * Key: host HTMLElement, Value: { data: Array, pendingByElem: Set<number>, sessionByElem: Set<number>, lastInSelection: boolean, elemToRowIndex: Map<number, number> }
- */
-const selectionStateByElement = new WeakMap();
-/**
- * Tracks the stable container node attached under each host element.
- * Key: host HTMLElement, Value: container HTMLDivElement
- */
-const containerByElement = new WeakMap();
-
-/**
- * Associates current local data with a container without attaching properties to DOM nodes.
- * Key: container HTMLDivElement, Value: Array<{row:number, dim:{text:string, elem:number, selected:boolean}, meas:{text:string}}>
- */
-const localDataByContainer = new WeakMap();
-
-/**
- * Removes and forgets a previously attached container for an element.
- * Used before rendering special states (no-data, error) to prevent duplicates.
- * @param {HTMLElement} element host root
- */
-function resetElementContainer(element) {
-  const existing = containerByElement.get(element);
-  if (existing && existing.parentNode) {
-    existing.parentNode.removeChild(existing);
-  }
-  containerByElement.delete(element);
-  clearChildren(element);
-}
-
 export default function supernova(galaxy) {
   return {
     qae: {
@@ -148,66 +100,42 @@ export default function supernova(galaxy) {
       const selections = useSelections();
 
       // Persist local selection state per element across renders
-      const selectionState = (function ensureState() {
-        let state = selectionStateByElement.get(element);
-        if (!state) {
-          state = {
-            data: [],
-            pendingByElem: new Set(), // clicks made out of selection mode
-            sessionByElem: new Set(), // selections within current selection mode session
-            lastInSelection: false,
-            elemToRowIndex: new Map(),
-          };
-          selectionStateByElement.set(element, state);
-        }
-        return state;
-      })();
+      const selectionState = ensureSelectionState(element);
 
       useEffect(() => {
         // Do not clear the root element up-front; we keep a stable container for data/selection
 
         try {
-          const inSelection = Boolean(safeGet(layout, 'qSelectionInfo.qInSelections', false));
+          const inSelection = getSelectionInfo(layout);
 
           // Handle transitions to keep selection sessions discrete
           const wasInSelection = !!selectionState.lastInSelection;
           if (!wasInSelection && inSelection) {
             // Entering selection mode: start a fresh session from pending clicks
-            selectionState.sessionByElem = new Set(selectionState.pendingByElem);
-            selectionState.pendingByElem.clear();
+            enterSelectionMode(selectionState);
           }
 
-          // Validate configuration: exactly 1 dimension and 0 or 1 measure
-          const { dimCount, measCount } = getCounts(layout);
-          if (isInvalidConfig({ dimCount, measCount })) {
+          // Process layout data for validation and extraction
+          const processedData = processLayoutData(layout);
+          if (!processedData.isValid) {
             // Ensure we don't accumulate multiple .no-data nodes across renders
             resetElementContainer(element);
-            element.appendChild(createNoDataDiv(dimCount, measCount));
+            element.appendChild(createNoDataDiv(processedData.counts.dimCount, processedData.counts.measCount));
             return;
           }
 
           // Check for data availability (edge case: empty hypercube)
-          const dataMatrix = safeGet(layout, 'qHyperCube.qDataPages.0.qMatrix', []);
-          if (!dataMatrix.length) {
+          if (!processedData.hasData) {
             resetElementContainer(element);
-            element.appendChild(createNoDataDiv(dimCount, measCount));
+            element.appendChild(createNoDataDiv(processedData.counts.dimCount, processedData.counts.measCount));
             return;
           }
 
           // Acquire or create a stable container per element for data/selection states
-          let container = containerByElement.get(element);
-          if (!container) {
-            container = createElement('div');
-            containerByElement.set(element, container);
-            // Remove any existing children before first attach
-            clearChildren(element);
-            element.appendChild(container);
-          }
+          const container = ensureContainer(element);
+
           // Update container accessibility and state classes
-          container.setAttribute('class', inSelection ? 'extension-container in-selection' : 'extension-container');
-          container.setAttribute('role', 'main');
-          container.setAttribute('aria-label', 'Qlik Sense Extension Content');
-          container.setAttribute('tabindex', '0');
+          updateContainerState(container, inSelection);
 
           // Clear and rebuild inner content each render
           clearChildren(container);
@@ -226,28 +154,22 @@ export default function supernova(galaxy) {
           const headerRow = createElement('tr');
 
           // Derive headers from layout
-          const dimHeader = safeGet(layout, 'qHyperCube.qDimensionInfo.0.qFallbackTitle', 'Dimension');
-          const measHeader = safeGet(layout, 'qHyperCube.qMeasureInfo.0.qFallbackTitle', 'Measure');
-
-          headerRow.appendChild(createElement('th', { scope: 'col' }, dimHeader));
-          headerRow.appendChild(createElement('th', { scope: 'col' }, measHeader));
+          headerRow.appendChild(createElement('th', { scope: 'col' }, processedData.dimHeader));
+          headerRow.appendChild(createElement('th', { scope: 'col' }, processedData.measHeader));
           thead.appendChild(headerRow);
 
           const tbody = createElement('tbody');
           const tbodyFrag = document.createDocumentFragment();
-          const elemToRowIndex = new Map();
 
-          const prevSelected = inSelection ? new Set(selectionState.sessionByElem) : new Set();
+          // Update local data state with current selection information
+          const localData = updateLocalDataState(selectionState, processedData.dataMatrix, inSelection);
 
-          const localData = [];
-          dataMatrix.forEach((row, rowIndex) => {
-            const tr = createElement('tr', { 'data-row-index': String(rowIndex) });
+          localData.forEach((dataEntry) => {
+            const tr = createElement('tr', { 'data-row-index': String(dataEntry.row) });
 
-            // qText is string for display; qElemNumber used for selections in Sense
-            const dimCellText = safeGet(row, '0.qText', '-');
-            const dimElem = safeGet(row, '0.qElemNumber', -1);
-            // Determine local selection from our local store (independent of visual gating)
-            const isSelected = prevSelected.has(dimElem);
+            // Use data from the processed entry
+            const { dim, meas } = dataEntry;
+            const isSelected = dim.selected;
 
             const tdDim = createElement(
               'td',
@@ -255,31 +177,18 @@ export default function supernova(galaxy) {
                 className: `dim-cell selectable-item${inSelection && isSelected ? ' local-selected' : ''}`,
                 role: 'button',
                 tabindex: '0',
-                'data-q-elem': String(dimElem),
-                'aria-label': `Select ${dimCellText}`,
+                'data-q-elem': String(dim.elem),
+                'aria-label': `Select ${dim.text}`,
               },
-              dimCellText
+              dim.text
             );
 
             // Optional measure
-            const measCellText = safeGet(row, '1.qText', '-');
-            const tdMeas = createElement('td', { className: 'meas-cell' }, measCellText);
+            const tdMeas = createElement('td', { className: 'meas-cell' }, meas.text);
 
             tr.appendChild(tdDim);
             tr.appendChild(tdMeas);
             tbodyFrag.appendChild(tr);
-
-            // Map elem -> rowIndex for fast updates
-            if (Number.isFinite(dimElem) && dimElem >= 0) {
-              elemToRowIndex.set(dimElem, rowIndex);
-            }
-
-            // Track local selection state
-            localData.push({
-              row: rowIndex,
-              dim: { text: dimCellText, elem: dimElem, selected: isSelected },
-              meas: { text: measCellText },
-            });
           });
 
           table.appendChild(thead);
@@ -287,30 +196,17 @@ export default function supernova(galaxy) {
           table.appendChild(tbody);
           content.appendChild(table);
           container.appendChild(content);
+
           // Update persisted local selection state and record current data
-          selectionState.data = localData;
-          selectionState.lastInSelection = inSelection;
-          selectionState.elemToRowIndex = elemToRowIndex;
+          updateLastSelectionState(selectionState, inSelection);
+
           // Store current data externally without attaching properties to DOM nodes
-          localDataByContainer.set(container, localData);
+          setContainerData(container, localData);
+
           // Ensure container remains attached (append only if not already present)
-          if (!container.parentNode) {
-            element.appendChild(container);
-          }
+          ensureContainerAttached(element, container);
 
           // Event delegation: attach once on tbody
-          /**
-           * Finds the cached data row entry for a given qElemNumber.
-           * @param {number} elem qElemNumber for the dimension cell
-           * @returns {{row:number, dim:{text:string, elem:number, selected:boolean}, meas:{text:string}}|undefined}
-           */
-          const getRowEntry = (elem) => {
-            const idx = selectionState.elemToRowIndex?.get(elem);
-            return Number.isInteger(idx)
-              ? selectionState.data[idx]
-              : (selectionState.data || []).find((r) => r.dim.elem === elem);
-          };
-
           /**
            * Handles click/keyboard activation from a dimension cell.
            * Updates Sense selections and local selection session state.
@@ -322,48 +218,36 @@ export default function supernova(galaxy) {
               return;
             }
             try {
-              const rowEntry = getRowEntry(elem);
-              // Update local state first to avoid races with re-render
-              if (inSelection) {
-                const wasSelected = selectionState.sessionByElem.has(elem);
-                if (wasSelected) {
-                  selectionState.sessionByElem.delete(elem);
-                  if (rowEntry) {
-                    rowEntry.dim.selected = false;
-                  }
-                  cell.classList.remove('local-selected');
-                } else {
-                  selectionState.sessionByElem.add(elem);
-                  if (rowEntry) {
-                    rowEntry.dim.selected = true;
-                  }
-                  cell.classList.add('local-selected');
-                }
+              const rowEntry = getRowEntry(selectionState, elem);
+
+              // Update local state using state management functions
+              const { isSelected } = toggleElementSelection(selectionState, elem, inSelection);
+
+              // Update the row entry if it exists
+              if (rowEntry) {
+                rowEntry.dim.selected = isSelected;
+              }
+
+              // Update cell visual state
+              if (isSelected) {
+                cell.classList.add('local-selected');
               } else {
-                const wasPending = selectionState.pendingByElem.has(elem);
-                if (!wasPending) {
-                  selectionState.pendingByElem.add(elem);
-                  if (rowEntry) {
-                    rowEntry.dim.selected = true;
-                  }
-                }
+                cell.classList.remove('local-selected');
               }
 
               // Then call backend selection API
               if (selections && typeof selections.select === 'function') {
                 if (!inSelection && typeof selections.begin === 'function') {
-                  selectionState.sessionByElem.clear();
-                  selectionState.data = [];
-                  await selections.begin(HYPERCUBE_PATH);
+                  await selections.begin(getHypercubePath());
                 }
                 await selections.select({
                   method: 'selectHyperCubeValues',
-                  params: [HYPERCUBE_PATH, DIM_COL_IDX, [elem], inSelection],
+                  params: [getHypercubePath(), getDimensionColumnIndex(), [elem], inSelection],
                 });
               }
 
               // If no selections remain in this session, exit selection mode (after select)
-              if (inSelection && selectionState.sessionByElem.size === 0) {
+              if (inSelection && isSelectionSessionEmpty(selectionState)) {
                 try {
                   if (selections && typeof selections.cancel === 'function') {
                     await selections.cancel();
