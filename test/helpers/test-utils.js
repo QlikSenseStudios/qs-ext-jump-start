@@ -813,6 +813,8 @@ async function getExtensionState(page) {
 }
 
 module.exports = {
+  // Expose WAIT buckets for consistent timing across tests
+  WAIT,
   configureExtension,
   cleanupExtensionConfiguration,
   triggerSelectionMode,

@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { triggerSelectionMode, configureExtension, clearAllSelections } = require('../helpers/test-utils');
+const { triggerSelectionMode, configureExtension, clearAllSelections, WAIT } = require('../helpers/test-utils');
 const commonTests = require('./common.test');
 
 /**
@@ -80,7 +80,7 @@ module.exports = {
       console.error('Failed to clear selections:', err);
     });
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -119,7 +119,7 @@ module.exports = {
   async shouldToggleSameCellOff(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -157,7 +157,7 @@ module.exports = {
   async shouldMultiSelectAndThenExit(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
       test.info().annotations.push({ type: 'skip', description: `Data state not reachable (${state})` });
@@ -219,7 +219,7 @@ module.exports = {
   async shouldSupportKeyboardToggle(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -265,7 +265,7 @@ module.exports = {
   async shouldConfirmSelectionsByClickingOutside(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -291,7 +291,7 @@ module.exports = {
 
     // Wait for selection mode to exit and layout to update
     await expect(page.locator(content + ' .extension-container.in-selection')).toHaveCount(0);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.LONG);
 
     // Verify all rows show only the selected value
     const dimCells = await page.$$(content + ' table.data-table tbody tr td.dim-cell');
@@ -311,7 +311,7 @@ module.exports = {
   async shouldConfirmSelectionsByButton(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -362,7 +362,7 @@ module.exports = {
 
     // Wait for selection mode to exit and layout to update
     await expect(page.locator(content + ' .extension-container.in-selection')).toHaveCount(0);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.LONG);
 
     // Verify all rows show only the selected values
     const dimCells = await page.$$(content + ' table.data-table tbody tr td.dim-cell');
