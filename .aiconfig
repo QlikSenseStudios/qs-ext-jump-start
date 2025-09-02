@@ -12,7 +12,7 @@ project:
   knowledge_base: KNOWLEDGE_BASE.md
   project_structure: docs/PROJECT_STRUCTURE.md
   workflows: docs/WORKFLOWS.md
-  license: MIT
+  license: SEE LICENSE IN license.txt
 
 ai:
   preferred_model: claude-3-5-sonnet-20241022
@@ -27,7 +27,24 @@ ai:
       description: 'All changes must pass lint and tests before committing.'
       steps:
         - run: npm run -s lint
-        - run: npm test
+        - run: npm test -s -- --reporter=list
+      required: true
+    - name: package-json-change-requires-install
+      description: 'If package.json is modified, run npm install to update package-lock.json before committing.'
+      when: changes-include('package.json')
+      steps:
+        - run: npm install --no-audit --no-fund
+        - run: git add package-lock.json
+      required: true
+    - name: no-commit-without-lint
+      description: 'Block committing if lint has not been executed in this session.'
+      steps:
+        - assert: last-ran('npm run -s lint')
+      required: true
+    - name: no-commit-without-tests
+      description: 'Block committing if tests have not been executed in this session (list reporter).'
+      steps:
+        - assert: last-ran('npm test -s -- --reporter=list')
       required: true
   prompt_templates:
     - 'Summarize this code.'

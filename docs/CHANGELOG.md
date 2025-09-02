@@ -10,6 +10,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 _No changes yet._
 
+## [0.4.1] - 2025-09-02
+
+### Added
+
+- .aiconfig: Assert last-ran lint policy to mirror the tests gate
+
+### Changed
+
+- Tests: Normalized literal waits (200/300/500/800ms) to shared WAIT buckets; exported WAIT from `test/helpers/test-utils.js`
+- Minor timing harmonization in selection/robustness flows for stability
+
+### Fixed
+
+- Reduced intermittent flake via standardized waits and clearer selection-mode checks
+
+### Misc
+
+- Documentation touch-ups to reflect local quality gates and timing buckets
+
 ## [0.4.0] - 2025-08-28
 
 ### Added

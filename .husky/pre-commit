@@ -1,0 +1,5 @@
+echo "Running pre-commit checks (lint only)..."
+npm run -s lint-staged || {
+	echo "Lint-staged failed. Aborting commit." >&2
+	exit 1
+}

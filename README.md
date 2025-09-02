@@ -127,6 +127,9 @@ npx playwright test --grep "your test name" --debug
 
 # Open the latest HTML report
 npx playwright show-report test/report
+
+# Local quality gates (list reporter)
+npm test -s -- --reporter=list
 ```
 
 See [Testing Guide](./docs/TESTING.md) for detailed usage.

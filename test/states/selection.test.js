@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { triggerSelectionMode, configureExtension, clearAllSelections } = require('../helpers/test-utils');
+const { triggerSelectionMode, configureExtension, clearAllSelections, WAIT } = require('../helpers/test-utils');
 const commonTests = require('./common.test');
 
 /**
@@ -76,9 +76,11 @@ module.exports = {
    * @returns {Promise<void>}
    */
   async shouldEnterSelectionWithPlainClick(page, content) {
-    await clearAllSelections(page).catch((err) => { console.error('Failed to clear selections:', err); });
+    await clearAllSelections(page).catch((err) => {
+      console.error('Failed to clear selections:', err);
+    });
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -92,7 +94,12 @@ module.exports = {
       return;
     }
     const firstElem = await firstCellHandle.getAttribute('data-q-elem');
-    await firstCellHandle.click({ force: true });
+    // Prefer default actionability; fallback to force if transient overlays/backdrops interfere.
+    try {
+      await firstCellHandle.click();
+    } catch {
+      await firstCellHandle.click({ force: true });
+    }
     // Wait for selection mode to be active and DOM to re-render
     await page.waitForSelector(content + ' .extension-container.in-selection', { timeout: 3000 });
 
@@ -112,7 +119,7 @@ module.exports = {
   async shouldToggleSameCellOff(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -127,7 +134,11 @@ module.exports = {
     }
     const firstElem = await firstCellHandle.getAttribute('data-q-elem');
     const firstCell = page.locator(`${content} [data-q-elem="${firstElem}"]`);
-    await firstCellHandle.click({ force: true });
+    try {
+      await firstCellHandle.click();
+    } catch {
+      await firstCellHandle.click({ force: true });
+    }
     await page.waitForSelector(content + ' .extension-container.in-selection', { timeout: 3000 });
     await expect(firstCell).toHaveClass(/local-selected/);
     // Toggle off
@@ -146,7 +157,7 @@ module.exports = {
   async shouldMultiSelectAndThenExit(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
       test.info().annotations.push({ type: 'skip', description: `Data state not reachable (${state})` });
@@ -163,16 +174,32 @@ module.exports = {
     const loc0 = page.locator(`${content} [data-q-elem="${elem0}"]`);
     const loc1 = page.locator(`${content} [data-q-elem="${elem1}"]`);
 
-    await cells[0].click({ force: true });
+    try {
+      await cells[0].click();
+    } catch {
+      await cells[0].click({ force: true });
+    }
     await page.waitForSelector(content + ' .extension-container.in-selection', { timeout: 3000 });
-    await loc1.click({ force: true });
+    try {
+      await loc1.click();
+    } catch {
+      await loc1.click({ force: true });
+    }
 
     await expect(loc0).toHaveClass(/local-selected/);
     await expect(loc1).toHaveClass(/local-selected/);
 
     // Toggle both off
-    await loc0.click({ force: true });
-    await loc1.click({ force: true });
+    try {
+      await loc0.click();
+    } catch {
+      await loc0.click({ force: true });
+    }
+    try {
+      await loc1.click();
+    } catch {
+      await loc1.click({ force: true });
+    }
 
     await expect(loc0).not.toHaveClass(/local-selected/);
     await expect(loc1).not.toHaveClass(/local-selected/);
@@ -192,7 +219,7 @@ module.exports = {
   async shouldSupportKeyboardToggle(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -238,7 +265,7 @@ module.exports = {
   async shouldConfirmSelectionsByClickingOutside(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -264,7 +291,7 @@ module.exports = {
 
     // Wait for selection mode to exit and layout to update
     await expect(page.locator(content + ' .extension-container.in-selection')).toHaveCount(0);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.LONG);
 
     // Verify all rows show only the selected value
     const dimCells = await page.$$(content + ' table.data-table tbody tr td.dim-cell');
@@ -284,7 +311,7 @@ module.exports = {
   async shouldConfirmSelectionsByButton(page, content) {
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(WAIT.MED);
 
     const state = await commonTests.getExtensionState(page, content);
     if (state !== 'extension-container') {
@@ -335,7 +362,7 @@ module.exports = {
 
     // Wait for selection mode to exit and layout to update
     await expect(page.locator(content + ' .extension-container.in-selection')).toHaveCount(0);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.LONG);
 
     // Verify all rows show only the selected values
     const dimCells = await page.$$(content + ' table.data-table tbody tr td.dim-cell');

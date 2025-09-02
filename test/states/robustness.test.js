@@ -1,6 +1,10 @@
 const { expect, test } = require('@playwright/test');
-const { configureExtension, triggerSelectionMode, clearAllSelections } = require('../helpers/test-utils');
+const { configureExtension, triggerSelectionMode, clearAllSelections, WAIT } = require('../helpers/test-utils');
 const commonTests = require('./common.test');
+
+// Extract magic numbers as named constants for clarity/maintainability
+const THRASH_ITERATIONS = 5;
+const SHORT_DELAY_MS = 40;
 
 module.exports = {
   /**
@@ -15,7 +19,7 @@ module.exports = {
       dimensions: ['Dim1'],
       measures: [{ field: 'Expression1', aggregation: 'Sum' }],
     });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.SHORT);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
       // Gate: requires data state; if not available, document and exit as a stub.
@@ -39,13 +43,13 @@ module.exports = {
     const b = cells.nth(secondIdx);
     await a.scrollIntoViewIfNeeded();
     await b.scrollIntoViewIfNeeded();
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < THRASH_ITERATIONS; i++) {
       await a.focus();
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(40);
+      await page.waitForTimeout(SHORT_DELAY_MS);
       await b.focus();
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(40);
+      await page.waitForTimeout(SHORT_DELAY_MS);
     }
 
     // Validate single container and table, and no error messages
@@ -66,7 +70,7 @@ module.exports = {
       dimensions: ['Dim1'],
       measures: [{ field: 'Expression1', aggregation: 'Sum' }],
     });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.SHORT);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
       // Gate: requires data state; if not available, document and exit as a stub.
@@ -115,7 +119,7 @@ module.exports = {
       dimensions: ['Dim1'],
       measures: [{ field: 'Expression1', aggregation: 'Sum' }],
     });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.SHORT);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
       // Gate: requires data state; if not available, document and exit as a stub.
@@ -183,7 +187,7 @@ module.exports = {
         if (!(await third.evaluate((el) => document.activeElement === el).catch(() => false))) {
           await third.click({ force: true }).catch(() => {});
         }
-        await page.waitForTimeout(60);
+        await page.waitForTimeout(WAIT.TINY);
       }
     }
 
@@ -207,7 +211,7 @@ module.exports = {
     // Try entering selection once before reload
     await clearAllSelections(page).catch(() => {});
     await configureExtension(page, { dimensions: ['Dim1'], measures: [{ field: 'Expression1', aggregation: 'Sum' }] });
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(WAIT.SHORT);
     await triggerSelectionMode(page);
 
     // Reload page and ensure extension renders to a valid state

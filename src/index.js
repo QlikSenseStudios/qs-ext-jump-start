@@ -104,8 +104,36 @@ function appendError(element, error) {
  * - Errors: Caught and presented as user-friendly message
  */
 // Maintain per-element state without leaking via globals or function properties
+/**
+ * Tracks per-element selection session state to avoid global leakage.
+ * Key: host HTMLElement, Value: { data: Array, pendingByElem: Set<number>, sessionByElem: Set<number>, lastInSelection: boolean, elemToRowIndex: Map<number, number> }
+ */
 const selectionStateByElement = new WeakMap();
+/**
+ * Tracks the stable container node attached under each host element.
+ * Key: host HTMLElement, Value: container HTMLDivElement
+ */
 const containerByElement = new WeakMap();
+
+/**
+ * Associates current local data with a container without attaching properties to DOM nodes.
+ * Key: container HTMLDivElement, Value: Array<{row:number, dim:{text:string, elem:number, selected:boolean}, meas:{text:string}}>
+ */
+const localDataByContainer = new WeakMap();
+
+/**
+ * Removes and forgets a previously attached container for an element.
+ * Used before rendering special states (no-data, error) to prevent duplicates.
+ * @param {HTMLElement} element host root
+ */
+function resetElementContainer(element) {
+  const existing = containerByElement.get(element);
+  if (existing && existing.parentNode) {
+    existing.parentNode.removeChild(existing);
+  }
+  containerByElement.delete(element);
+  clearChildren(element);
+}
 
 export default function supernova(galaxy) {
   return {
@@ -153,12 +181,7 @@ export default function supernova(galaxy) {
           const { dimCount, measCount } = getCounts(layout);
           if (isInvalidConfig({ dimCount, measCount })) {
             // Ensure we don't accumulate multiple .no-data nodes across renders
-            const existing = containerByElement.get(element);
-            if (existing && existing.parentNode) {
-              existing.parentNode.removeChild(existing);
-            }
-            containerByElement.delete(element);
-            clearChildren(element);
+            resetElementContainer(element);
             element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
@@ -166,12 +189,7 @@ export default function supernova(galaxy) {
           // Check for data availability (edge case: empty hypercube)
           const dataMatrix = safeGet(layout, 'qHyperCube.qDataPages.0.qMatrix', []);
           if (!dataMatrix.length) {
-            const existing = containerByElement.get(element);
-            if (existing && existing.parentNode) {
-              existing.parentNode.removeChild(existing);
-            }
-            containerByElement.delete(element);
-            clearChildren(element);
+            resetElementContainer(element);
             element.appendChild(createNoDataDiv(dimCount, measCount));
             return;
           }
@@ -269,12 +287,12 @@ export default function supernova(galaxy) {
           table.appendChild(tbody);
           content.appendChild(table);
           container.appendChild(content);
-          // Update persisted local selection state and expose current data
+          // Update persisted local selection state and record current data
           selectionState.data = localData;
           selectionState.lastInSelection = inSelection;
           selectionState.elemToRowIndex = elemToRowIndex;
-          // Expose current data (used in tests) without leaking handlers
-          container.__localData = localData;
+          // Store current data externally without attaching properties to DOM nodes
+          localDataByContainer.set(container, localData);
           // Ensure container remains attached (append only if not already present)
           if (!container.parentNode) {
             element.appendChild(container);
@@ -304,20 +322,8 @@ export default function supernova(galaxy) {
               return;
             }
             try {
-              if (selections && typeof selections.select === 'function') {
-                if (!inSelection && typeof selections.begin === 'function') {
-                  selectionState.sessionByElem.clear();
-                  selectionState.data = [];
-                  await selections.begin(HYPERCUBE_PATH);
-                }
-                await selections.select({
-                  method: 'selectHyperCubeValues',
-                  params: [HYPERCUBE_PATH, DIM_COL_IDX, [elem], inSelection],
-                });
-              }
-
               const rowEntry = getRowEntry(elem);
-
+              // Update local state first to avoid races with re-render
               if (inSelection) {
                 const wasSelected = selectionState.sessionByElem.has(elem);
                 if (wasSelected) {
@@ -333,18 +339,6 @@ export default function supernova(galaxy) {
                   }
                   cell.classList.add('local-selected');
                 }
-
-                // If no selections remain in this session, exit selection mode
-                if (selectionState.sessionByElem.size === 0) {
-                  try {
-                    if (selections && typeof selections.cancel === 'function') {
-                      await selections.cancel();
-                    }
-                  } catch (e) {
-                    // eslint-disable-next-line no-console
-                    console.warn('Failed to exit selection mode', e);
-                  }
-                }
               } else {
                 const wasPending = selectionState.pendingByElem.has(elem);
                 if (!wasPending) {
@@ -352,6 +346,31 @@ export default function supernova(galaxy) {
                   if (rowEntry) {
                     rowEntry.dim.selected = true;
                   }
+                }
+              }
+
+              // Then call backend selection API
+              if (selections && typeof selections.select === 'function') {
+                if (!inSelection && typeof selections.begin === 'function') {
+                  selectionState.sessionByElem.clear();
+                  selectionState.data = [];
+                  await selections.begin(HYPERCUBE_PATH);
+                }
+                await selections.select({
+                  method: 'selectHyperCubeValues',
+                  params: [HYPERCUBE_PATH, DIM_COL_IDX, [elem], inSelection],
+                });
+              }
+
+              // If no selections remain in this session, exit selection mode (after select)
+              if (inSelection && selectionState.sessionByElem.size === 0) {
+                try {
+                  if (selections && typeof selections.cancel === 'function') {
+                    await selections.cancel();
+                  }
+                } catch (e) {
+                  // eslint-disable-next-line no-console
+                  console.warn('Failed to exit selection mode', e);
                 }
               }
             } catch (err) {
@@ -379,12 +398,8 @@ export default function supernova(galaxy) {
         } catch (error) {
           // Error handling with user feedback
           // If a container exists, remove it to prevent overlapping UI
-          const existing = containerByElement.get(element);
-          if (existing && existing.parentNode) {
-            existing.parentNode.removeChild(existing);
-          }
-          // Clear element and show error
-          clearChildren(element);
+          resetElementContainer(element);
+          // Show error UI
           appendError(element, error);
         }
       }, [element, layout]);

@@ -9,7 +9,7 @@
     "playwright",
     "template"
   ],
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "SEE LICENSE IN license.txt",
   "repository": {
     "type": "git",
@@ -33,7 +33,9 @@
     }
   ],
   "scripts": {
-    "lint": "eslint src",
+    "prepare": "husky",
+    "lint": "eslint -c eslint.config.mjs src test",
+    "lint-staged": "lint-staged",
     "build": "nebula build",
     "serve": "nebula serve",
     "test": "playwright test",
@@ -41,7 +43,7 @@
     "package": "nebula sense --meta src/meta.json"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.17"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
@@ -52,10 +54,17 @@
     "@playwright/test": "^1.55.0",
     "dotenv": "^17.2.1",
     "eslint": "^9.34.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
     "prettier": "^3.6.2"
   },
   "peerDependencies": {
     "@nebula.js/stardust": "^5.17.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,mjs,cjs}": [
+      "eslint -c eslint.config.mjs --fix"
+    ]
   },
   "files": [
     "dist"

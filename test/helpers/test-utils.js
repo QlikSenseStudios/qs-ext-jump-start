@@ -4,8 +4,6 @@
  * supernova during Playwright runs. Focuses on robust selectors and timing.
  */
 
-/* eslint-disable no-console */
-
 // ---------------------------------------------------------------------------
 // Shared constants & tiny utilities
 // ---------------------------------------------------------------------------
@@ -526,9 +524,10 @@ async function resetPropertiesToEmptyJson(page) {
       // Attempt to clear and type {}
       try {
         await inputFound.click({ force: true });
-        // Support both CodeMirror/Monaco by sending select-all and backspace
-        await page.keyboard.press('Control+A').catch(() => {});
-        await page.keyboard.press('Meta+A').catch(() => {});
+        // Support both CodeMirror/Monaco by sending platform-aware select-all and backspace
+        const isMac = await page.evaluate(() => navigator.platform.includes('Mac'));
+        const selectAllCombo = isMac ? 'Meta+A' : 'Control+A';
+        await page.keyboard.press(selectAllCombo).catch(() => {});
         await page.keyboard.press('Backspace').catch(() => {});
         await page.keyboard.type('{}', { delay: 10 });
         // Brief pause so the change is visible in headed mode
@@ -814,6 +813,8 @@ async function getExtensionState(page) {
 }
 
 module.exports = {
+  // Expose WAIT buckets for consistent timing across tests
+  WAIT,
   configureExtension,
   cleanupExtensionConfiguration,
   triggerSelectionMode,

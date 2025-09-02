@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { configureExtension, triggerSelectionMode, clearAllSelections } = require('../helpers/test-utils');
+const { configureExtension, triggerSelectionMode, clearAllSelections, WAIT } = require('../helpers/test-utils');
 const commonTests = require('./common.test');
 
 module.exports = {
@@ -21,7 +21,7 @@ module.exports = {
 
     for (const vp of viewports) {
       await page.setViewportSize(vp);
-      await page.waitForTimeout(200);
+      await page.waitForTimeout(WAIT.SHORT);
 
       const root = page.locator(content);
       const noData = page.locator(content + ' .no-data');
@@ -55,7 +55,7 @@ module.exports = {
       dimensions: ['Dim1'],
       measures: [{ field: 'Expression1', aggregation: 'Sum' }],
     });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(WAIT.LONG);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
       // Gate: requires data state; if not available, document and exit as a stub.
@@ -65,7 +65,7 @@ module.exports = {
 
     for (const vp of viewports) {
       await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(WAIT.SHORT);
 
       const root = page.locator(content);
       const table = page.locator(content + ' table.data-table');
@@ -97,7 +97,7 @@ module.exports = {
       dimensions: ['Dim1'],
       measures: [{ field: 'Expression1', aggregation: 'Sum' }],
     });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(WAIT.SHORT);
     const state = await commonTests.getExtensionState(page, content);
     if (!configured || state !== 'extension-container') {
       // Gate: requires data state; if not available, document and exit as a stub.
@@ -117,7 +117,7 @@ module.exports = {
 
     for (const vp of viewports) {
       await page.setViewportSize(vp);
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(WAIT.SHORT);
 
       // No horizontal overflow inside container while in selection
       const rootMetrics = await page.locator(content).evaluate((el) => ({ sw: el.scrollWidth, cw: el.clientWidth }));

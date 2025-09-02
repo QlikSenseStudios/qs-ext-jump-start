@@ -53,7 +53,7 @@ Tests are organized by extension states with intelligent configuration:
 - **Error State** - Error condition testing ✅
 - **Common Functionality** - Universal features across all states ✅
 
-### Helper Utilities and Patterns (v0.4.0)
+### Helper Utilities and Patterns (v0.4.0+)
 
 - Stable selectors and signals
   - Root: `.njs-viz[data-render-count]`
@@ -80,17 +80,22 @@ Each test performs targeted cleanup and a properties reset to avoid state leakag
 1. Remove only items added during configuration (`cleanupExtensionConfiguration`).
 2. Clear all selections via toolbar/button.
 3. Open the properties dialog (gear, title="Modify object properties"), replace JSON with `{}`, and Confirm.
-4. Small waits after text clear and Confirm improve stability in headed runs.
+4. Waits use shared WAIT buckets (TINY/SHORT/MED/LONG/XLONG) for clarity and consistency.
 
 ## 🚀 Running Tests
 
-### Prerequisites
+```
+npm test
 
-You need these tools installed:
+npx playwright test --headed
 
-1. **Node.js** (version 20+) - [Download here](https://nodejs.org/)
-2. **Qlik Sense access** - Cloud or Enterprise environment
-3. **Test application** - Created using our provided load script
+npx playwright test --grep "your test name" --debug
+
+npx playwright show-report test/report
+
+# Local quality gate reporter
+npm test -s -- --reporter=list
+```
 
 ### Step 1: Setup Your Environment
 
@@ -210,8 +215,7 @@ npx playwright test --headed --grep "Data State"
 # Step-by-step debugging - pause execution
 npx playwright test --debug
 
-# Slow motion - see interactions clearly
-npx playwright test --headed --slowMo=1000
+# Note: slowMo is not supported in this workflow. Prefer --debug or --headed with fewer workers.
 ```
 
 Tip: For flake triage, prefer a single worker:
