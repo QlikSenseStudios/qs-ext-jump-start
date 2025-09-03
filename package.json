@@ -1,13 +1,16 @@
 {
   "name": "qs-ext-jump-start",
-  "description": "Template for Qlik Sense extension development with Nebula CLI and Playwright.",
+  "description": "Template for Qlik Sense extension development with component system, template system, declarative rendering, Nebula CLI and Playwright testing.",
   "keywords": [
     "qlik",
     "qlik-sense",
     "extension",
     "nebula",
     "playwright",
-    "template"
+    "template",
+    "declarative-rendering",
+    "component-system",
+    "ui-templates"
   ],
   "version": "0.4.1",
   "license": "SEE LICENSE IN license.txt",

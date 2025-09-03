@@ -3,6 +3,9 @@
  * Includes accessibility and responsive design considerations
  */
 
+/* Import declarative rendering styles */
+@import './rendering/declarative-styles.css';
+
 .extension-container {
   font-family: 'Source Sans Pro', Arial, sans-serif;
   padding: 16px;

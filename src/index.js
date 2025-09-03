@@ -18,6 +18,7 @@ import {
 } from './state';
 import { createNoDataComponent, attachSelectionHandlers } from './components';
 import { createExtensionStateTemplate } from './templates';
+import { renderExtensionAuto } from './rendering';
 import './styles.css';
 
 /**
@@ -63,6 +64,52 @@ export default function supernova(galaxy) {
 
           // Process layout data for validation and extraction
           const processedData = processLayoutData(layout);
+
+          // Check for declarative rendering mode
+          const useDeclarative = layout.props?.useDeclarativeRendering || false;
+
+          if (useDeclarative) {
+            // Declarative Rendering Path
+            const extensionState = {
+              state: !processedData.isValid ? 'no-data' : !processedData.hasData ? 'no-data' : 'data',
+              data: {
+                ...processedData,
+                localData: processedData.hasData
+                  ? updateLocalDataState(selectionState, processedData.dataMatrix, inSelection)
+                  : [],
+              },
+              inSelection,
+              layout,
+              element,
+            };
+
+            // Try declarative rendering
+            const declarativeSuccess = renderExtensionAuto(extensionState, {
+              configId: layout.props?.declarativeConfig || 'dataTableView',
+              preferDeclarative: true,
+            });
+
+            if (declarativeSuccess) {
+              // Update selection state for declarative rendering
+              updateLastSelectionState(selectionState, inSelection);
+
+              // Attach selection handlers if in data state
+              if (extensionState.state === 'data') {
+                const tbody = element.querySelector('tbody');
+                if (tbody) {
+                  attachSelectionHandlers(tbody, {
+                    selectionState,
+                    inSelection,
+                    selections,
+                  });
+                }
+              }
+              return;
+            }
+            // Fall through to template rendering if declarative fails
+          }
+
+          // Template Rendering Path (default)
           if (!processedData.isValid) {
             // Ensure we don't accumulate multiple .no-data nodes across renders
             resetElementContainer(element);

@@ -23,6 +23,9 @@ See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: 0.4.0).
 | Feature                   | Status   | Description                            |
 | ------------------------- | -------- | -------------------------------------- |
 | Modern Extension Template | ✅ Ready | Nebula.js Stardust hooks architecture  |
+| Component System          | ✅ Ready | Reusable UI components and utilities   |
+| Template System           | ✅ Ready | Standardized UI patterns and layouts   |
+| Declarative Rendering     | ✅ Ready | Configuration-driven UI composition    |
 | Playwright Testing        | ✅ Ready | Nebula hub integration with Playwright |
 | Development Server        | ✅ Ready | Hot reload with Nebula CLI             |
 | Packaging                 | ✅ Ready | One-command packaging                  |
@@ -35,6 +38,31 @@ This template provides:
 - Nebula CLI development server
 - Packaging and deployment scripts
 - Setup guides for Qlik Cloud and Enterprise
+
+### Advanced Features
+
+#### Component System
+Reusable UI components for consistent extension development:
+- **Header components** - Standardized titles and navigation
+- **Table components** - Data display with sorting and responsiveness
+- **Error handling** - User-friendly error messages and recovery
+- **No-data states** - Guidance when configuration is incomplete
+
+#### Template System
+Standardized UI patterns for rapid development:
+- **Base templates** - Foundation containers and layouts
+- **State templates** - Extension state management (data, no-data, error, loading)
+- **Table templates** - Advanced table patterns (enhanced, responsive, paginated)
+- **Template registry** - Centralized access to all templates
+
+#### Declarative Rendering (Beta)
+Configuration-driven UI composition for dynamic interfaces:
+- **JSON configurations** - Define layouts without code
+- **Conditional rendering** - Show/hide components based on data
+- **Layout strategies** - Grid, flex, and responsive layouts
+- **Template integration** - Works seamlessly with existing templates
+
+Enable in extension properties → Declarative Rendering section.
 
 ### Selections Example (feature branch)
 
