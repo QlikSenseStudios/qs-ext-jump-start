@@ -226,6 +226,11 @@ export function shouldUseDeclarativeRendering(extensionState, options = {}) {
     return false;
   }
   
+  // Check if declarative rendering is explicitly enabled in layout props
+  if (extensionState.layout?.props?.useDeclarativeRendering) {
+    return true;
+  }
+  
   // Use declarative for complex layouts or when specifically configured
   return extensionState.layout?.qHyperCube?.qDataPages?.length > 0 || 
          extensionState.data?.useDeclarative === true;

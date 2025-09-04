@@ -66,6 +66,12 @@ export default function supernova(galaxy) {
           const processedData = processLayoutData(layout);
 
           // Check for declarative rendering mode
+          // TODO: Fix property panel integration issues for declarative rendering
+          // Current issues:
+          // 1. Property panel dropdown may not be accessible in Qlik Sense environment
+          // 2. Changes to dropdown may not persist to JSON configuration properly
+          // 3. Controls may not appear in expected location alongside dimensions/measures
+          // Workaround: Use "Modify object properties" JSON dialog for reliable configuration
           const useDeclarative = layout.props?.useDeclarativeRendering || false;
 
           if (useDeclarative) {

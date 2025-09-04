@@ -78,6 +78,43 @@ This file lists suggested improvements and additions and their progress for the 
 - [x] Recommended VS Code extensions added
 - [x] AI metadata updated (.aiconfig)
 
+## Declarative Rendering (❌ NON-FUNCTIONAL BETA)
+
+**Status**: ❌ **NON-FUNCTIONAL BETA WORK IN PROGRESS** - Implementation exists but does not activate properly
+
+### Current Status:
+
+- [❌] **Core Implementation** - Codebase exists but `shouldUseDeclarativeRendering()` never activates
+- [❌] **All Configurations Non-Functional** - None of the 5 declarative configurations work (dataTableView, dashboardView, flexibleContentView, errorStateView, loadingStateView)
+- [❌] **Property Panel Integration** - Configuration possible but no actual rendering occurs
+- [❌] **Test Suite** - All tests disabled and marked as NON-FUNCTIONAL BETA
+- [❌] **Template System** - Exists in codebase but never used due to activation issues
+
+### Issues Identified:
+
+- [❌] **Activation Logic** - `shouldUseDeclarativeRendering()` function never returns true despite proper configuration
+- [❌] **Integration Gaps** - Implementation gaps between configuration and actual rendering
+- [❌] **Template Activation** - Declarative templates never override default template system
+- [❌] **DOM Output** - No declarative DOM elements ever generated
+
+### Work Completed:
+
+- [✅] **Beta Code Structure** - Implementation framework exists and preserved
+- [✅] **Configuration Schema** - JSON configuration structure defined
+- [✅] **Template Structure** - Declarative template system outlined
+- [✅] **Test Framework** - Comprehensive test suite exists (currently disabled)
+- [✅] **Documentation** - Architecture documented for future development
+
+### Future Work Required:
+
+- [ ] **Debug Activation Logic** - Fix `shouldUseDeclarativeRendering()` to properly detect configuration
+- [ ] **Integration Fixes** - Bridge gaps between configuration and rendering systems
+- [ ] **Template System** - Connect declarative templates to rendering pipeline
+- [ ] **Testing** - Re-enable test suite once functionality is working
+- [ ] **Documentation** - Update guides once feature is functional
+
+**Note**: This feature represents significant development work but is not functional in current state. Code preserved for future development iteration.
+
 ---
 
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.

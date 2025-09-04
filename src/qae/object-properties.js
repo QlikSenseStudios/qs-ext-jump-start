@@ -76,6 +76,15 @@ const properties = {
         defaultValue: false,
         show: (data) => data.props?.useDeclarativeRendering,
       },
+      // TODO: Fix property panel integration issues
+      // Known issues: dropdown may not be accessible, changes may not persist to JSON
+      // Current workaround: use "Modify object properties" JSON dialog for configuration
+      declarativeBetaNote: {
+        type: 'string',
+        component: 'text',
+        label: '⚠️ Beta: Property panel has known issues. Use JSON config for reliable setup.',
+        show: (data) => data.props?.useDeclarativeRendering,
+      },
     },
   },
 
