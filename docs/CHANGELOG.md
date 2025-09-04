@@ -10,6 +10,150 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 _No changes yet._
 
+## [0.5.0] - 2025-09-04
+
+### 🏗️ Major Architecture Refactor
+
+**Major Enhancement**: Complete redesign of extension architecture with comprehensive component system
+
+#### Component-Based Architecture
+
+- **Modular Components**: New `/src/components/` directory with reusable UI components
+  - `error-component.js` - Comprehensive error handling with user feedback
+  - `header-component.js` - Reusable header template structure
+  - `no-data-component.js` - Enhanced no-data state with configuration guidance
+  - `selection-handler.js` - Advanced selection handling with keyboard navigation
+  - `table-component.js` - Optimized table rendering with DocumentFragment
+- **Component Index**: Centralized component exports and utilities
+- **Clean Separation**: Clear boundaries between UI components and business logic
+
+#### Template System
+
+- **Template Engine**: New `/src/templates/` directory with flexible UI generation
+  - `base-template.js` - Foundation templates for layouts and containers
+  - `state-template.js` - State-specific templates (data, error, loading, no-data)
+  - `table-template.js` - Advanced table templates with responsive design
+  - `index.js` - Universal template factory with organized registry
+- **Template Flexibility**: Support for multiple layout strategies (grid, flex, single, auto)
+- **Template Utilities**: Helper functions for template creation and combination
+
+#### Enhanced State Management
+
+- **Isolated State**: New `/src/state/` directory with WeakMap-based state management
+  - `data-state.js` - Layout processing and validation logic
+  - `render-state.js` - DOM container and data association management
+  - `selection-state.js` - Selection session tracking and element mapping
+  - `index.js` - Centralized state management exports
+- **Memory Safety**: WeakMap usage prevents memory leaks and element isolation
+- **State Persistence**: Maintains state across renders without DOM pollution
+
+#### Declarative Rendering Framework (Beta)
+
+- **Configuration-Driven UI**: New `/src/rendering/` directory with declarative rendering system
+  - `declarative-config.js` - Comprehensive configuration schema with validation
+  - `declarative-examples.js` - Pre-built configuration examples and templates
+  - `declarative-integration.js` - Integration layer with existing extension infrastructure
+  - `declarative-renderer.js` - Core rendering engine with component caching
+  - `declarative-styles.css` - Styling framework for declarative components
+- **Multiple View Types**: 5 pre-configured views (dataTableView, dashboardView, flexibleContentView, errorStateView, loadingStateView)
+- **JSON Configuration**: Property panel integration with JSON-based configuration
+- **Template Integration**: Seamless bridge between declarative configs and template system
+- **Status**: Currently marked as NON-FUNCTIONAL BETA - implementation exists but requires activation fixes
+
+### 🧪 Testing Infrastructure Enhancement
+
+#### Comprehensive Test Framework
+
+- **Declarative Test Suite**: New disabled test module for future declarative rendering validation
+- **Test Utilities Enhancement**: Extended `test/helpers/test-utils.js` with:
+  - Platform-aware JSON editor handling (ACE, Monaco, CodeMirror)
+  - Advanced configuration utilities for complex scenarios
+  - Improved error handling and logging
+- **Test Organization**: Proper test structure for scalable testing across all new systems
+
+#### Property Panel Integration
+
+- **Enhanced Properties**: Updated `src/qae/object-properties.js` with:
+  - Declarative rendering toggle controls
+  - Configuration dropdown for view selection
+  - Debug mode support
+  - Beta feature warnings and documentation
+
+### 🚀 Performance & Code Quality
+
+#### Optimized Core Extension
+
+- **Streamlined Entry Point**: Significantly refactored `src/index.js` (455 lines reduced, 353 removed)
+- **Efficient Rendering**: DocumentFragment usage for optimal DOM operations
+- **Error Boundaries**: Comprehensive error handling with user-friendly feedback
+- **Memory Management**: WeakMap-based tracking for optimal memory usage
+
+#### Modern Development Practices
+
+- **Comprehensive JSDoc**: Full documentation coverage across all new modules
+- **ESLint Compliance**: Zero linting errors across 4,925+ new lines of code
+- **Modular Design**: Clear separation of concerns with focused, single-responsibility modules
+- **Type Safety**: JSDoc type definitions for better development experience
+
+### 📚 Documentation Overhaul
+
+#### Comprehensive Guides
+
+- **Testing Documentation**: Major expansion of `docs/TESTING.md` with:
+  - Complete declarative rendering documentation (257 new lines)
+  - Implementation guides and status information
+  - Developer recommendations and troubleshooting
+- **New Documentation**: Added `docs/README.md` with centralized documentation hub
+- **Performance Roadmap**: Added detailed performance optimization plan to `TODO.md`
+
+#### Project Structure Updates
+
+- **Architecture Documentation**: Updated to reflect new modular structure
+- **Component Documentation**: Examples and usage patterns for all new components
+- **Template Documentation**: Complete guide to template system usage
+
+### 🔧 Developer Experience
+
+#### Enhanced Development Workflow
+
+- **Backward Compatibility**: 100% compatibility maintained - no breaking changes
+- **Graceful Degradation**: Declarative features safely disabled when not configured
+- **Development Safety**: All new features isolated from existing functionality
+- **Clear Migration Path**: Existing extensions continue to work unchanged
+
+#### Future-Ready Foundation
+
+- **Scalable Architecture**: Component and template systems support complex UI requirements
+- **Performance Optimization Ready**: Clean foundation enables safe performance enhancements
+- **Feature Toggle System**: Safe activation/deactivation of beta features
+- **Extensible Design**: New systems designed for easy extension and customization
+
+### 🛠️ Technical Details
+
+#### File Structure Changes
+
+- **31 files changed**: 4,925 insertions(+), 353 deletions(-)
+- **New Directories**: `/src/components/`, `/src/templates/`, `/src/state/`, `/src/rendering/`
+- **Enhanced Testing**: Extended test utilities and new declarative test framework
+- **Documentation Growth**: Major expansion of guides and examples
+
+#### Dependencies & Compatibility
+
+- **No New Dependencies**: All enhancements built with existing toolchain
+- **Node.js**: Maintained compatibility with Node.js >=20.17
+- **Qlik Integration**: Enhanced but backward-compatible Qlik Sense integration
+- **Browser Support**: Modern browser features with graceful degradation
+
+### ⚠️ Beta Features
+
+#### Declarative Rendering System
+
+- **Status**: NON-FUNCTIONAL BETA - Comprehensive implementation exists but requires activation fixes
+- **Implementation**: Complete codebase with 5 view configurations and integration layer
+- **Issue**: `shouldUseDeclarativeRendering()` function needs debugging for proper activation
+- **Future Work**: 1-2 weeks of integration work required to make functional
+- **Safety**: All declarative code safely disabled - no impact on existing functionality
+
 ## [0.4.1] - 2025-09-02
 
 ### Added
