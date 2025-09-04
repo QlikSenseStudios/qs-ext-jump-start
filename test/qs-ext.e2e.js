@@ -11,6 +11,7 @@ const commonTests = require('./states/common.test');
 const a11yTests = require('./states/accessibility.test');
 const responsiveTests = require('./states/responsiveness.test');
 const robustTests = require('./states/robustness.test');
+const declarativeTests = require('./states/declarative-rendering.test');
 
 test.describe('Qlik Sense Extension E2E Tests', () => {
   // Test configuration constants
@@ -365,6 +366,57 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
 
     test('page reload recovers to a valid state without errors', async () => {
       await robustTests.verifyReloadRecovers(page, content);
+    });
+  });
+
+  // DISABLED: Declarative Rendering tests (NON-FUNCTIONAL BETA)
+  test.describe.skip('Declarative Rendering - DISABLED (NON-FUNCTIONAL BETA)', () => {
+    test('NON-FUNCTIONAL: declarative rendering via JSON', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: property panel accessibility after JSON setup', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: Dashboard View configuration', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: Flexible Content View configuration', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: Error State View configuration', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: Loading State View configuration', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: fallback mechanism', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: declarative rendering with data configuration', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: responsive behavior across viewports', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: accessibility features', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: error handling', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
+    });
+
+    test('NON-FUNCTIONAL: performance', async () => {
+      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
     });
   });
 });

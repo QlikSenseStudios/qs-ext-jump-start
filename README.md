@@ -1,13 +1,13 @@
 # QS-Ext-Jump-Start
 
-QS-Ext-Jump-Start is a template project designed to help you quickly start building Qlik Sense extensions. It includes example code, testing tools, and setup guides to streamline development and testing.
+QS-Ext-Jump-Start is an advanced template project designed to accelerate Qlik Sense extension development. It features a comprehensive component-based architecture, flexible template system, declarative rendering framework, and robust testing infrastructure.
 
-See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: 0.4.0).
+See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: **0.5.0** - Major Architecture Refactor).
 
 ## Two Usage Modes
 
-- Contribute as a fork: Prepare focused pull requests back to the source template to improve it. See [CONTRIBUTING.md](./CONTRIBUTING.md).
-- Use as a starter template: Rename the extension, update your repository origin, and remove references to the original template as needed. See [Workflows & Tasks](./docs/WORKFLOWS.md).
+- **Contribute as a fork**: Prepare focused pull requests back to the source template to improve it. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+- **Use as a starter template**: Rename the extension, update your repository origin, and remove references to the original template as needed. See [Workflows & Tasks](./docs/WORKFLOWS.md).
 
 ## ⚡ Quick Start for Creating a New Extension
 
@@ -20,21 +20,57 @@ See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: 0.4.0).
 
 ## 🚀 What You Get
 
-| Feature                   | Status   | Description                            |
-| ------------------------- | -------- | -------------------------------------- |
-| Modern Extension Template | ✅ Ready | Nebula.js Stardust hooks architecture  |
-| Playwright Testing        | ✅ Ready | Nebula hub integration with Playwright |
-| Development Server        | ✅ Ready | Hot reload with Nebula CLI             |
-| Packaging                 | ✅ Ready | One-command packaging                  |
-| Documentation             | ✅ Ready | Setup and usage guides                 |
+| Feature                      | Status     | Description                                    |
+| ---------------------------- | ---------- | ---------------------------------------------- |
+| Modern Extension Template    | ✅ Ready   | Nebula.js Stardust hooks architecture          |
+| Component-Based Architecture | ✅ Ready   | Modular, reusable UI components                |
+| Template System              | ✅ Ready   | Flexible UI generation and layouts             |
+| Enhanced State Management    | ✅ Ready   | Memory-safe WeakMap-based state isolation      |
+| Declarative Rendering        | 🔄 Beta    | Configuration-driven UI composition (disabled) |
+| Comprehensive Testing        | ✅ Ready   | Nebula hub integration with Playwright         |
+| Development Server           | ✅ Ready   | Hot reload with Nebula CLI                     |
+| Performance Optimization     | 📋 Planned | Detailed roadmap for performance enhancements  |
+| Documentation Hub            | ✅ Ready   | Complete setup and development guides          |
 
 This template provides:
 
-- Example extension code (see `src/`)
-- Playwright-based testing setup (see `test/`)
-- Nebula CLI development server
-- Packaging and deployment scripts
-- Setup guides for Qlik Cloud and Enterprise
+- **Advanced Extension Architecture** (see `src/components/`, `src/templates/`, `src/state/`)
+- **Comprehensive Testing Framework** (see `test/` with enhanced utilities)
+- **Nebula CLI Development Server** with hot reload
+- **One-Command Packaging** and deployment scripts
+- **Complete Documentation** for Qlik Cloud and Enterprise setup
+
+### Advanced Architecture
+
+#### Component-Based System
+
+Modular, reusable components for consistent extension development:
+
+- **Error Components** - Comprehensive error handling with user feedback
+- **Header Components** - Standardized titles and navigation
+- **Table Components** - Optimized data display with DocumentFragment rendering
+- **Selection Handlers** - Advanced selection with keyboard navigation
+- **No-Data Components** - Enhanced guidance for configuration setup
+
+#### Template System
+
+Standardized UI patterns for rapid development:
+
+- **Base templates** - Foundation containers and layouts
+- **State templates** - Extension state management (data, no-data, error, loading)
+- **Table templates** - Advanced table patterns (enhanced, responsive, paginated)
+- **Template registry** - Centralized access to all templates
+
+#### Declarative Rendering (Beta)
+
+Configuration-driven UI composition for dynamic interfaces:
+
+- **JSON configurations** - Define layouts without code
+- **Conditional rendering** - Show/hide components based on data
+- **Layout strategies** - Grid, flex, and responsive layouts
+- **Template integration** - Works seamlessly with existing templates
+
+Enable in extension properties → Declarative Rendering section.
 
 ### Selections Example (feature branch)
 

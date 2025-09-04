@@ -812,9 +812,154 @@ async function getExtensionState(page) {
   }
 }
 
+/**
+ * Platform-aware JSON editor interaction utility
+ * Handles both ACE and Monaco editors properly, including auto-closing bracket cleanup
+ * @param {Page} page - Playwright page object
+ * @param {string} newContent - JSON content to set
+ * @returns {Promise<{success: boolean, currentContent: string}>}
+ */
+async function setJsonEditorContent(page, newContent) {
+  const result = { success: false, currentContent: '' };
+
+  try {
+    // First find the dialog
+    const dialog = page.locator('.MuiDialog-root [role="dialog"], [role="dialog"]').last();
+    if (!(await isVisible(dialog))) {
+      return result;
+    }
+
+    // Check for ACE editor first (most common in Qlik)
+    const aceEditor = dialog.locator('.ace_editor').first();
+    if (await isVisible(aceEditor)) {
+      // For ACE editor, get content via textContent
+      result.currentContent = (await aceEditor.textContent()) || '';
+
+      // Try to find the actual input behind the ACE editor
+      const aceInput = dialog.locator('.ace_text-input').first();
+      if (await isVisible(aceInput)) {
+        try {
+          await aceInput.click();
+          await page.waitForTimeout(100);
+          await aceInput.fill(newContent);
+          await page.waitForTimeout(WAIT.MED);
+          result.success = true;
+          return result;
+        } catch (error) {
+          console.warn('ACE input fill failed:', error.message);
+        }
+      }
+
+      // Fallback for ACE: try the visible editor area with keyboard
+      try {
+        await aceEditor.click();
+        await page.waitForTimeout(100);
+
+        // Select all and replace - but avoid typing character by character
+        const isMac = await page.evaluate(() => navigator.platform.includes('Mac'));
+        const selectAllCombo = isMac ? 'Meta+A' : 'Control+A';
+        await page.keyboard.press(selectAllCombo);
+        await page.waitForTimeout(100);
+
+        // Use clipboard to paste content to avoid auto-closing issues
+        await page.evaluate((content) => {
+          navigator.clipboard.writeText(content);
+        }, newContent);
+
+        const pasteCombo = isMac ? 'Meta+V' : 'Control+V';
+        await page.keyboard.press(pasteCombo);
+        await page.waitForTimeout(WAIT.MED);
+
+        result.success = true;
+        return result;
+      } catch (error) {
+        console.warn('ACE keyboard approach failed:', error.message);
+      }
+    }
+
+    // Handle Monaco editor with clipboard approach for continuous string content
+    const monacoEditor = dialog.locator('.monaco-editor').first();
+    if (await isVisible(monacoEditor)) {
+      console.log('Monaco editor detected - using clipboard approach for continuous string');
+
+      const monacoInput = dialog.locator('.monaco-editor textarea.inputarea').first();
+      if (await isVisible(monacoInput)) {
+        try {
+          await monacoInput.click({ force: true });
+          await page.waitForTimeout(100);
+
+          // Select all and replace using clipboard to avoid auto-closing bracket issues
+          const isMac = await page.evaluate(() => navigator.platform.includes('Mac'));
+          const selectAllCombo = isMac ? 'Meta+A' : 'Control+A';
+          await page.keyboard.press(selectAllCombo);
+          await page.waitForTimeout(100);
+
+          // Use clipboard to paste content (works well with continuous strings)
+          await page.evaluate((content) => {
+            navigator.clipboard.writeText(content);
+          }, newContent);
+
+          const pasteCombo = isMac ? 'Meta+V' : 'Control+V';
+          await page.keyboard.press(pasteCombo);
+          await page.waitForTimeout(300);
+
+          // Check if confirm button is enabled to validate JSON
+          const confirmButton = dialog
+            .locator('button:has-text("Confirm"), button:has-text("Apply"), button:has-text("OK")')
+            .first();
+          const isEnabled = await confirmButton.isEnabled().catch(() => false);
+
+          console.log(`Monaco clipboard approach: confirm button enabled = ${isEnabled}`);
+
+          if (isEnabled) {
+            console.log('✓ Monaco JSON content set successfully via clipboard');
+            result.success = true;
+            return result;
+          }
+        } catch (error) {
+          console.log(`Monaco clipboard approach failed: ${error.message}`);
+        }
+      }
+    }
+
+    // Fallback to standard input methods for other editors
+    const jsonInputs = [
+      dialog.locator('textarea').first(),
+      dialog.locator('textarea[role="textbox"]').first(),
+      dialog.locator('input[type="text"]').first(),
+      dialog.locator('[contenteditable="true"]').first(),
+      dialog.locator('.cm-content').first(), // CodeMirror content
+    ];
+
+    for (const inp of jsonInputs) {
+      if (await isVisible(inp)) {
+        try {
+          result.currentContent = (await inp.inputValue()) || (await inp.textContent()) || '';
+          await inp.fill(newContent);
+          await page.waitForTimeout(WAIT.MED);
+          result.success = true;
+          return result;
+        } catch {
+          continue;
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('setJsonEditorContent error:', error.message);
+  }
+
+  return result;
+}
+
 module.exports = {
   // Expose WAIT buckets for consistent timing across tests
   WAIT,
+  // Utility functions
+  isVisible,
+  clickWithBackdropHandling,
+  clickFirstVisible,
+  setJsonEditorContent,
+  // Main configuration functions
   configureExtension,
   cleanupExtensionConfiguration,
   triggerSelectionMode,

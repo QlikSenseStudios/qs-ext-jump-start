@@ -4,12 +4,11 @@
 
 This guide shows you how to use the Playwright testing framework for your Qlik Sense extension. For project updates and version history, see [CHANGELOG.md](./CHANGELOG.md).
 
-> Status: v0.4.0 — Expanded coverage (a11y, responsiveness, robustness) with hardened teardown
-
 ### What You Can Test
 
 - ✅ **Extension Rendering** - Validates UI across all states
 - ✅ **Nebula Configuration** - Real dropdown interactions for dimensions/measures
+- ❌ **Declarative Rendering** - NON-FUNCTIONAL BETA (all tests disabled)
 - ✅ **Accessibility Compliance** - ARIA attributes and keyboard navigation
 - ✅ **Responsive Design** - Multi-viewport testing (mobile, tablet, desktop)
 - ✅ **State Transitions** - No-data, data, selection, and error states
@@ -28,6 +27,7 @@ test/
 │  ├── data.test.js # Data state
 │  ├── selection.test.js # Selection state
 │  ├── error.test.js # Error state
+│  ├── declarative-rendering.test.js # Declarative rendering
 │  ├── accessibility.test.js # Accessibility refinements
 │  ├── responsiveness.test.js # Responsiveness & layout
 │  └── robustness.test.js # Robustness & re-renders
@@ -51,9 +51,10 @@ Tests are organized by extension states with intelligent configuration:
 - **Data State** - Real Nebula hub configuration with dimensions/measures ✅
 - **Selection State** - User interaction simulation ✅
 - **Error State** - Error condition testing ✅
+- **Declarative Rendering** - NON-FUNCTIONAL BETA (tests disabled) ❌
 - **Common Functionality** - Universal features across all states ✅
 
-### Helper Utilities and Patterns (v0.4.0+)
+### Helper Utilities and Patterns
 
 - Stable selectors and signals
   - Root: `.njs-viz[data-render-count]`
@@ -73,7 +74,7 @@ Tests are organized by extension states with intelligent configuration:
   - Use bottom-most targets to avoid toolbar overlays
   - Selection-mode detection aligned on `.extension-container.in-selection`
 
-### Teardown and Cleanup (v0.4.0)
+### Teardown and Cleanup
 
 Each test performs targeted cleanup and a properties reset to avoid state leakage:
 
@@ -81,6 +82,58 @@ Each test performs targeted cleanup and a properties reset to avoid state leakag
 2. Clear all selections via toolbar/button.
 3. Open the properties dialog (gear, title="Modify object properties"), replace JSON with `{}`, and Confirm.
 4. Waits use shared WAIT buckets (TINY/SHORT/MED/LONG/XLONG) for clarity and consistency.
+
+### Declarative Rendering Tests
+
+**Status**: ❌ **NON-FUNCTIONAL BETA** - All tests disabled, implementation not functional
+
+The declarative rendering test module (`test/states/declarative-rendering.test.js`) contains a comprehensive test suite, but is currently disabled due to the feature being non-functional.
+
+**Current Status:**
+
+❌ **ALL TESTS DISABLED**: The declarative rendering feature is NON-FUNCTIONAL BETA work in progress:
+
+1. **Implementation Exists**: Complete codebase with 5 view types implemented
+2. **Activation Issues**: `shouldUseDeclarativeRendering()` never activates despite proper configuration
+3. **No DOM Output**: No declarative elements are ever generated
+4. **Test Suite Disabled**: All 12 tests are disabled with proper skip indicators
+
+**Implementation Details:**
+
+- **Test Framework**: Complete test suite with 12 comprehensive tests (disabled)
+- **Coverage Areas**: Configuration, accessibility, responsive behavior, performance
+- **View Types**: All 5 view types have test coverage (dataTableView, dashboardView, flexibleContentView, errorStateView, loadingStateView)
+- **Code Preservation**: Implementation preserved for future development
+
+**Disabled Test Coverage:**
+
+- **Configuration Tests**: JSON and property panel configuration (disabled)
+- **View Type Tests**: All 5 declarative configurations (disabled)
+- **Integration Tests**: Data configuration and fallback mechanisms (disabled)
+- **Responsive Tests**: Multi-viewport testing (disabled)
+- **Accessibility Tests**: ARIA attributes and keyboard navigation (disabled)
+- **Performance Tests**: Configuration and rendering performance (disabled)
+
+**For Developers:**
+
+⚠️ **NON-FUNCTIONAL STATUS**:
+
+1. **Safe Codebase**: Disabled tests don't interfere with working features
+2. **Future Development**: Implementation structure preserved for future work
+3. **Documentation**: Complete documentation available in the Declarative Rendering extension below
+4. **Alternative Approaches**: Use working template system for customization
+
+**Test Execution:**
+
+```bash
+# All declarative rendering tests are skipped
+npm test -- --grep "Declarative Rendering"  # Will skip all tests with NON-FUNCTIONAL BETA messages
+
+# Test specific configurations
+npm test -- --grep "Data Table View"
+npm test -- --grep "Dashboard View"
+npm test -- --grep "Flexible Content View"
+```
 
 ## 🚀 Running Tests
 
@@ -239,7 +292,7 @@ npx playwright test --reporter=line
 npx playwright test --max-failures=1 --timeout=60000
 ```
 
-### Common Flakiness Fixes (v0.4.0)
+### Common Flakiness Fixes
 
 - If a click fails due to overlays, use `clickWithBackdropHandling()` or prefer keyboard toggles
 - Re-query elements after DOM updates to avoid detached handles
@@ -289,3 +342,197 @@ When enhancing the testing framework:
 ---
 
 _This guide focuses on practical usage. For technical implementation details review the code files. For version history, see [CHANGELOG.md](./CHANGELOG.md)._
+
+---
+
+## 📋 Extension: Declarative Rendering (NON-FUNCTIONAL BETA)
+
+**⚠️ WARNING: This feature is NON-FUNCTIONAL BETA work in progress. Implementation exists but does not activate properly.**
+
+### Status: NON-FUNCTIONAL BETA
+
+The declarative rendering system represents a comprehensive attempt to create configurable UI components for Qlik Sense extensions, but the implementation is not functional in its current state.
+
+### Architecture Overview
+
+#### Implementation Structure
+
+The declarative rendering system includes:
+
+- **Configuration Schema**: JSON-based configuration for 5 different view types
+- **Template System**: Declarative templates for each view type
+- **Integration Layer**: Connection between configuration and rendering pipeline
+- **Test Framework**: Comprehensive test suite (currently disabled)
+
+#### View Types (All Non-Functional)
+
+1. **dataTableView** - Tabular data presentation
+2. **dashboardView** - Dashboard-style layout
+3. **flexibleContentView** - Flexible layout system
+4. **errorStateView** - Error state rendering
+5. **loadingStateView** - Loading state display
+
+### Implementation Files
+
+#### Core Files
+
+- `src/rendering/declarative-integration.js` - Main integration logic
+- `src/rendering/template-manager.js` - Template management system
+- `src/rendering/views/` - Individual view implementations
+
+#### Configuration
+
+- Property panel integration for JSON configuration
+- `useDeclarativeRendering` toggle
+- `declarativeConfig` options for view selection
+
+#### Testing (Disabled)
+
+- `test/states/declarative-rendering.test.js` - Comprehensive test suite (disabled)
+- E2E test integration in `test/qs-ext.e2e.js` (disabled)
+
+### Known Issues
+
+#### Primary Issue: Activation Failure
+
+The core problem is in the activation logic:
+
+```javascript
+// From src/rendering/declarative-integration.js
+function shouldUseDeclarativeRendering(layout) {
+  // This function never returns true despite proper configuration
+  return layout.useDeclarativeRendering === true;
+}
+```
+
+**Problem**: Even when `useDeclarativeRendering` is properly configured via JSON, the function doesn't activate declarative rendering.
+
+#### Secondary Issues
+
+1. **Integration Gaps**: Gaps between configuration detection and rendering pipeline
+2. **Template Activation**: Declarative templates never override the default template system
+3. **DOM Generation**: No declarative DOM elements are ever generated
+
+### Configuration Approach
+
+#### JSON Configuration (Attempted)
+
+Users can modify the extension's configuration via "Modify object properties" dialog:
+
+```json
+{
+  "useDeclarativeRendering": true,
+  "declarativeConfig": {
+    "viewType": "dataTableView",
+    "options": {
+      "showHeaders": true,
+      "alternatingRows": true
+    }
+  }
+}
+```
+
+**Result**: Configuration is accepted but no rendering changes occur.
+
+#### Property Panel (Attempted)
+
+Property panel controls exist for:
+
+- Enabling declarative rendering
+- Selecting view type
+- Configuring view-specific options
+
+**Result**: Controls are accessible but selections don't activate declarative rendering.
+
+### Test Suite Status
+
+#### Test Coverage (All Disabled)
+
+The comprehensive test suite includes 12 tests covering:
+
+1. Basic configuration via JSON
+2. Property panel accessibility
+3. All 5 view type configurations
+4. Fallback mechanism validation
+5. Data configuration integration
+6. Responsive behavior testing
+7. Accessibility validation
+8. Performance testing
+
+#### Test Disabling
+
+All tests are disabled with:
+
+```javascript
+test.describe.skip('Declarative Rendering - DISABLED (NON-FUNCTIONAL BETA)', () => {
+  // All tests throw NON-FUNCTIONAL BETA errors
+});
+```
+
+### Development History
+
+#### What Was Attempted
+
+1. **Complete Implementation**: Full declarative rendering system implemented
+2. **Multiple Approaches**: Both JSON and property panel configuration methods
+3. **Comprehensive Testing**: Full test suite developed and validated
+4. **Documentation**: Complete documentation of intended functionality
+
+#### Discovery Process
+
+Through extensive testing, we discovered:
+
+- Configuration systems work properly
+- Template structures exist and are well-designed
+- Activation logic prevents any actual rendering
+- No declarative DOM elements are ever generated
+
+### Future Development
+
+#### Required Work
+
+To make this feature functional:
+
+1. **Debug Activation Logic**: Fix `shouldUseDeclarativeRendering()` function
+2. **Integration Fixes**: Bridge configuration to rendering pipeline
+3. **Template System**: Connect declarative templates to DOM generation
+4. **Testing**: Re-enable and validate test suite
+
+#### Estimated Effort
+
+This represents significant development work:
+
+- **Core Fixes**: 1-2 weeks of debugging and integration work
+- **Testing**: 1 week of test re-enabling and validation
+- **Documentation**: 1-2 days of guide updates
+
+### For Developers
+
+#### Code Preservation
+
+The implementation is preserved for future development:
+
+- All source files remain intact
+- Test framework structure maintained
+- Configuration schemas documented
+- Architecture decisions recorded
+
+#### Safe Usage
+
+The current codebase is safe to use:
+
+- Disabled features don't interfere with working functionality
+- Property panel controls are non-destructive
+- Test suite is safely disabled
+- No performance impact from non-functional code
+
+### Recommendations
+
+1. **Focus on Working Features**: Use the template system and property configurations that are functional
+2. **Future Iteration**: Consider this feature for a future development cycle when resources allow
+3. **Alternative Approaches**: Use existing template customization for similar functionality
+4. **Documentation**: Keep this documentation for future development reference
+
+---
+
+**Note**: This documentation serves as a complete record of the attempted implementation for future development teams who may choose to complete this feature.

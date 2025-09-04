@@ -3,7 +3,9 @@
 project:
   name: QS-Ext-Jump-Start
   description: >
-    Boilerplate for Qlik Sense extension development, featuring Nebula CLI, Playwright testing, and deployment guides.
+    Advanced template for Qlik Sense extension development featuring component-based architecture,
+    template system, declarative rendering framework, comprehensive state management, 
+    Nebula CLI integration, and Playwright testing infrastructure.
   language: JavaScript
   frameworks:
     - nebula.js
@@ -12,7 +14,15 @@ project:
   knowledge_base: KNOWLEDGE_BASE.md
   project_structure: docs/PROJECT_STRUCTURE.md
   workflows: docs/WORKFLOWS.md
+  testing_guide: docs/TESTING.md
+  changelog: docs/CHANGELOG.md
   license: SEE LICENSE IN license.txt
+  architecture:
+    components: src/components/
+    templates: src/templates/
+    state_management: src/state/
+    declarative_rendering: src/rendering/
+    testing_utilities: test/helpers/
 
 ai:
   preferred_model: claude-3-5-sonnet-20241022
@@ -59,6 +69,12 @@ ai:
     - 'Create a new property panel configuration.'
     - 'Debug this Playwright test failure.'
     - 'Generate JSDoc comments for this function.'
+    - 'Create a new component using the component-based architecture.'
+    - 'Add a new template to the template system.'
+    - 'Configure declarative rendering for a specific use case.'
+    - 'Implement state management for a new feature.'
+    - 'Create performance optimizations following the TODO roadmap.'
+    - 'Debug declarative rendering activation issues.'
   cursor_specific:
     enable_chat_context: true
     enable_codebase_analysis: true

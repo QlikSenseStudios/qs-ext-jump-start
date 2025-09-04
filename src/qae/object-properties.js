@@ -12,9 +12,9 @@ import pkg from '../../package.json';
 const properties = {
   title: `${pkg.name} v${pkg.version}`,
   qHyperCubeDef: {
-  // One dimension and optional one measure => width 2 is sufficient
-  // Lower qHeight to exercise large-row scenarios in tests more easily
-  qInitialDataFetch: [{ qWidth: 2, qHeight: 20 }],
+    // One dimension and optional one measure => width 2 is sufficient
+    // Lower qHeight to exercise large-row scenarios in tests more easily
+    qInitialDataFetch: [{ qWidth: 2, qHeight: 20 }],
     qDimensions: [],
     qMeasures: [],
     qSuppressZero: false,
@@ -22,27 +22,71 @@ const properties = {
   },
 
   // Example property sections - uncomment and customize as needed
-  /*
-  settings: {
+  // settings: {
+  //   type: 'items',
+  //   label: 'Settings',
+  //   items: {
+  //     showTitle: {
+  //       type: 'boolean',
+  //       label: 'Show Title',
+  //       ref: 'props.showTitle',
+  //       defaultValue: true,
+  //     },
+  //     customColor: {
+  //       type: 'string',
+  //       label: 'Custom Color',
+  //       ref: 'props.customColor',
+  //       defaultValue: '#4477aa',
+  //       expression: 'optional',
+  //     },
+  //   },
+  // },
+
+  // Declarative Rendering Configuration
+  declarativeRendering: {
     type: 'items',
-    label: 'Settings',
+    label: 'Declarative Rendering (Beta)',
     items: {
-      showTitle: {
+      useDeclarativeRendering: {
         type: 'boolean',
-        label: 'Show Title',
-        ref: 'props.showTitle',
-        defaultValue: true,
+        label: 'Enable Declarative Rendering',
+        ref: 'props.useDeclarativeRendering',
+        defaultValue: false,
+        show: true,
       },
-      customColor: {
+      declarativeConfig: {
         type: 'string',
-        label: 'Custom Color',
-        ref: 'props.customColor',
-        defaultValue: '#4477aa',
-        expression: 'optional',
+        component: 'dropdown',
+        label: 'Rendering Configuration',
+        ref: 'props.declarativeConfig',
+        options: [
+          { value: 'dataTableView', label: 'Data Table View' },
+          { value: 'dashboardView', label: 'Dashboard View' },
+          { value: 'flexibleContentView', label: 'Flexible Content View' },
+          { value: 'errorStateView', label: 'Error State View' },
+          { value: 'loadingStateView', label: 'Loading State View' },
+        ],
+        defaultValue: 'dataTableView',
+        show: (data) => data.props?.useDeclarativeRendering,
+      },
+      declarativeDebug: {
+        type: 'boolean',
+        label: 'Debug Mode',
+        ref: 'props.declarativeDebug',
+        defaultValue: false,
+        show: (data) => data.props?.useDeclarativeRendering,
+      },
+      // TODO: Fix property panel integration issues
+      // Known issues: dropdown may not be accessible, changes may not persist to JSON
+      // Current workaround: use "Modify object properties" JSON dialog for configuration
+      declarativeBetaNote: {
+        type: 'string',
+        component: 'text',
+        label: '⚠️ Beta: Property panel has known issues. Use JSON config for reliable setup.',
+        show: (data) => data.props?.useDeclarativeRendering,
       },
     },
   },
-  */
 
   // Add additional property configurations here if needed
   // Example: custom section with toggles, colors, and expressions
