@@ -49,7 +49,7 @@
     "node": ">=20.17"
   },
   "devDependencies": {
-    "@eslint/js": "^9.34.0",
+    "@eslint/js": "^9.35.0",
     "@nebula.js/cli": "^5.17.0",
     "@nebula.js/cli-build": "^5.17.0",
     "@nebula.js/cli-sense": "^5.17.0",
