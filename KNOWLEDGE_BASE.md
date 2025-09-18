@@ -37,14 +37,15 @@ src/
 ├── utils.js                  # Utility functions
 └── meta.json                 # Extension metadata
 test/
-├── states/                   # State-specific test modules
-├── helpers/                  # Nebula interaction utilities
+├── lib/                      # Test framework library
+│   ├── core/                 # Core validation and utilities
+│   ├── utilities/            # DOM and JSON editor utilities
+│   └── page-objects/         # Page Object Model implementations
 ├── artifacts/                # Test screenshots and traces
 ├── report/                   # HTML test reports
 ├── qlik-sense-app/           # Test data and load script
-├── qs-ext.e2e.js             # Main test orchestration
-├── qs-ext.connect.js         # Qlik connection utilities
-└── qs-ext.fixture.js         # Test fixtures and setup
+├── qs-ext.e2e.js             # Main environment validation tests
+└── qs-ext.connect.js         # Qlik connection utilities
 docs/                         # Setup and deployment guides
 ```
 
@@ -92,7 +93,7 @@ See also: [Testing Guide](./docs/TESTING.md) for practical examples of these pat
 
 - **Add a new property:** Edit `src/qae/object-properties.js`
 - **Change data source:** Edit `src/qae/data.js`
-- **Write a new test:** Add tests to `test/states/` modules
+- **Write a new test:** Extend the existing test framework in `test/qs-ext.e2e.js`
 - **Update documentation:** Edit relevant files in `docs/` or root
 
 ## 7. Reference Resources

@@ -1,3 +1,45 @@
+// TODO: check build variable (BUILD_DEBUG)
+const developmentUtilitiesSection = /* BUILD_DEBUG ? */ {
+  debug: {
+    component: 'expandable-items',
+    label: 'Development Utilities',
+    items: {
+      debugging: {
+        label: 'Debugging',
+        type: 'items',
+        items: {
+          enable: {
+            type: 'boolean',
+            label: 'Enable Debugging',
+            // path to value on layout object
+            ref: 'props.debug.enabled',
+            defaultValue: false,
+          },
+          forceState: {
+            label: 'Force State (Testing)',
+            component: 'dropdown',
+            // path to value on layout object
+            ref: 'props.debug.forceState',
+            type: 'string',
+            defaultValue: '',
+            options: [
+              { value: '', label: 'Normal Operation' },
+              { value: 'invalid-config', label: 'Invalid Configuration' },
+              { value: 'dimension-error', label: 'Dimension Error' },
+              { value: 'measure-error', label: 'Measure Error' },
+              { value: 'data-suppressed', label: 'Data Suppressed' },
+              { value: 'no-data', label: 'No Data Available' },
+              { value: 'empty-data', label: 'Empty Data Values' },
+              { value: 'hypercube-error', label: 'Hypercube Error' },
+            ],
+            show: (data) => data.props?.debug?.enabled,
+          },
+        },
+      },
+    },
+  },
+}; /* : {} */
+
 /**
  * Extension configuration for Qlik Sense capabilities
  * @param {object} galaxy - Galaxy object containing environment settings
@@ -13,21 +55,13 @@ export default function ext(/* galaxy */) {
       viewData: true,
     },
 
-    // Additional extension configuration
+    // Property panel definition for Qlik Sense - built from object-properties.js (no debug section)
     definition: {
       type: 'items',
       component: 'accordion',
       items: {
-        // Limit to exactly 1 dimension (required) and 0-1 measure (optional)
-        dimensions: {
-          uses: 'dimensions',
-          min: 1,
-          max: 1,
-        },
-        measures: {
-          uses: 'measures',
-          min: 0,
-          max: 1,
+        data: {
+          uses: 'data',
         },
         sorting: {
           uses: 'sorting',
@@ -35,6 +69,11 @@ export default function ext(/* galaxy */) {
         addons: {
           uses: 'addons',
         },
+        settings: {
+          uses: 'settings',
+          items: {},
+        },
+        ...developmentUtilitiesSection,
       },
     },
   };

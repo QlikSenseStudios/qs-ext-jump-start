@@ -83,7 +83,7 @@ This template includes a simple selections-focused example to demonstrate best p
 - Uses Qlik’s selection APIs via `useSelections.begin/select/cancel`
 - Shows a helpful no-data message when the configuration is invalid (pick 1 dim, optional 1 measure)
 
-See `src/index.js` and `src/styles.css` for the implementation, and `test/states/*.test.js` for E2E coverage. The suite covers no-data, data, selection behavior, error handling, accessibility, responsiveness, and robustness/re-renders.
+See `src/index.js` and `src/styles.css` for the implementation, and `test/qs-ext.e2e.js` for E2E coverage. The test suite validates environment setup and essential component accessibility.
 
 ## 📖 Documentation
 
@@ -143,7 +143,8 @@ src/
 └── meta.json            # 📋 Extension metadata
 
 test/
-├── states/              # 🧪 Add your custom tests here
+├── lib/                 # 🧪 Test framework library
+├── qs-ext.e2e.js        # 🧪 Environment validation tests
 └── qlik-sense-app/      # 📂 Test data (load script)
 ```
 
@@ -210,7 +211,7 @@ See deployment guides for your environment.
 1. **New Extension Logic** → Edit `src/index.js`
 2. **Property Panel Changes** → Update `src/qae/object-properties.js`
 3. **Data Processing** → Modify `src/qae/data.js`
-4. **Test Coverage** → Add tests in `test/states/`
+4. **Test Coverage** → Add tests to the existing framework
 
 See [Testing Guide](./docs/TESTING.md) for more information.
 

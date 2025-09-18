@@ -87,6 +87,7 @@ ai:
     - .git/
     - .cursor/
     - '*.log'
+    - sandbox/
 
 contributors:
   - name: Qlik Professional Services

@@ -54,7 +54,7 @@ Tips:
 
 ### Write a New Test
 
-- Add a file in `test/states/`
+- Extend the existing test framework in `test/qs-ext.e2e.js`
 - See existing tests for patterns and fixtures
 
 ### Qlik Cloud/Enterprise Setup

@@ -2,94 +2,81 @@ import pkg from '../../package.json';
 
 /**
  * Qlik Sense extension properties configuration
- * - Controls the property panel (what users can configure)
- * - Defines the hypercube (dimensions/measures) via qHyperCubeDef
+ * - Sets base defaults for the property panel (what users can configure)
  *
  * Where to edit:
  * - Add/remove properties in this file
  * - For data targets and advanced data hooks, see `src/qae/data.js`
+ * - For property panel structure, see `src/ext.js`
  */
-const properties = {
-  title: `${pkg.name} v${pkg.version}`,
-  qHyperCubeDef: {
-    // One dimension and optional one measure => width 2 is sufficient
-    // Lower qHeight to exercise large-row scenarios in tests more easily
-    qInitialDataFetch: [{ qWidth: 2, qHeight: 20 }],
-    qDimensions: [],
-    qMeasures: [],
-    qSuppressZero: false,
-    qSuppressMissing: false,
-  },
+const caption_properties = {
+  /**
+   * Current version of this generic object definition
+   * @type {string}
+   * @default
+   */
+  version: pkg.version,
 
-  // Example property sections - uncomment and customize as needed
-  // settings: {
-  //   type: 'items',
-  //   label: 'Settings',
-  //   items: {
-  //     showTitle: {
-  //       type: 'boolean',
-  //       label: 'Show Title',
-  //       ref: 'props.showTitle',
-  //       defaultValue: true,
-  //     },
-  //     customColor: {
-  //       type: 'string',
-  //       label: 'Custom Color',
-  //       ref: 'props.customColor',
-  //       defaultValue: '#4477aa',
-  //       expression: 'optional',
-  //     },
-  //   },
-  // },
+  /**
+   * Show title for the visualization
+   * @type {boolean=}
+   * @default
+   */
+  showTitles: true,
 
-  // Declarative Rendering Configuration
-  declarativeRendering: {
-    type: 'items',
-    label: 'Declarative Rendering (Beta)',
-    items: {
-      useDeclarativeRendering: {
-        type: 'boolean',
-        label: 'Enable Declarative Rendering',
-        ref: 'props.useDeclarativeRendering',
-        defaultValue: false,
-        show: true,
-      },
-      declarativeConfig: {
-        type: 'string',
-        component: 'dropdown',
-        label: 'Rendering Configuration',
-        ref: 'props.declarativeConfig',
-        options: [
-          { value: 'dataTableView', label: 'Data Table View' },
-          { value: 'dashboardView', label: 'Dashboard View' },
-          { value: 'flexibleContentView', label: 'Flexible Content View' },
-          { value: 'errorStateView', label: 'Error State View' },
-          { value: 'loadingStateView', label: 'Loading State View' },
-        ],
-        defaultValue: 'dataTableView',
-        show: (data) => data.props?.useDeclarativeRendering,
-      },
-      declarativeDebug: {
-        type: 'boolean',
-        label: 'Debug Mode',
-        ref: 'props.declarativeDebug',
-        defaultValue: false,
-        show: (data) => data.props?.useDeclarativeRendering,
-      },
-      // TODO: Fix property panel integration issues
-      // Known issues: dropdown may not be accessible, changes may not persist to JSON
-      // Current workaround: use "Modify object properties" JSON dialog for configuration
-      declarativeBetaNote: {
-        type: 'string',
-        component: 'text',
-        label: '⚠️ Beta: Property panel has known issues. Use JSON config for reliable setup.',
-        show: (data) => data.props?.useDeclarativeRendering,
-      },
-    },
-  },
+  /**
+   * Visualization title
+   * @type {(string|StringExpression)=}
+   * @default
+   */
+  title: `${pkg.name}`,
 
-  // Add additional property configurations here if needed
-  // Example: custom section with toggles, colors, and expressions
+  /**
+   * Visualization subtitle
+   * @type {(string|StringExpression)=}
+   * @default
+   */
+  subtitle: `v${pkg.version}`,
+
+  /**
+   * Visualization footnote
+   * @type {(string|StringExpression)=}
+   * @default
+   */
+  footnote: 'This is a template project for creating Qlik Sense extensions',
 };
 
-export default properties;
+const data_definition = {
+  /**
+   * Extends HyperCubeDef, see Engine API: HyperCubeDef
+   * @extends {HyperCubeDef}
+   */
+  qHyperCubeDef: {
+    /**
+     * @type {DimensionProperties[]}
+     */
+    qDimensions: [],
+    /**
+     * @type {MeasureProperties[]}
+     */
+    qMeasures: [],
+    // limit: qWidth * qHeight < 10000
+    qInitialDataFetch: [{ qLeft: 0, qTop: 0, qWidth: 2, qHeight: 20 }],
+    qSuppressZero: false,
+    qSuppressMissing: false,
+    qShowAlternative: false,
+  },
+};
+
+const custom_props = {
+  debug: {
+    enabled: false,
+    forceState: '',
+  },
+};
+
+export default {
+  ...caption_properties,
+  ...data_definition,
+  props: custom_props,
+};

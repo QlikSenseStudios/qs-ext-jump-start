@@ -1,5 +1,5 @@
 /**
- * State management module exports
+ * State management module
  * Centralized access to all state management functionality
  */
 
@@ -30,11 +30,12 @@ export {
 // Data state management
 export {
   getCounts,
-  isInvalidConfig,
+  validateConfiguration,
   getSelectionInfo,
   getDataMatrix,
   getHeaders,
   processLayoutData,
+  checkDataAvailability,
   getHypercubePath,
   getDimensionColumnIndex,
 } from './data-state';

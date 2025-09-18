@@ -3,8 +3,7 @@
  * Includes accessibility and responsive design considerations
  */
 
-/* Import declarative rendering styles */
-@import './rendering/declarative-styles.css';
+/* Removed declarative rendering styles import - focusing on debug testing only */
 
 .extension-container {
   font-family: 'Source Sans Pro', Arial, sans-serif;
@@ -163,4 +162,98 @@
 .in-selection .state-L {
   /* Locked */
   border-left: 3px solid #6c757d;
+}
+
+/* Enhanced no-data states */
+.no-data {
+  position: relative;
+}
+
+.no-data-message {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #495057;
+}
+
+.no-data-hint {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #6c757d;
+}
+
+.no-data-hint p {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  color: #495057;
+}
+
+.no-data-hint ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.no-data-hint li {
+  margin-bottom: 4px;
+  color: #6c757d;
+}
+
+.no-data-hint li.issue {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+/* Error type specific styling */
+.error-invalid-config .no-data-hint {
+  border-left-color: #ffc107;
+  background-color: #fff8e1;
+}
+
+.error-dimension-error .no-data-hint,
+.error-measure-error .no-data-hint {
+  border-left-color: #dc3545;
+  background-color: #ffeaea;
+}
+
+.error-data-suppressed .no-data-hint {
+  border-left-color: #6f42c1;
+  background-color: #f3e8ff;
+}
+
+.error-no-data .no-data-hint,
+.error-empty-data .no-data-hint {
+  border-left-color: #17a2b8;
+  background-color: #e7f7f9;
+}
+
+.error-hypercube-error .no-data-hint {
+  border-left-color: #fd7e14;
+  background-color: #fff4e6;
+}
+
+/* Error-specific hint styles */
+.error-hint p,
+.access-hint p,
+.selection-hint p,
+.empty-hint p,
+.hypercube-hint p {
+  color: #721c24;
+}
+
+.access-hint {
+  border-left-color: #6f42c1;
+}
+
+.selection-hint {
+  border-left-color: #17a2b8;
+}
+
+.empty-hint {
+  border-left-color: #20c997;
+}
+
+.hypercube-hint {
+  border-left-color: #fd7e14;
 }
