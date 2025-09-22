@@ -1,17 +1,19 @@
 /**
- * @fileoverview E2E tests for validating user environment setup.
+ * @fileoverview E2E test orchestrator for Qlik Sense extension testing.
  *
- * These tests validate that the user has correctly configured their development environment.
- * If either test fails, it indicates a problem that requires user intervention to fix.
+ * This file serves as the main entry point for all E2E tests, importing and
+ * orchestrating test modules for comprehensive extension validation.
  *
- * Tests:
+ * Test modules:
  * - Connection: Validates Qlik Cloud connection and Nebula Hub access
  * - Environment: Validates essential UI components are accessible
+ * - Extension Default: Tests extension default unconfigured state
  */
 
-const { test, expect } = require('@playwright/test');
+const { test } = require('@playwright/test');
 const { getNebulaQueryString, getQlikServerAuthenticatedContext } = require('./qs-ext.connect');
 const { NebulaHubPage } = require('./lib');
+const { connectionTests, environmentTests, extensionDefaultTests } = require('./modules');
 
 /**
  * Pauses execution when running in headed mode to allow visual inspection.
@@ -27,16 +29,17 @@ async function slowForShow(testInfo, page, timeoutInMs = 2000) {
 }
 
 /**
- * Environment validation tests.
+ * Main test orchestrator.
  *
- * Validates that the user has correctly set up their development environment.
- * Failures indicate setup issues that require user intervention.
+ * Sets up the testing environment and coordinates the execution of all test modules.
+ * Provides shared context and utilities to each test module.
  */
 test.describe('Qlik Sense Extension E2E Tests', () => {
   const nebulaQueryString = getNebulaQueryString();
 
   let context;
   let page;
+  let hub;
 
   test.beforeAll(async ({ browser }) => {
     context = await getQlikServerAuthenticatedContext({ browser });
@@ -65,87 +68,46 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     }
   });
 
-  /**
-   * Validates Qlik Cloud connection and Nebula Hub access.
-   * Failure indicates incorrect environment setup requiring user intervention.
-   */
-  test.describe('Connection', () => {
-    test('validates nebula hub connection', async () => {
-      const url = page.url();
+  // Test context shared across all modules
+  const testContext = {
+    get page() {
+      return page;
+    },
+    get hub() {
+      return hub;
+    },
+    slowForShow,
+  };
 
-      // Validate nebula development mode
-      expect(url).toContain('/dev/');
+  // Connection tests - don't need NebulaHubPage
+  connectionTests(testContext);
 
-      // Validate page title
-      const title = await page.title();
-      expect(title).toBeTruthy();
-      expect(title.length).toBeGreaterThan(0);
-      expect(title.toLowerCase()).toBe('nebula hub');
-
-      // Validate Qlik Cloud connection
-      expect(url).toContain('engine_url=');
-
-      // Validate nebula.js version element
-      await page.waitForSelector('div[data-nebulajs-version]', { state: 'attached' });
-      const versionDiv = await page.$('div[data-nebulajs-version]');
-      expect(versionDiv).toBeTruthy();
-      const version = await versionDiv.getAttribute('data-nebulajs-version');
-      expect(version).toMatch(/^\d+\.\d+\.\d+(-.+)?$/);
-
-      const appDiv = await page.$('#app');
-      expect(appDiv).toBeTruthy();
-
-      console.log(`✅ Connected to Nebula Hub with Nebula.js version: ${version}`);
-
-      test.info().annotations.push({
-        type: 'info',
-        description: `Nebula hub validated at: ${url}`,
-      });
-    });
-  });
-
-  test.describe('Environment', () => {
-    let hub;
-
+  // Tests that require NebulaHubPage
+  test.describe('Extension Development Tests', () => {
     test.beforeEach(async () => {
-      // Should give us access to the page components for use in tests
+      // Initialize page object for tests that need it
       hub = new NebulaHubPage(page);
     });
 
     test.afterEach(async () => {
-      // Clear validation cache for clean state between tests
-      const { clearValidationCache } = require('./lib/core/validation');
-      clearValidationCache(page);
-      console.log('🧹 Cleared validation cache for clean state');
+      if (hub) {
+        // Clear validation cache for clean state between tests
+        const { clearValidationCache } = require('./lib/core/validation');
+        clearValidationCache(page);
+        console.log('🧹 Cleared validation cache for clean state');
 
-      await slowForShow(test.info(), page, 2000);
-
-      // Reset extension configuration to clean state
-      console.log('🧹 Clearing nebula hub configuration in Environment teardown');
-      const resetSuccess = await hub.resetConfiguration();
-      if (resetSuccess) {
-        console.log('   • Configuration reset: ✅ Success');
-      } else {
-        console.log('   • Configuration reset: ⚠️ Skipped (already empty or unavailable)');
+        // Reset extension configuration to clean state
+        console.log('🧹 Clearing nebula hub configuration in teardown');
+        const resetSuccess = await hub.resetConfiguration();
+        if (resetSuccess) {
+          console.log('   • Configuration reset: ✅ Success');
+        } else {
+          console.log('   • Configuration reset: ⚠️ Skipped (already empty or unavailable)');
+        }
       }
     });
 
-    test('validates environment components', async () => {
-      // Validate required components using hub object
-      const validation = await hub.validateEnvironment();
-
-      expect(validation.components.propertyCacheCheckbox).toBe(true);
-      console.log('   • Property cache checkbox (Identifies configuration panel for updating properties): ✅ Found');
-      expect(validation.components.modifyPropertiesButton).toBe(true);
-      console.log('   • Modify properties button (Accesses currently declared property state): ✅ Found');
-      expect(validation.components.extensionView).toBe(true);
-      console.log('   • Extension view component (Renders the extension being developed): ✅ Found');
-
-      console.log('✅ All key environment components validated');
-      test.info().annotations.push({
-        type: 'info',
-        description: 'Environment components validated successfully',
-      });
-    });
+    environmentTests(testContext);
+    extensionDefaultTests(testContext);
   });
 });

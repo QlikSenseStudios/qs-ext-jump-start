@@ -26,18 +26,34 @@ test/
 │   │   └── json-editor.js        # 📝 JSON configuration handling
 │   └── page-objects/             # 📄 Page Object Models
 │       └── nebula-hub.js         # 🌟 Nebula Hub interactions
-├── qs-ext.e2e.js                 # ✨ E2E tests
+├── modules/                      # 📦 Test Modules
+│   ├── connection.test.js        # 🔗 Connection validation
+│   ├── environment.test.js       # 🌍 Environment validation
+│   ├── extension-default.test.js # 📋 Extension default state (stub)
+│   └── index.js                  # 📄 Module exports
+├── qs-ext.e2e.js                 # ✨ E2E test orchestrator
 ├── qs-ext.connect.js             # 🔗 Qlik connection utilities
-└── qlik-sense-app/               # � Test data
+└── qlik-sense-app/               # 📊 Test data
     └── load-script.qvs           # Test data generation
 ```
 
+### Modular Test Structure
+
+Tests are organized into focused modules that are orchestrated by the main `qs-ext.e2e.js` file:
+
+- **Connection Module** (`modules/connection.test.js`) - Validates Qlik Cloud connection and Nebula Hub access
+- **Environment Module** (`modules/environment.test.js`) - Validates essential UI components are accessible
+- **Extension Default Module** (`modules/extension-default.test.js`) - Placeholder for extension default state tests
+
 ### Test Types
 
-The framework contains two essential environment validation tests:
+The framework contains modular test suites:
 
 - **Connection Test** - Validates Qlik Cloud connection and Nebula Hub access
 - **Environment Test** - Validates essential UI components are accessible
+- **Extension Default Test** - Placeholder stub for extension default state validation
+
+Each module is focused on a specific testing scope and can be run independently or as part of the full test suite.
 
 ### Page Object Model Pattern
 
