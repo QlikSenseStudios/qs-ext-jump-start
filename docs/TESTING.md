@@ -6,35 +6,38 @@ This guide shows you how to use the Playwright testing framework for your Qlik S
 
 ### What You Can Test
 
+- ✅ **Connection Validation** - Validates Qlik Cloud connection and Nebula Hub access
 - ✅ **Environment Validation** - Validates that your development environment is correctly configured
-- ✅ **Extension Configuration** - Tests the extension's configuration system using page object patterns
+- ✅ **Extension Configuration** - Tests the extension's unconfigured state and configuration panel options
 
 ## 🏗️ Test Architecture
 
-### Streamlined Structure
+### Current Structure
 
 ```
 test/
-├── lib/                          # 📚 Test Framework
-│   ├── index.js                  # 🎯 Entry point
-│   ├── core/                     # 🔧 Framework fundamentals
-│   │   ├── identifiers.js        # 🎯 DOM selectors and IDs
-│   │   ├── validation.js         # ✅ Environment validation with caching
-│   │   └── constants.js          # 📊 Timing constants
-│   ├── utilities/                # 🛠️ Utility functions
-│   │   ├── dom.js                # 🖱️ DOM interaction helpers
-│   │   └── json-editor.js        # 📝 JSON configuration handling
-│   └── page-objects/             # 📄 Page Object Models
-│       └── nebula-hub.js         # 🌟 Nebula Hub interactions
-├── modules/                      # 📦 Test Modules
-│   ├── connection.test.js        # 🔗 Connection validation
-│   ├── environment.test.js       # 🌍 Environment validation
-│   ├── extension-default.test.js # 📋 Extension default state (stub)
-│   └── index.js                  # 📄 Module exports
-├── qs-ext.e2e.js                 # ✨ E2E test orchestrator
-├── qs-ext.connect.js             # 🔗 Qlik connection utilities
-└── qlik-sense-app/               # 📊 Test data
-    └── load-script.qvs           # Test data generation
+├── lib/                                    # 📚 Test Framework
+│   ├── index.js                            # 🎯 Entry point
+│   ├── core/                               # 🔧 Framework fundamentals
+│   │   ├── identifiers.js                  # 🎯 DOM selectors and timeouts
+│   │   ├── configuration-identifiers.js    # 🎛️ Configuration panel selectors
+│   │   └── validation.js                   # ✅ Environment validation with caching
+│   ├── utilities/                          # �️ Consolidated utility functions
+│   │   ├── configuration-defaults.js       # ⚙️ Configuration defaults provider
+│   │   ├── props-structure-analyzer.js     # 🔍 Dynamic props analysis
+│   │   ├── dom.js                          # 🖱️ DOM interaction helpers
+│   │   └── json-editor.js                  # 📝 JSON configuration handling
+│   └── page-objects/                       # 📄 Page Object Models
+│       └── nebula-hub.js                   # 🌟 Nebula Hub interactions
+├── modules/                                # 📦 Test Modules
+│   ├── connection.test.js                  # 🔗 Connection validation
+│   ├── environment.test.js                 # 🌍 Environment validation
+│   ├── extension-unconfigured.test.js      # 📋 Extension unconfigured state tests
+│   └── index.js                            # 📄 Module exports
+├── qs-ext.e2e.js                           # ✨ E2E test orchestrator
+├── qs-ext.connect.js                       # 🔗 Qlik connection utilities
+└── qlik-sense-app/                         # 📊 Test data
+    └── load-script.qvs                     # Test data generation
 ```
 
 ### Modular Test Structure
@@ -43,17 +46,35 @@ Tests are organized into focused modules that are orchestrated by the main `qs-e
 
 - **Connection Module** (`modules/connection.test.js`) - Validates Qlik Cloud connection and Nebula Hub access
 - **Environment Module** (`modules/environment.test.js`) - Validates essential UI components are accessible
-- **Extension Default Module** (`modules/extension-default.test.js`) - Placeholder for extension default state tests
+- **Extension Unconfigured Module** (`modules/extension-unconfigured.test.js`) - Tests extension unconfigured state and configuration options
 
 ### Test Types
 
-The framework contains modular test suites:
+The framework contains three main test suites:
 
-- **Connection Test** - Validates Qlik Cloud connection and Nebula Hub access
-- **Environment Test** - Validates essential UI components are accessible
-- **Extension Default Test** - Placeholder stub for extension default state validation
+#### Connection Test
 
-Each module is focused on a specific testing scope and can be run independently or as part of the full test suite.
+Validates basic connectivity and Nebula Hub setup:
+
+- Nebula.js version detection
+- Qlik Cloud engine connection
+- Page title and URL validation
+
+#### Environment Test
+
+Validates essential UI components are accessible:
+
+- Property cache checkbox accessibility
+- Modify properties button availability
+- Extension view container presence
+
+#### Extension Unconfigured State Test
+
+Validates extension behavior and configuration options:
+
+- Incomplete visualization display when unconfigured
+- Configuration panel form elements (dimensions, measures, captions)
+- Dynamic custom properties validation using MUI component patterns
 
 ### Page Object Model Pattern
 
@@ -61,7 +82,8 @@ The framework uses the Page Object Model pattern for clean, maintainable test co
 
 ```javascript
 // Using page object pattern for environment validation
-const { NebulaHubPage, clearValidationCache } = require('./lib');
+const { NebulaHubPage } = require('./lib');
+const { clearValidationCache } = require('./lib/core/validation');
 
 test('validates environment components', async ({ page }) => {
   // Use page object for interactions
@@ -77,26 +99,49 @@ test('validates environment components', async ({ page }) => {
 });
 ```
 
+### Dynamic Configuration Testing
+
+The extension unconfigured state test includes dynamic configuration validation:
+
+```javascript
+// Dynamic validation against object-properties.js
+const { getExpectedConfigurationDefaults } = require('../lib/utilities/configuration-defaults');
+const { analyzePropsStructure } = require('../lib/utilities/props-structure-analyzer');
+
+// Tests automatically adapt to changes in object-properties.js
+const expectedDefaults = getExpectedConfigurationDefaults();
+const propsStructure = analyzePropsStructure(expectedDefaults.props);
+
+// Validate configuration elements match expected defaults
+expect(titleValue).toBe(expectedDefaults.title);
+expect(isChecked).toBe(expectedDefaults.showTitles);
+```
+
 ### Framework Components
 
-Essential utilities for environment validation testing:
+Essential utilities for comprehensive extension testing:
 
-- **Core Identifiers** (`lib/core/identifiers.js`) - Centralized DOM selectors
+- **Core Identifiers** (`lib/core/identifiers.js`) - Centralized DOM selectors and timeouts
+- **Configuration Identifiers** (`lib/core/configuration-identifiers.js`) - Specialized configuration panel selectors
 - **Validation Functions** (`lib/core/validation.js`) - Environment validation with caching
+- **Configuration Defaults** (`lib/utilities/configuration-defaults.js`) - Imports defaults from source files
+- **Props Structure Analyzer** (`lib/utilities/props-structure-analyzer.js`) - Dynamic MUI component analysis
 - **Page Objects** (`lib/page-objects/nebula-hub.js`) - Encapsulated UI interaction patterns
 - **DOM Utilities** (`lib/utilities/dom.js`) - Safe DOM interaction helpers
 - **JSON Editor** (`lib/utilities/json-editor.js`) - JSON configuration handling
 
 Key features:
 
-- JSON formatting uses `JSON.stringify(config, null, 0)` to avoid auto-close brace issues
+- Dynamic property structure analysis adapts to changes in `object-properties.js`
+- MUI component navigation patterns handle deeply nested DOM structures
 - Smart validation caching eliminates redundant DOM queries
+- Configuration defaults sourced directly from extension files
 - Comprehensive error handling with detailed logging
-- Consistent timing with `WAIT_TIMES` constants
+- Consistent timing with standardized timeout values
 
 ## ⚡ Performance Optimizations
 
-The testing framework includes performance optimizations for reliable environment validation:
+The testing framework includes performance optimizations for reliable test execution:
 
 ### **Clean Setup & Teardown Structure**
 
@@ -114,13 +159,18 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     await page.close(); // Clean page closure
   });
 
-  // Environment tests with targeted cleanup
-  test.describe('Environment', () => {
+  // Extension tests with targeted cleanup
+  test.describe('Extension Development Tests', () => {
+    test.beforeEach(async () => {
+      hub = new NebulaHubPage(page);
+    });
+
     test.afterEach(async () => {
       // Clear validation cache for clean state
+      const { clearValidationCache } = require('./lib/core/validation');
       clearValidationCache(page);
 
-      // Reset configuration if modified
+      // Reset extension configuration if modified
       await hub.resetConfiguration();
     });
   });
@@ -137,11 +187,22 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
 
 - **Standard timeouts**: 5 seconds for most element detection
 - **Fast checks**: 2 seconds for quick existence checks
-- **Wait times**: 100-600ms for UI state transitions
+- **Network operations**: 10 seconds for API calls and data loading
+- **Form elements**: 3 seconds for configuration panel interactions
+- **Element transitions**: 500ms for UI animations and accordion expansion
 
 ### **Smart Validation Caching**
 
 Environment validation results are cached to avoid redundant DOM queries during test execution. Cache is cleared between test runs to ensure clean state.
+
+### **Dynamic Property Validation**
+
+The framework includes dynamic property structure analysis that adapts to changes in extension configuration:
+
+- Properties are analyzed from `object-properties.js` at runtime
+- MUI selectors are generated dynamically for each property type
+- Tests gracefully handle empty props objects or complex nested structures
+- Configuration defaults are imported directly from source files for accurate validation
 
 ### Environment Validation and Cleanup
 
@@ -216,14 +277,37 @@ npx playwright show-report test/report
 
 ## 📊 Understanding Test Structure
 
-The framework runs two essential environment validation tests:
+The framework runs three main test suites for comprehensive extension validation:
 
-| Test                 | Description                                           |
-| -------------------- | ----------------------------------------------------- |
-| **Connection Test**  | Validates Qlik Cloud connection and Nebula Hub access |
-| **Environment Test** | Validates essential UI components are accessible      |
+| Test                            | Description                                                      |
+| ------------------------------- | ---------------------------------------------------------------- |
+| **Connection Test**             | Validates Qlik Cloud connection and Nebula Hub access            |
+| **Environment Test**            | Validates essential UI components are accessible                 |
+| **Extension Unconfigured Test** | Validates extension unconfigured state and configuration options |
 
-These tests ensure your development environment is correctly configured for extension development.
+### Test Coverage Details
+
+#### Connection Test
+
+- Nebula.js version detection
+- Qlik Cloud engine URL validation
+- Page title and application element validation
+- Development mode URL verification
+
+#### Environment Test
+
+- Property cache checkbox accessibility (configuration panel identifier)
+- Modify properties button availability (JSON configuration access)
+- Extension view container presence (extension rendering validation)
+
+#### Extension Unconfigured Test
+
+- **Incomplete visualization display** - Validates "Incomplete visualization" message when unconfigured
+- **Configuration panel validation** - Tests data configuration buttons (Add Dimension, Add Measure)
+- **Caption properties validation** - Tests title, subtitle, footnote fields with dynamic defaults
+- **Custom properties validation** - Dynamic MUI component testing with props structure analysis
+
+These tests ensure your development environment is correctly configured and the extension behaves properly in its unconfigured state.
 
 ### Nebula Hub Integration
 

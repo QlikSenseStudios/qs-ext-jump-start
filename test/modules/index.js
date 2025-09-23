@@ -6,10 +6,10 @@
 
 const { connectionTests } = require('./connection.test');
 const { environmentTests } = require('./environment.test');
-const { extensionDefaultTests } = require('./extension-default.test');
+const { extensionUnconfiguredTests } = require('./extension-unconfigured.test');
 
 module.exports = {
   connectionTests,
   environmentTests,
-  extensionDefaultTests,
+  extensionUnconfiguredTests,
 };

@@ -39,7 +39,7 @@ src/
 test/
 ├── lib/                      # Test framework library
 │   ├── core/                 # Core validation and utilities
-│   ├── utilities/            # DOM and JSON editor utilities
+│   ├── utilities/            # Consolidated test utilities and configuration defaults
 │   └── page-objects/         # Page Object Model implementations
 ├── artifacts/                # Test screenshots and traces
 ├── report/                   # HTML test reports

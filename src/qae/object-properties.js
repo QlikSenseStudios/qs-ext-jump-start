@@ -9,14 +9,29 @@ import pkg from '../../package.json';
  * - For data targets and advanced data hooks, see `src/qae/data.js`
  * - For property panel structure, see `src/ext.js`
  */
-const caption_properties = {
+const data_definition = {
   /**
-   * Current version of this generic object definition
-   * @type {string}
-   * @default
+   * Extends HyperCubeDef, see Engine API: HyperCubeDef
+   * @extends {HyperCubeDef}
    */
-  version: pkg.version,
+  qHyperCubeDef: {
+    /**
+     * @type {DimensionProperties[]}
+     */
+    qDimensions: [],
+    /**
+     * @type {MeasureProperties[]}
+     */
+    qMeasures: [],
+    // limit: qWidth * qHeight < 10000
+    qInitialDataFetch: [{ qLeft: 0, qTop: 0, qWidth: 2, qHeight: 20 }],
+    qSuppressZero: false,
+    qSuppressMissing: false,
+    qShowAlternative: false,
+  },
+};
 
+const caption_properties = {
   /**
    * Show title for the visualization
    * @type {boolean=}
@@ -46,28 +61,6 @@ const caption_properties = {
   footnote: 'This is a template project for creating Qlik Sense extensions',
 };
 
-const data_definition = {
-  /**
-   * Extends HyperCubeDef, see Engine API: HyperCubeDef
-   * @extends {HyperCubeDef}
-   */
-  qHyperCubeDef: {
-    /**
-     * @type {DimensionProperties[]}
-     */
-    qDimensions: [],
-    /**
-     * @type {MeasureProperties[]}
-     */
-    qMeasures: [],
-    // limit: qWidth * qHeight < 10000
-    qInitialDataFetch: [{ qLeft: 0, qTop: 0, qWidth: 2, qHeight: 20 }],
-    qSuppressZero: false,
-    qSuppressMissing: false,
-    qShowAlternative: false,
-  },
-};
-
 const custom_props = {
   debug: {
     enabled: false,
@@ -76,7 +69,14 @@ const custom_props = {
 };
 
 export default {
-  ...caption_properties,
+  /**
+   * Current version of this generic object definition
+   * @type {string}
+   * @default
+   */
+  version: pkg.version,
+
   ...data_definition,
+  ...caption_properties,
   props: custom_props,
 };

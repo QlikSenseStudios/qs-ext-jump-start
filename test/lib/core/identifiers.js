@@ -41,8 +41,7 @@ const IDENTIFIERS = Object.freeze({
    * Property cache configuration checkbox in the nebula hub settings panel.
    * This validates that the nebula hub configuration panel is accessible.
    */
-  PROPERTY_CACHE_CHECKBOX:
-    'input[type="checkbox"]:near(:text("Enable property cache")), label:has-text("Enable property cache")',
+  PROPERTY_CACHE_CHECKBOX: 'label:has-text("Enable property cache") input[type="checkbox"]',
 
   /**
    * Fully rendered and configured visualization container.

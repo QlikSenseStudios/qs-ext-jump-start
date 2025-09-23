@@ -7,13 +7,13 @@
  * Test modules:
  * - Connection: Validates Qlik Cloud connection and Nebula Hub access
  * - Environment: Validates essential UI components are accessible
- * - Extension Default: Tests extension default unconfigured state
+ * - Extension Unconfigured: Tests extension unconfigured state behavior
  */
 
 const { test } = require('@playwright/test');
 const { getNebulaQueryString, getQlikServerAuthenticatedContext } = require('./qs-ext.connect');
 const { NebulaHubPage } = require('./lib');
-const { connectionTests, environmentTests, extensionDefaultTests } = require('./modules');
+const { connectionTests, environmentTests, extensionUnconfiguredTests } = require('./modules');
 
 /**
  * Pauses execution when running in headed mode to allow visual inspection.
@@ -108,6 +108,6 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     });
 
     environmentTests(testContext);
-    extensionDefaultTests(testContext);
+    extensionUnconfiguredTests(testContext);
   });
 });
