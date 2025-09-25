@@ -219,7 +219,9 @@ See [Testing Guide](./docs/TESTING.md) for more information.
 
 ### Quick Troubleshooting
 
-**🔴 Tests failing?** → Check [Testing Guide troubleshooting](./docs/TESTING.md#troubleshooting). Consider running headed and single-worker for investigation.  
+**🔴 Connection test fails?** → Check Qlik Sense user setup and application access. See [Testing Guide troubleshooting](./docs/TESTING.md#troubleshooting).  
+**🔴 Environment test fails?** → Check Nebula Hub connection string and app ID. Run with `--headed` to inspect interface.  
+**🔴 Extension unconfigured test fails?** → Check extension data and object-properties files and entry-point code.  
 **🔴 Development server issues?** → Verify environment setup guides  
 **🔴 Deployment problems?** → See deployment documentation for your platform
 

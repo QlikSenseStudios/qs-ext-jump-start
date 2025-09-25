@@ -335,24 +335,69 @@ Load * INLINE [
 
 ## 🐛 Troubleshooting
 
-### Common Issues & Solutions
+### Test-Specific Troubleshooting
+
+These tests are designed to always pass in a properly configured environment. Test failures typically indicate user configuration issues that need correction.
+
+**❌ Connection Test Fails**
+
+```
+✅ Solution: Check Qlik Sense user setup and application access
+- Verify Qlik Cloud/Enterprise login credentials are correct
+- Ensure your user account has access to the test application
+- Check that the Qlik Sense environment is running and accessible
+- Validate network connectivity to Qlik Cloud tenant or Enterprise server
+- Confirm the test application exists and contains loaded data
+```
+
+**❌ Environment Test Fails**
+
+```
+✅ Solution: Check Nebula Hub connection string and app ID
+- Verify the app ID in your Nebula Hub URL matches your test application
+- Ensure Nebula Hub connects to the correct Qlik environment
+- Confirm the extension loads properly in the Nebula Hub interface
+- Validate that property cache checkbox and configuration panel are accessible
+- Run tests with --headed to visually inspect the Nebula Hub interface
+```
+
+**❌ Extension Unconfigured Test Fails**
+
+```
+✅ Solution: Check extension data and object-properties files and entry-point code
+- Validate that configuration-defaults.js matches object-properties.js defaults
+  (configuration-defaults.js is located in test/lib/utilities/)
+- Verify object-properties.js contains correct caption properties (title, subtitle, footnote)
+  and that they are properly reflected in configuration-defaults.js
+- Ensure custom props structure in configuration-defaults.js matches test expectations
+- Check that data.js dimensions/measures constraints are properly configured
+- Validate that index.js (entry-point) correctly renders incomplete visualization state
+- Confirm configuration panel elements align with object-properties.js structure
+- Check for syntax errors in extension source files
+```
+
+### General Issues & Solutions
 
 **❌ Tests fail with timeout errors**
 
 ```
-✅ Solution: Check your environment configuration
-- Verify your Qlik Cloud/Enterprise connection
-- Ensure extension loads in Nebula Hub
-- Confirm test application has required data
+✅ Solution: Environment and timing issues
+- Verify your Qlik Cloud/Enterprise connection is stable
+- Ensure the extension loads properly in Nebula Hub
+- Confirm the test application contains required data
+- Check network latency and increase timeout values if needed
+- Verify no background processes are interfering with browser automation
 ```
 
 **❌ "Component not found" errors**
 
 ```
-✅ Solution: Verify Nebula Hub interface accessibility
-- Check that property panel is accessible
-- Ensure extension is properly loaded
-- Run with --headed to see visual state
+✅ Solution: DOM structure and selector issues
+- Verify that MUI component selectors match the current Nebula Hub version
+- Ensure the extension configuration panel renders all expected form elements
+- Validate that test selectors correspond to the actual DOM structure
+- Run tests with --headed to visually inspect element selectors
+- Check browser developer tools to confirm element presence and attributes
 ```
 
 ### Debug Mode

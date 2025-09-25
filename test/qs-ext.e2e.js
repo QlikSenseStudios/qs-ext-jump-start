@@ -91,6 +91,9 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
 
     test.afterEach(async () => {
       if (hub) {
+        // Pause for visual inspection in headed mode
+        await slowForShow(test.info(), page, 3000);
+
         // Clear validation cache for clean state between tests
         const { clearValidationCache } = require('./lib/core/validation');
         clearValidationCache(page);
