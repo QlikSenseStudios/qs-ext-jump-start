@@ -22,11 +22,12 @@ This directory contains comprehensive documentation for all extension features a
 
 ### Development Tools
 
-| Tool                  | Documentation                                      | Description                            |
-| --------------------- | -------------------------------------------------- | -------------------------------------- |
-| **Testing Framework** | [**TESTING.md**](./TESTING.md)                     | Playwright E2E testing with Nebula hub |
-| **Project Structure** | [**PROJECT_STRUCTURE.md**](./PROJECT_STRUCTURE.md) | File organization and purpose          |
-| **Workflows**         | [**WORKFLOWS.md**](./WORKFLOWS.md)                 | Common development tasks               |
+| Tool                  | Documentation                                      | Description                                                              |
+| --------------------- | -------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Testing Framework** | [**TESTING.md**](./TESTING.md)                     | Playwright E2E testing with Nebula hub and JSON configuration validation |
+| **Debug Utilities**   | Built-in (see `src/utils.js`)                      | Consolidated debug detection and conditional logging                     |
+| **Project Structure** | [**PROJECT_STRUCTURE.md**](./PROJECT_STRUCTURE.md) | File organization and purpose                                            |
+| **Workflows**         | [**WORKFLOWS.md**](./WORKFLOWS.md)                 | Common development tasks                                                 |
 
 ## 📋 Reference
 

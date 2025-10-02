@@ -10,12 +10,17 @@ This file lists suggested improvements and additions and their progress for the 
 - [x] **Modern Code Structure** → Clean separation of concerns across all modules
 - [x] **JSDoc Documentation** → Comprehensive documentation across 4,925+ new lines
 - [x] **ESLint Compliance** → Zero linting errors across entire refactored codebase
+- [x] **Consolidated Debug Utilities** → Centralized debug detection and logging in src/utils.js with isDebugEnabled() and debugLog() functions
+- [x] **Debug System Integration** → Multi-source debug mode detection from URL parameters, extension properties, or localhost environment
 
-## Testing
+## Testing ✅
 
 - [x] **Comprehensive Test Framework** → Declarative test suite structure implemented (disabled)
 - [x] **Enhanced Test Utilities** → Platform-aware JSON editor handling and improved helpers
 - [x] **Property Panel Integration** → Test infrastructure for complex configuration scenarios
+- [x] **JSON Configuration Validation** → Comprehensive test validates extension JSON against object-properties.js defaults
+- [x] **Cross-Platform JSON Editor Support** → Enhanced utilities support Monaco Editor, CodeMirror, and textarea implementations
+- [x] **Property Path Validation System** → Flexible property path mapping for robust JSON structure validation
 - [ ] Add unit test setup (e.g., Jest) for non-UI logic
 - [ ] Optional: Add visual regression tests (screenshots)
 
@@ -35,7 +40,7 @@ This file lists suggested improvements and additions and their progress for the 
 - [x] **Developer Documentation Hub** → Centralized documentation with clear navigation
 - [x] **Performance Optimization Roadmap** → Detailed TODO section with implementation strategy
 - [x] **API Documentation** → Complete JSDoc coverage for all new modules and functions
-- [x] **Version 0.5.0 Changelog** → Comprehensive release documentation with migration guidance
+- [x] **Version 0.6.0 Changelog** → Comprehensive release documentation with JSON validation and debug utilities
 
 ## Deployment & Automation
 
@@ -46,7 +51,7 @@ This file lists suggested improvements and additions and their progress for the 
 ## Build & Tooling
 
 - [ ] Optional: Switch package to ESM (add `"type": "module"`) to align with ESLint flat config
-- [x] **Version 0.5.0 Release** → Minor version bump reflecting major feature additions
+- [x] **Version 0.6.0 Release** → Minor version bump reflecting JSON validation testing and consolidated debug utilities
 
 ## Declarative Rendering (❌ NON-FUNCTIONAL BETA)
 

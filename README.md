@@ -2,7 +2,7 @@
 
 QS-Ext-Jump-Start is an advanced template project designed to accelerate Qlik Sense extension development. It features a comprehensive component-based architecture, flexible template system, declarative rendering framework, and robust testing infrastructure.
 
-See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: **0.5.0** - Major Architecture Refactor).
+See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: **0.6.0** - JSON Configuration Validation & Debug Utilities).
 
 ## Two Usage Modes
 

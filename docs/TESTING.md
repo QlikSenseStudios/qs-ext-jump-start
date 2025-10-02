@@ -306,6 +306,7 @@ The framework runs three main test suites for comprehensive extension validation
 - **Configuration panel validation** - Tests data configuration buttons (Add Dimension, Add Measure)
 - **Caption properties validation** - Tests title, subtitle, footnote fields with dynamic defaults
 - **Custom properties validation** - Dynamic MUI component testing with props structure analysis
+- **JSON configuration validation** - Validates extension JSON configuration against object-properties.js defaults with Monaco Editor support
 
 These tests ensure your development environment is correctly configured and the extension behaves properly in its unconfigured state.
 

@@ -8,9 +8,52 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
+_No changes yet._
+
+## [0.6.0] - 2025-10-02
+
+### Added
+
+- **JSON Configuration Validation Test**: Comprehensive test in `extension-unconfigured.test.js` validates extension JSON configuration against `object-properties.js` defaults
+- **Monaco Editor Support**: Enhanced JSON editor utilities support Monaco Editor collapsed JSON and complete JSON parsing scenarios
+- **Cross-Platform JSON Editing**: JSON editor utilities with compatibility across CodeMirror, Monaco, and textarea implementations
+- **Property Path Validation**: Flexible property path mapping system for robust JSON structure validation
+- **Modular Test Architecture**: Restructured E2E tests into focused modules with dedicated test files for connection, environment, and extension validation
+- **Extension Unconfigured State Tests**: Comprehensive test suite validating incomplete visualization display, configuration panel options, and custom properties
+- **MUI Component Testing**: Dynamic testing framework for Material-UI components with automatic props structure analysis
+- **Configuration Validation Framework**: Dynamic validation against object-properties.js with enhanced configuration defaults provider
+
 ### Enhanced
 
 - **Debug Utilities**: Consolidated debug detection and logging functionality in `src/utils.js` with `isDebugEnabled()` and `debugLog()` functions
+- **Debug Detection**: Multi-source debug mode detection from URL parameters (`debug=true`), extension properties, or localhost environment
+- **Code Quality**: Eliminated redundant debug detection code across extension components
+- **Test Infrastructure**: Enhanced configuration defaults validation with qType support and improved error handling
+- **Testing Framework**: Streamlined extension interface with essential validation focus, replacing complex state-based testing
+- **Page Object Model**: Enhanced Nebula Hub interactions with improved resource management and cleanup
+- **Documentation**: Updated debug system documentation across KNOWLEDGE_BASE.md, README.md, PROJECT_STRUCTURE.md, and WORKFLOWS.md
+- **Troubleshooting**: Enhanced troubleshooting documentation with test-specific guidance for connection, environment, and extension validation failures
+
+### Removed
+
+- **Declarative Rendering System**: Removed non-functional declarative rendering components and framework to reduce complexity
+- **State-Based Testing**: Simplified testing approach by removing complex state-based test modules in favor of essential environment validation
+- **Excessive Rendering Stubs**: Cleaned up extension entry points by removing non-functional rendering components
+
+### Breaking Changes
+
+- **Testing Framework Restructure**: Complete restructuring of testing framework from modular state-based to essential validation approach
+  - Removed `test/states/` and `test/helpers/` directories
+  - Replaced with focused `test/modules/` structure for connection, environment, and extension tests
+  - Updated API and test organization patterns (affects custom test development only)
+
+### Technical Details
+
+- **Backward Compatibility**: All enhancements maintain 100% backward compatibility with existing extensions
+- **Debug System**: Consistent debug behavior across extension components with centralized utilities
+- **Test Coverage**: Enhanced test utilities with cross-editor JSON handling for robust validation
+- **Development Experience**: Improved developer debugging workflow with conditional logging and environment detection
+- **Test Organization**: Clean separation of concerns with focused test modules for improved maintainability
 
 ## [0.5.0] - 2025-09-04
 
