@@ -49,16 +49,16 @@
     "node": ">=20.17"
   },
   "devDependencies": {
-    "@eslint/js": "^9.34.0",
+    "@eslint/js": "^9.36.0",
     "@nebula.js/cli": "^5.17.0",
     "@nebula.js/cli-build": "^5.17.0",
     "@nebula.js/cli-sense": "^5.17.0",
     "@nebula.js/cli-serve": "^5.17.0",
     "@playwright/test": "^1.55.0",
-    "dotenv": "^17.2.1",
-    "eslint": "^9.34.0",
+    "dotenv": "^17.2.2",
+    "eslint": "^9.36.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.5",
+    "lint-staged": "^16.2.3",
     "prettier": "^3.6.2"
   },
   "peerDependencies": {
