@@ -37,14 +37,15 @@ src/
 ├── utils.js                  # Utility functions
 └── meta.json                 # Extension metadata
 test/
-├── states/                   # State-specific test modules
-├── helpers/                  # Nebula interaction utilities
+├── lib/                      # Test framework library
+│   ├── core/                 # Core validation and utilities
+│   ├── utilities/            # Consolidated test utilities and configuration defaults
+│   └── page-objects/         # Page Object Model implementations
 ├── artifacts/                # Test screenshots and traces
 ├── report/                   # HTML test reports
 ├── qlik-sense-app/           # Test data and load script
-├── qs-ext.e2e.js             # Main test orchestration
-├── qs-ext.connect.js         # Qlik connection utilities
-└── qs-ext.fixture.js         # Test fixtures and setup
+├── qs-ext.e2e.js             # Main environment validation tests
+└── qs-ext.connect.js         # Qlik connection utilities
 docs/                         # Setup and deployment guides
 ```
 
@@ -75,6 +76,15 @@ See [README.md](./README.md) for detailed quick start instructions.
 - Use per-element `WeakMap` for state instead of attaching data to functions or globals
 - Prevent duplicate stateful nodes (like `.no-data`) across renders
 
+### Debug System
+
+The extension includes centralized debug utilities in `src/utils.js`:
+
+- **`isDebugEnabled()`** - Detects debug mode from URL parameters (`debug=true`), extension properties, or localhost environment
+- **`debugLog()`** - Outputs console messages only when debug mode is active
+
+Debug mode activates automatically on localhost or when explicitly enabled. The extension uses these utilities consistently across components for conditional development features and logging.
+
 ### Selection Mode Detection
 
 - Treat selection mode as a modifier class on the container: `.extension-container.in-selection`
@@ -92,7 +102,7 @@ See also: [Testing Guide](./docs/TESTING.md) for practical examples of these pat
 
 - **Add a new property:** Edit `src/qae/object-properties.js`
 - **Change data source:** Edit `src/qae/data.js`
-- **Write a new test:** Add tests to `test/states/` modules
+- **Write a new test:** Extend the existing test framework in `test/qs-ext.e2e.js`
 - **Update documentation:** Edit relevant files in `docs/` or root
 
 ## 7. Reference Resources

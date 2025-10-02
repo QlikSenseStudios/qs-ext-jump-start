@@ -5,7 +5,8 @@ project:
   description: >
     Advanced template for Qlik Sense extension development featuring component-based architecture,
     template system, declarative rendering framework, comprehensive state management, 
-    Nebula CLI integration, and Playwright testing infrastructure.
+    Nebula CLI integration, Playwright testing infrastructure, consolidated debug utilities,
+    and JSON configuration validation testing.
   language: JavaScript
   frameworks:
     - nebula.js
@@ -23,6 +24,7 @@ project:
     state_management: src/state/
     declarative_rendering: src/rendering/
     testing_utilities: test/helpers/
+    debug_utilities: src/utils.js
 
 ai:
   preferred_model: claude-3-5-sonnet-20241022
@@ -75,6 +77,10 @@ ai:
     - 'Implement state management for a new feature.'
     - 'Create performance optimizations following the TODO roadmap.'
     - 'Debug declarative rendering activation issues.'
+    - 'Create JSON configuration validation tests for new properties.'
+    - 'Debug extension configuration with consolidated debug utilities.'
+    - 'Implement cross-platform JSON editor support for new test scenarios.'
+    - 'Use debug utilities for conditional logging in development.'
   cursor_specific:
     enable_chat_context: true
     enable_codebase_analysis: true
@@ -87,6 +93,7 @@ ai:
     - .git/
     - .cursor/
     - '*.log'
+    - sandbox/
 
 contributors:
   - name: Qlik Professional Services

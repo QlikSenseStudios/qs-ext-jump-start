@@ -2,138 +2,218 @@
 
 ## Quick Start
 
-This guide shows you how to use the Playwright testing framework for your Qlik Sense extension. For project updates and version history, see [CHANGELOG.md](./CHANGELOG.md).
+This guide shows you how to use the Playwright testing framework for your Qlik Sense extension.
 
 ### What You Can Test
 
-- ✅ **Extension Rendering** - Validates UI across all states
-- ✅ **Nebula Configuration** - Real dropdown interactions for dimensions/measures
-- ❌ **Declarative Rendering** - NON-FUNCTIONAL BETA (all tests disabled)
-- ✅ **Accessibility Compliance** - ARIA attributes and keyboard navigation
-- ✅ **Responsive Design** - Multi-viewport testing (mobile, tablet, desktop)
-- ✅ **State Transitions** - No-data, data, selection, and error states
-- ✅ **Robustness & Re-renders** - No duplicate containers/tables, resilient toggles, reload recovery
+- ✅ **Connection Validation** - Validates Qlik Cloud connection and Nebula Hub access
+- ✅ **Environment Validation** - Validates that your development environment is correctly configured
+- ✅ **Extension Configuration** - Tests the extension's unconfigured state and configuration panel options
 
 ## 🏗️ Test Architecture
 
-### Optimized Modular Structure
-
-Test files are organized as follows:
+### Current Structure
 
 ```
 test/
-├── states/ # State-specific test modules
-|  ├── no-data.test.js # No-data state
-│  ├── data.test.js # Data state
-│  ├── selection.test.js # Selection state
-│  ├── error.test.js # Error state
-│  ├── declarative-rendering.test.js # Declarative rendering
-│  ├── accessibility.test.js # Accessibility refinements
-│  ├── responsiveness.test.js # Responsiveness & layout
-│  └── robustness.test.js # Robustness & re-renders
-│  └── common.test.js # Shared utilities
-├── helpers/
-│  └── test-utils.js # Nebula configuration & cleanup utilities
-├── artifacts/ # Test screenshots and traces
-├── report/  # HTML test report output
-├── qlik-sense-app/
-│  └── load-script.qvs # Test data generation script
-├── qs-ext.e2e.js # Main test orchestration
-├── qs-ext.connect.js # Qlik connection utilities
-└── qs-ext.fixture.js # Test fixtures and setup
+├── lib/                                    # 📚 Test Framework
+│   ├── index.js                            # 🎯 Entry point
+│   ├── core/                               # 🔧 Framework fundamentals
+│   │   ├── identifiers.js                  # 🎯 DOM selectors and timeouts
+│   │   ├── configuration-identifiers.js    # 🎛️ Configuration panel selectors
+│   │   └── validation.js                   # ✅ Environment validation with caching
+│   ├── utilities/                          # �️ Consolidated utility functions
+│   │   ├── configuration-defaults.js       # ⚙️ Configuration defaults provider
+│   │   ├── props-structure-analyzer.js     # 🔍 Dynamic props analysis
+│   │   ├── dom.js                          # 🖱️ DOM interaction helpers
+│   │   └── json-editor.js                  # 📝 JSON configuration handling
+│   └── page-objects/                       # 📄 Page Object Models
+│       └── nebula-hub.js                   # 🌟 Nebula Hub interactions
+├── modules/                                # 📦 Test Modules
+│   ├── connection.test.js                  # 🔗 Connection validation
+│   ├── environment.test.js                 # 🌍 Environment validation
+│   ├── extension-unconfigured.test.js      # 📋 Extension unconfigured state tests
+│   └── index.js                            # 📄 Module exports
+├── qs-ext.e2e.js                           # ✨ E2E test orchestrator
+├── qs-ext.connect.js                       # 🔗 Qlik connection utilities
+└── qlik-sense-app/                         # 📊 Test data
+    └── load-script.qvs                     # Test data generation
 ```
 
-### State-Based Testing with Nebula Integration
+### Modular Test Structure
 
-Tests are organized by extension states with intelligent configuration:
+Tests are organized into focused modules that are orchestrated by the main `qs-ext.e2e.js` file:
 
-- **No-Data State** - Default state, always reachable ✅
-- **Data State** - Real Nebula hub configuration with dimensions/measures ✅
-- **Selection State** - User interaction simulation ✅
-- **Error State** - Error condition testing ✅
-- **Declarative Rendering** - NON-FUNCTIONAL BETA (tests disabled) ❌
-- **Common Functionality** - Universal features across all states ✅
+- **Connection Module** (`modules/connection.test.js`) - Validates Qlik Cloud connection and Nebula Hub access
+- **Environment Module** (`modules/environment.test.js`) - Validates essential UI components are accessible
+- **Extension Unconfigured Module** (`modules/extension-unconfigured.test.js`) - Tests extension unconfigured state and configuration options
 
-### Helper Utilities and Patterns
+### Test Types
 
-- Stable selectors and signals
-  - Root: `.njs-viz[data-render-count]`
-  - Container: `.extension-container` and `.extension-container.in-selection`
-  - Cells: `td.dim-cell.selectable-item`, stable ids via `[data-q-elem]`
-  - States: `.no-data`, `.error-message`
-- Shared helpers (see `test/helpers/test-utils.js`)
-  - `configureExtension()`, `configureDimensions()`, `configureMeasures()`, `selectAggregation()`
-  - `cleanupExtensionConfiguration()`, `clearAllSelections()`
-  - `triggerSelectionMode()`
-  - `resetPropertiesToEmptyJson()` — properties dialog → `{}` → Confirm
-  - `clickWithBackdropHandling()` — handles MUI backdrops
-  - WAIT buckets: `TINY/SHORT/MED/LONG/XLONG` for consistent timing
-- Robust interaction patterns
-  - Keyboard-first toggles (Enter/Space) preferred over clicks
-  - Re-query locators after each iteration to avoid stale handles
-  - Use bottom-most targets to avoid toolbar overlays
-  - Selection-mode detection aligned on `.extension-container.in-selection`
+The framework contains three main test suites:
 
-### Teardown and Cleanup
+#### Connection Test
 
-Each test performs targeted cleanup and a properties reset to avoid state leakage:
+Validates basic connectivity and Nebula Hub setup:
 
-1. Remove only items added during configuration (`cleanupExtensionConfiguration`).
-2. Clear all selections via toolbar/button.
-3. Open the properties dialog (gear, title="Modify object properties"), replace JSON with `{}`, and Confirm.
-4. Waits use shared WAIT buckets (TINY/SHORT/MED/LONG/XLONG) for clarity and consistency.
+- Nebula.js version detection
+- Qlik Cloud engine connection
+- Page title and URL validation
 
-### Declarative Rendering Tests
+#### Environment Test
 
-**Status**: ❌ **NON-FUNCTIONAL BETA** - All tests disabled, implementation not functional
+Validates essential UI components are accessible:
 
-The declarative rendering test module (`test/states/declarative-rendering.test.js`) contains a comprehensive test suite, but is currently disabled due to the feature being non-functional.
+- Property cache checkbox accessibility
+- Modify properties button availability
+- Extension view container presence
 
-**Current Status:**
+#### Extension Unconfigured State Test
 
-❌ **ALL TESTS DISABLED**: The declarative rendering feature is NON-FUNCTIONAL BETA work in progress:
+Validates extension behavior and configuration options:
 
-1. **Implementation Exists**: Complete codebase with 5 view types implemented
-2. **Activation Issues**: `shouldUseDeclarativeRendering()` never activates despite proper configuration
-3. **No DOM Output**: No declarative elements are ever generated
-4. **Test Suite Disabled**: All 12 tests are disabled with proper skip indicators
+- Incomplete visualization display when unconfigured
+- Configuration panel form elements (dimensions, measures, captions)
+- Dynamic custom properties validation using MUI component patterns
 
-**Implementation Details:**
+### Page Object Model Pattern
 
-- **Test Framework**: Complete test suite with 12 comprehensive tests (disabled)
-- **Coverage Areas**: Configuration, accessibility, responsive behavior, performance
-- **View Types**: All 5 view types have test coverage (dataTableView, dashboardView, flexibleContentView, errorStateView, loadingStateView)
-- **Code Preservation**: Implementation preserved for future development
+The framework uses the Page Object Model pattern for clean, maintainable test code:
 
-**Disabled Test Coverage:**
+```javascript
+// Using page object pattern for environment validation
+const { NebulaHubPage } = require('./lib');
+const { clearValidationCache } = require('./lib/core/validation');
 
-- **Configuration Tests**: JSON and property panel configuration (disabled)
-- **View Type Tests**: All 5 declarative configurations (disabled)
-- **Integration Tests**: Data configuration and fallback mechanisms (disabled)
-- **Responsive Tests**: Multi-viewport testing (disabled)
-- **Accessibility Tests**: ARIA attributes and keyboard navigation (disabled)
-- **Performance Tests**: Configuration and rendering performance (disabled)
+test('validates environment components', async ({ page }) => {
+  // Use page object for interactions
+  const hub = new NebulaHubPage(page);
+  const validation = await hub.validateEnvironment();
 
-**For Developers:**
+  expect(validation.components.propertyCacheCheckbox).toBe(true);
+  expect(validation.components.modifyPropertiesButton).toBe(true);
+  expect(validation.components.extensionView).toBe(true);
 
-⚠️ **NON-FUNCTIONAL STATUS**:
-
-1. **Safe Codebase**: Disabled tests don't interfere with working features
-2. **Future Development**: Implementation structure preserved for future work
-3. **Documentation**: Complete documentation available in the Declarative Rendering extension below
-4. **Alternative Approaches**: Use working template system for customization
-
-**Test Execution:**
-
-```bash
-# All declarative rendering tests are skipped
-npm test -- --grep "Declarative Rendering"  # Will skip all tests with NON-FUNCTIONAL BETA messages
-
-# Test specific configurations
-npm test -- --grep "Data Table View"
-npm test -- --grep "Dashboard View"
-npm test -- --grep "Flexible Content View"
+  // Clean up validation cache
+  clearValidationCache(page);
+});
 ```
+
+### Dynamic Configuration Testing
+
+The extension unconfigured state test includes dynamic configuration validation:
+
+```javascript
+// Dynamic validation against object-properties.js
+const { getExpectedConfigurationDefaults } = require('../lib/utilities/configuration-defaults');
+const { analyzePropsStructure } = require('../lib/utilities/props-structure-analyzer');
+
+// Tests automatically adapt to changes in object-properties.js
+const expectedDefaults = getExpectedConfigurationDefaults();
+const propsStructure = analyzePropsStructure(expectedDefaults.props);
+
+// Validate configuration elements match expected defaults
+expect(titleValue).toBe(expectedDefaults.title);
+expect(isChecked).toBe(expectedDefaults.showTitles);
+```
+
+### Framework Components
+
+Essential utilities for comprehensive extension testing:
+
+- **Core Identifiers** (`lib/core/identifiers.js`) - Centralized DOM selectors and timeouts
+- **Configuration Identifiers** (`lib/core/configuration-identifiers.js`) - Specialized configuration panel selectors
+- **Validation Functions** (`lib/core/validation.js`) - Environment validation with caching
+- **Configuration Defaults** (`lib/utilities/configuration-defaults.js`) - Imports defaults from source files
+- **Props Structure Analyzer** (`lib/utilities/props-structure-analyzer.js`) - Dynamic MUI component analysis
+- **Page Objects** (`lib/page-objects/nebula-hub.js`) - Encapsulated UI interaction patterns
+- **DOM Utilities** (`lib/utilities/dom.js`) - Safe DOM interaction helpers
+- **JSON Editor** (`lib/utilities/json-editor.js`) - JSON configuration handling
+
+Key features:
+
+- Dynamic property structure analysis adapts to changes in `object-properties.js`
+- MUI component navigation patterns handle deeply nested DOM structures
+- Smart validation caching eliminates redundant DOM queries
+- Configuration defaults sourced directly from extension files
+- Comprehensive error handling with detailed logging
+- Consistent timing with standardized timeout values
+
+## ⚡ Performance Optimizations
+
+The testing framework includes performance optimizations for reliable test execution:
+
+### **Clean Setup & Teardown Structure**
+
+Tests use targeted setup/teardown that matches actual requirements:
+
+```javascript
+test.describe('Qlik Sense Extension E2E Tests', () => {
+  // Base setup for all tests
+  test.beforeEach(async () => {
+    page = await context.newPage();
+    await page.goto(`/dev/${nebulaQueryString}`, { waitUntil: 'domcontentloaded' });
+  });
+
+  test.afterEach(async () => {
+    await page.close(); // Clean page closure
+  });
+
+  // Extension tests with targeted cleanup
+  test.describe('Extension Development Tests', () => {
+    test.beforeEach(async () => {
+      hub = new NebulaHubPage(page);
+    });
+
+    test.afterEach(async () => {
+      // Clear validation cache for clean state
+      const { clearValidationCache } = require('./lib/core/validation');
+      clearValidationCache(page);
+
+      // Reset extension configuration if modified
+      await hub.resetConfiguration();
+    });
+  });
+});
+```
+
+**Benefits:**
+
+- ✅ **Targeted Cleanup**: Only cleans up what was actually modified
+- ✅ **Fast Execution**: Minimal setup/teardown overhead
+- ✅ **Clear Logging**: Explicit logging of cleanup operations
+
+### **Optimized Timeouts**
+
+- **Standard timeouts**: 5 seconds for most element detection
+- **Fast checks**: 2 seconds for quick existence checks
+- **Network operations**: 10 seconds for API calls and data loading
+- **Form elements**: 3 seconds for configuration panel interactions
+- **Element transitions**: 500ms for UI animations and accordion expansion
+
+### **Smart Validation Caching**
+
+Environment validation results are cached to avoid redundant DOM queries during test execution. Cache is cleared between test runs to ensure clean state.
+
+### **Dynamic Property Validation**
+
+The framework includes dynamic property structure analysis that adapts to changes in extension configuration:
+
+- Properties are analyzed from `object-properties.js` at runtime
+- MUI selectors are generated dynamically for each property type
+- Tests gracefully handle empty props objects or complex nested structures
+- Configuration defaults are imported directly from source files for accurate validation
+
+### Environment Validation and Cleanup
+
+The testing framework provides environment validation and cleanup:
+
+1. **Environment Validation** - Cached validation of essential UI components
+2. **Configuration Testing** - Page object interactions for configuration dialogs
+3. **Cache Management** - Clear validation caches for clean test state
+4. **Comprehensive Logging** - Detailed status reporting with emoji indicators
+
+The cleanup uses the `NebulaHubPage` page object model and `clearValidationCache()` function.
 
 ## 🚀 Running Tests
 
@@ -197,25 +277,50 @@ npx playwright show-report test/report
 
 ## 📊 Understanding Test Structure
 
-The framework runs tests organized by extension states:
+The framework runs three main test suites for comprehensive extension validation:
 
-| State         | Description                           |
-| ------------- | ------------------------------------- |
-| **No-Data**   | Default state - always reachable      |
-| **Data**      | Configured with dimensions/measures   |
-| **Selection** | User selection interaction simulation |
-| **Error**     | Error condition handling              |
-| **Common**    | Cross-state functionality             |
+| Test                            | Description                                                      |
+| ------------------------------- | ---------------------------------------------------------------- |
+| **Connection Test**             | Validates Qlik Cloud connection and Nebula Hub access            |
+| **Environment Test**            | Validates essential UI components are accessible                 |
+| **Extension Unconfigured Test** | Validates extension unconfigured state and configuration options |
+
+### Test Coverage Details
+
+#### Connection Test
+
+- Nebula.js version detection
+- Qlik Cloud engine URL validation
+- Page title and application element validation
+- Development mode URL verification
+
+#### Environment Test
+
+- Property cache checkbox accessibility (configuration panel identifier)
+- Modify properties button availability (JSON configuration access)
+- Extension view container presence (extension rendering validation)
+
+#### Extension Unconfigured Test
+
+- **Incomplete visualization display** - Validates "Incomplete visualization" message when unconfigured
+- **Configuration panel validation** - Tests data configuration buttons (Add Dimension, Add Measure)
+- **Caption properties validation** - Tests title, subtitle, footnote fields with dynamic defaults
+- **Custom properties validation** - Dynamic MUI component testing with props structure analysis
+- **JSON configuration validation** - Validates extension JSON configuration against object-properties.js defaults with Monaco Editor support
+
+These tests ensure your development environment is correctly configured and the extension behaves properly in its unconfigured state.
 
 ### Nebula Hub Integration
 
-This framework uses **Nebula hub interface interactions** instead of programmatic configuration, testing end point behavior and results:
+The framework tests **Nebula hub interface interactions** for environment validation, ensuring the development environment is properly configured for extension development.
 
-See code in `test/helpers/test-utils.js` for detailed implementation.
+The page object model in `test/lib/page-objects/nebula-hub.js` encapsulates common interaction patterns.
 
-### Extending Test Data
+### Test Data Configuration
 
-Add your own test dimensions and data fields to the data load script of your test Qlik Sense application. Be sure to update the `test/qlik-sense-app/load-script.qvs` file to keep your project repository up to date.
+The test environment uses data from `test/qlik-sense-app/load-script.qvs`. This script provides test dimensions and measures needed for environment validation.
+
+To extend test data, modify the load script in your test Qlik Sense application:
 
 Example:
 
@@ -231,30 +336,69 @@ Load * INLINE [
 
 ## 🐛 Troubleshooting
 
-### Common Issues & Solutions
+### Test-Specific Troubleshooting
 
-**❌ Tests fail with "Add dimension button not found"**
+These tests are designed to always pass in a properly configured environment. Test failures typically indicate user configuration issues that need correction.
 
-```
-✅ Solution: Verify your extension loads the Nebula hub interface
-- Check that property panel is enabled
-- Ensure extension is in edit mode
-```
-
-**❌ Configuration timeout errors**
+**❌ Connection Test Fails**
 
 ```
-✅ Solution: Check MUI backdrop interference
-- Tests automatically handle this with force clicks
-- Run with --headed to see visual interactions
+✅ Solution: Check Qlik Sense user setup and application access
+- Verify Qlik Cloud/Enterprise login credentials are correct
+- Ensure your user account has access to the test application
+- Check that the Qlik Sense environment is running and accessible
+- Validate network connectivity to Qlik Cloud tenant or Enterprise server
+- Confirm the test application exists and contains loaded data
 ```
 
-**❌ "Field not found" during configuration**
+**❌ Environment Test Fails**
 
 ```
-✅ Solution: Verify test data is loaded
-- Check your test app has the load script data
-- Confirm field names match exactly (case-sensitive)
+✅ Solution: Check Nebula Hub connection string and app ID
+- Verify the app ID in your Nebula Hub URL matches your test application
+- Ensure Nebula Hub connects to the correct Qlik environment
+- Confirm the extension loads properly in the Nebula Hub interface
+- Validate that property cache checkbox and configuration panel are accessible
+- Run tests with --headed to visually inspect the Nebula Hub interface
+```
+
+**❌ Extension Unconfigured Test Fails**
+
+```
+✅ Solution: Check extension data and object-properties files and entry-point code
+- Validate that configuration-defaults.js matches object-properties.js defaults
+  (configuration-defaults.js is located in test/lib/utilities/)
+- Verify object-properties.js contains correct caption properties (title, subtitle, footnote)
+  and that they are properly reflected in configuration-defaults.js
+- Ensure custom props structure in configuration-defaults.js matches test expectations
+- Check that data.js dimensions/measures constraints are properly configured
+- Validate that index.js (entry-point) correctly renders incomplete visualization state
+- Confirm configuration panel elements align with object-properties.js structure
+- Check for syntax errors in extension source files
+```
+
+### General Issues & Solutions
+
+**❌ Tests fail with timeout errors**
+
+```
+✅ Solution: Environment and timing issues
+- Verify your Qlik Cloud/Enterprise connection is stable
+- Ensure the extension loads properly in Nebula Hub
+- Confirm the test application contains required data
+- Check network latency and increase timeout values if needed
+- Verify no background processes are interfering with browser automation
+```
+
+**❌ "Component not found" errors**
+
+```
+✅ Solution: DOM structure and selector issues
+- Verify that MUI component selectors match the current Nebula Hub version
+- Ensure the extension configuration panel renders all expected form elements
+- Validate that test selectors correspond to the actual DOM structure
+- Run tests with --headed to visually inspect element selectors
+- Check browser developer tools to confirm element presence and attributes
 ```
 
 ### Debug Mode
@@ -262,13 +406,14 @@ Load * INLINE [
 Use debug mode to see exactly what's happening:
 
 ```bash
-# Visual debugging - see dropdown interactions
-npx playwright test --headed --grep "Data State"
+# Visual debugging - see interface interactions
+npx playwright test --headed --grep "Environment"
 
 # Step-by-step debugging - pause execution
 npx playwright test --debug
 
-# Note: slowMo is not supported in this workflow. Prefer --debug or --headed with fewer workers.
+# Single worker for consistent behavior
+npx playwright test --headed --workers=1
 ```
 
 Tip: For flake triage, prefer a single worker:
@@ -292,12 +437,12 @@ npx playwright test --reporter=line
 npx playwright test --max-failures=1 --timeout=60000
 ```
 
-### Common Flakiness Fixes
+### Common Testing Patterns
 
-- If a click fails due to overlays, use `clickWithBackdropHandling()` or prefer keyboard toggles
-- Re-query elements after DOM updates to avoid detached handles
-- Use bottom-most cells to avoid overlapping toolbars and popovers
-- Add small waits after confirming modal actions in headed mode
+- Use page object model for consistent interactions: `new NebulaHubPage(page)`
+- Clear validation cache between tests: `clearValidationCache(page)`
+- Handle MUI backdrop interference with `clickWithBackdropHandling()`
+- Use `waitForEnvironmentReady()` for proper page initialization
 
 ## 📖 Technical Details
 
@@ -305,234 +450,32 @@ npx playwright test --max-failures=1 --timeout=60000
 
 ### Key Components
 
-| Component         | Purpose                      | Location               |
-| ----------------- | ---------------------------- | ---------------------- |
-| `test-utils.js`   | Nebula interaction utilities | `test/helpers/`        |
-| State modules     | Extension state testing      | `test/states/`         |
-| Main orchestrator | Test organization            | `test/qs-ext.e2e.js`   |
-| Load script       | Test data generation         | `test/qlik-sense-app/` |
+| Component         | Purpose                            | Location                 |
+| ----------------- | ---------------------------------- | ------------------------ |
+| `nebula-hub.js`   | Page object model for interactions | `test/lib/page-objects/` |
+| `validation.js`   | Environment validation logic       | `test/lib/core/`         |
+| `qs-ext.e2e.js`   | Main test orchestrator             | `test/`                  |
+| `load-script.qvs` | Test data generation               | `test/qlik-sense-app/`   |
 
 ## 🚀 What's Next
 
 ### Extending the Framework
 
-1. **Add New States**: Create additional test modules in `test/states/`
-2. **Custom Interactions**: Extend `test-utils.js` with your specific Nebula patterns
-3. **Performance Tests**: Add timing and memory usage validation
-4. **Visual Testing**: Implement screenshot comparison for UI consistency
+1. **Add New Tests**: Extend the existing test structure for additional validation
+2. **Custom Page Objects**: Create additional page objects for specific UI interactions
+3. **Enhanced Validation**: Add more comprehensive environment validation checks
 
 ### Contributing
 
 When enhancing the testing framework:
 
-1. Keep all tests passing reliably
+1. Keep environment validation tests passing reliably
 2. Update documentation to reflect changes
-3. Follow the established modular architecture
-4. Ensure each test cleans up after itself
+3. Follow the established page object model architecture
+4. Ensure tests clean up after themselves
 
 ---
 
-## 📚 Additional Resources
-
-- **Setup Guides**: [Qlik Cloud](./QLIK_CLOUD_SETUP.md) | [Qlik Enterprise](./QLIK_ENTERPRISE_SETUP.md)
-- **Project History**: [CHANGELOG.md](./CHANGELOG.md) - Version updates and technical changes
-- **Playwright Docs**: [playwright.dev](https://playwright.dev/docs/intro)
-- **Nebula.js Docs**: [qlik.dev/libraries-and-tools/nebulajs](https://qlik.dev/libraries-and-tools/nebulajs)
-
 ---
 
-_This guide focuses on practical usage. For technical implementation details review the code files. For version history, see [CHANGELOG.md](./CHANGELOG.md)._
-
----
-
-## 📋 Extension: Declarative Rendering (NON-FUNCTIONAL BETA)
-
-**⚠️ WARNING: This feature is NON-FUNCTIONAL BETA work in progress. Implementation exists but does not activate properly.**
-
-### Status: NON-FUNCTIONAL BETA
-
-The declarative rendering system represents a comprehensive attempt to create configurable UI components for Qlik Sense extensions, but the implementation is not functional in its current state.
-
-### Architecture Overview
-
-#### Implementation Structure
-
-The declarative rendering system includes:
-
-- **Configuration Schema**: JSON-based configuration for 5 different view types
-- **Template System**: Declarative templates for each view type
-- **Integration Layer**: Connection between configuration and rendering pipeline
-- **Test Framework**: Comprehensive test suite (currently disabled)
-
-#### View Types (All Non-Functional)
-
-1. **dataTableView** - Tabular data presentation
-2. **dashboardView** - Dashboard-style layout
-3. **flexibleContentView** - Flexible layout system
-4. **errorStateView** - Error state rendering
-5. **loadingStateView** - Loading state display
-
-### Implementation Files
-
-#### Core Files
-
-- `src/rendering/declarative-integration.js` - Main integration logic
-- `src/rendering/template-manager.js` - Template management system
-- `src/rendering/views/` - Individual view implementations
-
-#### Configuration
-
-- Property panel integration for JSON configuration
-- `useDeclarativeRendering` toggle
-- `declarativeConfig` options for view selection
-
-#### Testing (Disabled)
-
-- `test/states/declarative-rendering.test.js` - Comprehensive test suite (disabled)
-- E2E test integration in `test/qs-ext.e2e.js` (disabled)
-
-### Known Issues
-
-#### Primary Issue: Activation Failure
-
-The core problem is in the activation logic:
-
-```javascript
-// From src/rendering/declarative-integration.js
-function shouldUseDeclarativeRendering(layout) {
-  // This function never returns true despite proper configuration
-  return layout.useDeclarativeRendering === true;
-}
-```
-
-**Problem**: Even when `useDeclarativeRendering` is properly configured via JSON, the function doesn't activate declarative rendering.
-
-#### Secondary Issues
-
-1. **Integration Gaps**: Gaps between configuration detection and rendering pipeline
-2. **Template Activation**: Declarative templates never override the default template system
-3. **DOM Generation**: No declarative DOM elements are ever generated
-
-### Configuration Approach
-
-#### JSON Configuration (Attempted)
-
-Users can modify the extension's configuration via "Modify object properties" dialog:
-
-```json
-{
-  "useDeclarativeRendering": true,
-  "declarativeConfig": {
-    "viewType": "dataTableView",
-    "options": {
-      "showHeaders": true,
-      "alternatingRows": true
-    }
-  }
-}
-```
-
-**Result**: Configuration is accepted but no rendering changes occur.
-
-#### Property Panel (Attempted)
-
-Property panel controls exist for:
-
-- Enabling declarative rendering
-- Selecting view type
-- Configuring view-specific options
-
-**Result**: Controls are accessible but selections don't activate declarative rendering.
-
-### Test Suite Status
-
-#### Test Coverage (All Disabled)
-
-The comprehensive test suite includes 12 tests covering:
-
-1. Basic configuration via JSON
-2. Property panel accessibility
-3. All 5 view type configurations
-4. Fallback mechanism validation
-5. Data configuration integration
-6. Responsive behavior testing
-7. Accessibility validation
-8. Performance testing
-
-#### Test Disabling
-
-All tests are disabled with:
-
-```javascript
-test.describe.skip('Declarative Rendering - DISABLED (NON-FUNCTIONAL BETA)', () => {
-  // All tests throw NON-FUNCTIONAL BETA errors
-});
-```
-
-### Development History
-
-#### What Was Attempted
-
-1. **Complete Implementation**: Full declarative rendering system implemented
-2. **Multiple Approaches**: Both JSON and property panel configuration methods
-3. **Comprehensive Testing**: Full test suite developed and validated
-4. **Documentation**: Complete documentation of intended functionality
-
-#### Discovery Process
-
-Through extensive testing, we discovered:
-
-- Configuration systems work properly
-- Template structures exist and are well-designed
-- Activation logic prevents any actual rendering
-- No declarative DOM elements are ever generated
-
-### Future Development
-
-#### Required Work
-
-To make this feature functional:
-
-1. **Debug Activation Logic**: Fix `shouldUseDeclarativeRendering()` function
-2. **Integration Fixes**: Bridge configuration to rendering pipeline
-3. **Template System**: Connect declarative templates to DOM generation
-4. **Testing**: Re-enable and validate test suite
-
-#### Estimated Effort
-
-This represents significant development work:
-
-- **Core Fixes**: 1-2 weeks of debugging and integration work
-- **Testing**: 1 week of test re-enabling and validation
-- **Documentation**: 1-2 days of guide updates
-
-### For Developers
-
-#### Code Preservation
-
-The implementation is preserved for future development:
-
-- All source files remain intact
-- Test framework structure maintained
-- Configuration schemas documented
-- Architecture decisions recorded
-
-#### Safe Usage
-
-The current codebase is safe to use:
-
-- Disabled features don't interfere with working functionality
-- Property panel controls are non-destructive
-- Test suite is safely disabled
-- No performance impact from non-functional code
-
-### Recommendations
-
-1. **Focus on Working Features**: Use the template system and property configurations that are functional
-2. **Future Iteration**: Consider this feature for a future development cycle when resources allow
-3. **Alternative Approaches**: Use existing template customization for similar functionality
-4. **Documentation**: Keep this documentation for future development reference
-
----
-
-**Note**: This documentation serves as a complete record of the attempted implementation for future development teams who may choose to complete this feature.
+_This guide describes the current testing framework functionality. For version history, see [CHANGELOG.md](./CHANGELOG.md)._

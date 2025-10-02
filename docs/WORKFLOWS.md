@@ -50,11 +50,11 @@ Tips:
 
 ### Render Custom UI
 
-- Edit `src/index.js`; use `useElement`, `useLayout`, and helpers in `src/utils.js`
+- Edit `src/index.js`; use `useElement`, `useLayout`, and helpers in `src/utils.js` (includes debug utilities)
 
 ### Write a New Test
 
-- Add a file in `test/states/`
+- Extend the existing test framework in `test/qs-ext.e2e.js`
 - See existing tests for patterns and fixtures
 
 ### Qlik Cloud/Enterprise Setup

@@ -77,6 +77,63 @@ export function safeGet(obj, path, defaultValue = null) {
 }
 
 /**
+ * Determines if debug features should be enabled.
+ * Uses multiple sources to detect development environment:
+ * - URL parameters (for testing/development)
+ * - Extension properties (for user-controlled debugging)
+ * - Development indicators (console availability, localhost, etc.)
+ *
+ * @param {Object} [layout] - Qlik Sense layout object
+ * @returns {boolean} True if debug features should be enabled
+ */
+export function isDebugEnabled(layout = null) {
+  // Check URL parameters for debug flag
+  if (typeof window !== 'undefined' && window.location) {
+    const urlParams = window.URLSearchParams ? new window.URLSearchParams(window.location.search) : null;
+    if (urlParams && (urlParams.has('debug') || urlParams.has('dev'))) {
+      return true;
+    }
+  }
+
+  // Check extension properties for debug flag
+  if (layout && safeGet(layout, 'props.debug.enabled', false)) {
+    return true;
+  }
+
+  // Check for development environment indicators
+  if (typeof window !== 'undefined') {
+    // Development host detection
+    const isLocalhost =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.includes('dev');
+
+    // Console availability (often disabled in production)
+    const hasConsole =
+      typeof console !== 'undefined' &&
+      // eslint-disable-next-line no-console
+      typeof console.log === 'function';
+
+    return isLocalhost && hasConsole;
+  }
+
+  return false;
+}
+
+/**
+ * Conditional debug logging that only logs when debug is enabled.
+ *
+ * @param {Object} [layout] - Qlik Sense layout object
+ * @param {...any} args - Arguments to log
+ */
+export function debugLog(layout, ...args) {
+  if (isDebugEnabled(layout) && typeof console !== 'undefined') {
+    // eslint-disable-next-line no-console
+    console.log('[QS-Ext Debug]:', ...args);
+  }
+}
+
+/**
  * Formats numbers for display.
  * @param {number} value Number to format
  * @param {{decimals?: number, thousands?: string, prefix?: string, suffix?: string}} options Formatting options

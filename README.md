@@ -2,7 +2,7 @@
 
 QS-Ext-Jump-Start is an advanced template project designed to accelerate Qlik Sense extension development. It features a comprehensive component-based architecture, flexible template system, declarative rendering framework, and robust testing infrastructure.
 
-See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: **0.5.0** - Major Architecture Refactor).
+See [CHANGELOG.md](./docs/CHANGELOG.md) for recent updates (current: **0.6.0** - JSON Configuration Validation & Debug Utilities).
 
 ## Two Usage Modes
 
@@ -83,7 +83,7 @@ This template includes a simple selections-focused example to demonstrate best p
 - Uses Qlik’s selection APIs via `useSelections.begin/select/cancel`
 - Shows a helpful no-data message when the configuration is invalid (pick 1 dim, optional 1 measure)
 
-See `src/index.js` and `src/styles.css` for the implementation, and `test/states/*.test.js` for E2E coverage. The suite covers no-data, data, selection behavior, error handling, accessibility, responsiveness, and robustness/re-renders.
+See `src/index.js` and `src/styles.css` for the implementation, and `test/qs-ext.e2e.js` for E2E coverage. The test suite validates environment setup and essential component accessibility.
 
 ## 📖 Documentation
 
@@ -139,11 +139,12 @@ src/
 │   ├── data.js           # 📊 Data processing
 │   └── object-properties.js  # 🎛️ Property panel setup
 ├── styles.css            # 🎨 Extension styling
-├── utils.js              # 🔧 Utility functions
+├── utils.js              # 🔧 Utility functions (debug, DOM helpers)
 └── meta.json            # 📋 Extension metadata
 
 test/
-├── states/              # 🧪 Add your custom tests here
+├── lib/                 # 🧪 Test framework library
+├── qs-ext.e2e.js        # 🧪 Environment validation tests
 └── qlik-sense-app/      # 📂 Test data (load script)
 ```
 
@@ -210,15 +211,23 @@ See deployment guides for your environment.
 1. **New Extension Logic** → Edit `src/index.js`
 2. **Property Panel Changes** → Update `src/qae/object-properties.js`
 3. **Data Processing** → Modify `src/qae/data.js`
-4. **Test Coverage** → Add tests in `test/states/`
+4. **Test Coverage** → Add tests to the existing framework
 
 See [Testing Guide](./docs/TESTING.md) for more information.
+
+### Development Tips
+
+**Debug Mode**: The extension includes debug utilities that activate automatically on localhost or when URL contains `debug=true`. Debug mode enables additional logging and development features.
+
+**Console Logging**: Use `debugLog()` from `src/utils.js` for conditional logging that only outputs when debug mode is active.
 
 ## 🆘 Need Help?
 
 ### Quick Troubleshooting
 
-**🔴 Tests failing?** → Check [Testing Guide troubleshooting](./docs/TESTING.md#troubleshooting). Consider running headed and single-worker for investigation.  
+**🔴 Connection test fails?** → Check Qlik Sense user setup and application access. See [Testing Guide troubleshooting](./docs/TESTING.md#troubleshooting).  
+**🔴 Environment test fails?** → Check Nebula Hub connection string and app ID. Run with `--headed` to inspect interface.  
+**🔴 Extension unconfigured test fails?** → Check extension data and object-properties files and entry-point code.  
 **🔴 Development server issues?** → Verify environment setup guides  
 **🔴 Deployment problems?** → See deployment documentation for your platform
 

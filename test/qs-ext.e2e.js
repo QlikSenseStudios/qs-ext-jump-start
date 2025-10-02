@@ -1,422 +1,116 @@
-const { test, expect } = require('@playwright/test');
+/**
+ * @fileoverview E2E test orchestrator for Qlik Sense extension testing.
+ *
+ * This file serves as the main entry point for all E2E tests, importing and
+ * orchestrating test modules for comprehensive extension validation.
+ *
+ * Test modules:
+ * - Connection: Validates Qlik Cloud connection and Nebula Hub access
+ * - Environment: Validates essential UI components are accessible
+ * - Extension Unconfigured: Tests extension unconfigured state behavior
+ */
+
+const { test } = require('@playwright/test');
 const { getNebulaQueryString, getQlikServerAuthenticatedContext } = require('./qs-ext.connect');
-const { clearAllSelections, resetPropertiesToEmptyJson } = require('./helpers/test-utils');
+const { NebulaHubPage } = require('./lib');
+const { connectionTests, environmentTests, extensionUnconfiguredTests } = require('./modules');
 
-// Import modular state-specific test suites
-const noDataTests = require('./states/no-data.test');
-const dataTests = require('./states/data.test');
-const selectionTests = require('./states/selection.test');
-const errorTests = require('./states/error.test');
-const commonTests = require('./states/common.test');
-const a11yTests = require('./states/accessibility.test');
-const responsiveTests = require('./states/responsiveness.test');
-const robustTests = require('./states/robustness.test');
-const declarativeTests = require('./states/declarative-rendering.test');
+/**
+ * Pauses execution when running in headed mode to allow visual inspection.
+ *
+ * @param {import('@playwright/test').TestInfo} testInfo - Test information
+ * @param {import('@playwright/test').Page} page - Browser page
+ * @param {number} [timeoutInMs=2000] - Pause duration in milliseconds
+ */
+async function slowForShow(testInfo, page, timeoutInMs = 2000) {
+  if (!testInfo.project.use.headless) {
+    await page.waitForTimeout(timeoutInMs);
+  }
+}
 
+/**
+ * Main test orchestrator.
+ *
+ * Sets up the testing environment and coordinates the execution of all test modules.
+ * Provides shared context and utilities to each test module.
+ */
 test.describe('Qlik Sense Extension E2E Tests', () => {
-  // Test configuration constants
   const nebulaQueryString = getNebulaQueryString();
-  const content = '.njs-viz[data-render-count]'; // Keep original name for compatibility
-  const viewports = [
-    // Keep original name for compatibility
-    { width: 1920, height: 1080, name: 'Desktop' },
-    { width: 768, height: 1024, name: 'Tablet' },
-    { width: 375, height: 667, name: 'Mobile' },
-  ];
 
   let context;
   let page;
+  let hub;
 
-  // Global test setup - establish authenticated Qlik context
   test.beforeAll(async ({ browser }) => {
     context = await getQlikServerAuthenticatedContext({ browser });
   });
 
-  // Global test teardown - cleanup resources
-  test.afterAll(async ({ browser }) => {
+  test.afterAll(async () => {
     await context.close();
-    await browser.close();
   });
 
+  // Create fresh page for each test
   test.beforeEach(async () => {
     page = await context.newPage();
-    await page.goto(`/dev/${nebulaQueryString}`);
-    await commonTests.waitForExtensionRender(page, content);
+    console.log(`✅ Test page created.`);
+
+    await page.goto(`/dev/${nebulaQueryString}`, { waitUntil: 'domcontentloaded' });
   });
 
   test.afterEach(async () => {
-    // Clean up any configuration before closing
-    try {
-      // Always clear selections first to avoid bleed between tests
-      await clearAllSelections(page);
-      await dataTests.cleanupConfiguration(page);
-      // Reset object properties to a blank state to avoid config artifacts across tests
-      await resetPropertiesToEmptyJson(page);
-    } catch {
-      // Silently handle cleanup failures
+    if (page) {
+      // Pause for visual inspection in headed mode
+      await slowForShow(test.info(), page, 2000);
+
+      // Close page to ensure clean state
+      await page.close();
+      console.log(`✅ Test page closed.`);
     }
-    await page.close();
   });
 
-  test.describe('No-Data State', () => {
-    test('should render no-data state by default', async () => {
-      const state = await commonTests.getExtensionState(page, content);
-      expect(state).toBe('no-data');
+  // Test context shared across all modules
+  const testContext = {
+    get page() {
+      return page;
+    },
+    get hub() {
+      return hub;
+    },
+    slowForShow,
+  };
 
-      await noDataTests.shouldRenderNoDataState(page, content);
+  // Connection tests - don't need NebulaHubPage
+  connectionTests(testContext);
+
+  // Tests that require NebulaHubPage
+  test.describe('Extension Development Tests', () => {
+    test.beforeEach(async () => {
+      // Initialize page object for tests that need it
+      hub = new NebulaHubPage(page);
     });
 
-    test('should have proper accessibility in no-data state', async () => {
-      await commonTests.validateStateExists(page, content, ['no-data']);
-      await noDataTests.shouldHaveProperAccessibility(page, content);
-    });
+    test.afterEach(async () => {
+      if (hub) {
+        // Pause for visual inspection in headed mode
+        await slowForShow(test.info(), page, 3000);
 
-    test('should be responsive in no-data state', async () => {
-      await commonTests.validateStateExists(page, content, ['no-data']);
+        // Clear validation cache for clean state between tests
+        const { clearValidationCache } = require('./lib/core/validation');
+        clearValidationCache(page);
+        console.log('🧹 Cleared validation cache for clean state');
 
-      for (const viewport of viewports) {
-        await noDataTests.shouldBeResponsive(page, content, viewport);
+        // Reset extension configuration to clean state
+        console.log('🧹 Clearing nebula hub configuration in teardown');
+        const resetSuccess = await hub.resetConfiguration();
+        if (resetSuccess) {
+          console.log('   • Configuration reset: ✅ Success');
+        } else {
+          console.log('   • Configuration reset: ⚠️ Skipped (already empty or unavailable)');
+        }
       }
     });
 
-    test('should show hint for invalid config: 2 dimensions', async () => {
-      await noDataTests.configureInvalidTwoDimensionsAndValidate(page, content);
-    });
-
-    test('should show hint for invalid config: 1 dimension + 2 measures', async () => {
-      await noDataTests.configureInvalidTwoMeasuresAndValidate(page, content);
-    });
-
-    test('valid-but-empty should not show invalid-config hint (if reachable)', async () => {
-      await noDataTests.attemptValidButEmptyAndValidateOptional(page, content);
-    });
-  });
-
-  test.describe('Data State', () => {
-    test('should attempt to configure extension for data state', async () => {
-      // This test documents the configuration attempt without depending on success
-      await dataTests.attemptConfiguration(page);
-
-      // We can't guarantee configuration success in E2E environment
-      // So we test what we can observe
-      const finalState = await commonTests.getExtensionState(page, content);
-      expect(['no-data', 'extension-container', 'error-message']).toContain(finalState);
-    });
-
-    test('should validate data state if reachable', async () => {
-      // Gate: This test runs full validations only if the E2E environment can reach data state.
-      // Rationale: Configuration depends on the host app's data; when not reachable we document and return.
-      const configured = await dataTests.attemptConfiguration(page);
-      const state = await commonTests.getExtensionState(page, content);
-
-      if (configured) {
-        // If configuration reported success, we must be in data state
-        expect(state).toBe('extension-container');
-        await dataTests.shouldRenderDataState(page, content);
-        await dataTests.shouldHaveProperAccessibility(page, content);
-        await dataTests.shouldDisplayDataCorrectly(page, content);
-      } else {
-        // Document that data state was not reachable due to configuration failure
-        test.info().annotations.push({
-          type: 'skip',
-          description: `Configuration failed; skipping data validations. Current state: ${state}`,
-        });
-        return; // Explicitly exit as a stub for environments where data state is not guaranteed
-      }
-    });
-
-    test('should support keyboard navigation if in data state', async () => {
-      // Gate: Only meaningful if data state is reachable; otherwise skip as a documented stub.
-      const configured = await dataTests.attemptConfiguration(page);
-      const state = await commonTests.getExtensionState(page, content);
-
-      if (configured) {
-        expect(state).toBe('extension-container');
-        await dataTests.shouldSupportKeyboardNavigation(page, content);
-      } else {
-        test.info().annotations.push({
-          type: 'skip',
-          description: 'Keyboard navigation test skipped - configuration failed',
-        });
-        return; // Stub path; environment did not allow data state
-      }
-    });
-
-    test('should render with 1 dimension only (no measure)', async () => {
-      await dataTests.configureOneDimensionOnlyAndValidate(page, content);
-    });
-
-    test('should render with alternate aggregation (Avg)', async () => {
-      await dataTests.configureAlternateAggregationAndValidate(page, content);
-    });
-
-    test('should handle large row count gracefully', async () => {
-      await dataTests.configureLargeRowCountAndValidate(page, content);
-    });
-  });
-
-  test.describe('Selection State', () => {
-    test('should attempt to trigger selection state', async () => {
-      // Attempt selection directly (helper will configure if needed)
-      const selectionAttempted = await selectionTests.attemptSelectionTrigger(page, content);
-
-      // Document the attempt
-      test.info().annotations.push({
-        type: 'info',
-        description: `Selection trigger attempted: ${selectionAttempted}`,
-      });
-    });
-
-    test('should validate selection state if reachable', async () => {
-      // Attempt selection (helper will configure if needed)
-      await selectionTests.attemptSelectionTrigger(page, content);
-
-      const state = await commonTests.getExtensionState(page, content);
-
-      if (state === 'selection-mode') {
-        await selectionTests.shouldRenderSelectionState(page, content);
-        await selectionTests.shouldHaveProperAccessibility(page, content);
-        await selectionTests.shouldIndicateActiveSelection(page, content);
-      } else {
-        test.info().annotations.push({
-          type: 'info',
-          description: `Selection state not reached. Current state: ${state}`,
-        });
-        return; // Documented stub when selection mode cannot be reached in this environment
-      }
-    });
-
-    test('should enter selection with plain click (no Ctrl) and highlight cell', async () => {
-      await selectionTests.shouldEnterSelectionWithPlainClick(page, content);
-    });
-
-    test('should toggle same cell off', async () => {
-      await selectionTests.shouldToggleSameCellOff(page, content);
-    });
-
-    test('should multi-select then exit when all deselected', async () => {
-      await selectionTests.shouldMultiSelectAndThenExit(page, content);
-    });
-
-    test('should support keyboard toggling (Enter/Space)', async () => {
-      await selectionTests.shouldSupportKeyboardToggle(page, content);
-    });
-
-    test('should confirm selections by clicking outside and filter rows', async () => {
-      await selectionTests.shouldConfirmSelectionsByClickingOutside(page, content);
-    });
-
-    test('should confirm selections via button and filter rows', async () => {
-      await selectionTests.shouldConfirmSelectionsByButton(page, content);
-    });
-  });
-
-  test.describe('Error State', () => {
-    test('should attempt to trigger error state', async () => {
-      const errorAttempted = await errorTests.attemptErrorTrigger(page, content);
-
-      test.info().annotations.push({
-        type: 'info',
-        description: `Error trigger attempted: ${errorAttempted}`,
-      });
-    });
-
-    test('should validate error state if reachable', async () => {
-      await errorTests.attemptErrorTrigger(page, content);
-
-      // Wait for potential error state
-      await page.waitForTimeout(2000);
-
-      const state = await commonTests.getExtensionState(page, content);
-
-      if (state === 'error-message') {
-        await errorTests.shouldRenderErrorState(page, content);
-        await errorTests.shouldHaveProperAccessibility(page, content);
-        await errorTests.shouldProvideUsefulErrorMessage(page, content);
-      } else {
-        test.info().annotations.push({
-          type: 'info',
-          description: `Error state not reached. Current state: ${state}`,
-        });
-        return; // Documented stub when error state cannot be reached
-      }
-    });
-
-    test('should not allow selection interactions in error state', async () => {
-      await errorTests.attemptErrorTrigger(page, content);
-      await page.waitForTimeout(500);
-      await errorTests.shouldNotAllowSelectionInError(page, content);
-    });
-
-    test('should avoid rendering duplicate error elements on repeated triggers', async () => {
-      await errorTests.attemptErrorTrigger(page, content);
-      await page.waitForTimeout(500);
-      await errorTests.shouldNotDuplicateErrorsOnRepeatedTrigger(page, content);
-    });
-
-    test('should recover to data state after applying a valid configuration', async () => {
-      await errorTests.attemptErrorTrigger(page, content);
-      await page.waitForTimeout(500);
-      await errorTests.shouldRecoverAfterValidConfiguration(page, content);
-    });
-
-    test('error message should remain visible across viewport changes', async () => {
-      await errorTests.attemptErrorTrigger(page, content);
-      await page.waitForTimeout(500);
-      await errorTests.shouldRemainVisibleOnResize(page, content);
-    });
-  });
-
-  test.describe('Common Functionality', () => {
-    test('should maintain basic accessibility across all states', async () => {
-      await commonTests.validateBasicAccessibility(page, content);
-
-      // Test state detection works
-      const state = await commonTests.getExtensionState(page, content);
-      expect(['no-data', 'extension-container', 'selection-mode', 'error-message']).toContain(state);
-    });
-
-    test('should handle responsive design across viewports', async () => {
-      await commonTests.testResponsiveDesign(page, content, viewports);
-    });
-
-    test('should validate state transitions are handled gracefully', async () => {
-      // Test that extension handles rapid changes without breaking
-      const initialState = await commonTests.getExtensionState(page, content);
-
-      // Attempt various configurations
-      await dataTests.attemptConfiguration(page);
-      await page.waitForTimeout(500);
-
-      await selectionTests.attemptSelectionTrigger(page, content);
-      await page.waitForTimeout(500);
-
-      // Ensure we're still in a valid state
-      const finalState = await commonTests.getExtensionState(page, content);
-      expect(['no-data', 'extension-container', 'selection-mode', 'error-message']).toContain(finalState);
-
-      test.info().annotations.push({
-        type: 'info',
-        description: `State transition: ${initialState} → ${finalState}`,
-      });
-    });
-  });
-
-  test.describe('Accessibility Refinements', () => {
-    test('container roles and labels are correct across states', async () => {
-      await a11yTests.verifyContainerRolesAcrossStates(page, content);
-    });
-
-    test('cells expose role/button, aria-labels, and Tab order is predictable', async () => {
-      await a11yTests.verifyCellAccessibilityAndTabOrder(page, content);
-    });
-
-    test('no-data hint uses aria-live polite note region', async () => {
-      await a11yTests.verifyNoDataLiveRegion(page, content);
-    });
-
-    test('table headers have proper scope and labels', async () => {
-      await a11yTests.verifyHeaderScopes(page, content);
-    });
-  });
-
-  test.describe('Responsiveness and Layout', () => {
-    test('no-data is centered without overflow across viewports', async () => {
-      const viewports = [
-        { width: 1920, height: 1080 },
-        { width: 768, height: 1024 },
-        { width: 375, height: 667 },
-      ];
-      await responsiveTests.verifyNoDataCenteredWithoutOverflow(page, content, viewports);
-    });
-
-    test('data table fits and remains interactable across viewports', async () => {
-      const viewports = [
-        { width: 1920, height: 1080 },
-        { width: 1024, height: 768 },
-        { width: 768, height: 1024 },
-        { width: 375, height: 667 },
-      ];
-      await responsiveTests.verifyDataTableFitsViewport(page, content, viewports);
-    });
-
-    test('selection layout has no overflow and keeps selected cell visible', async () => {
-      const viewports = [
-        { width: 1920, height: 1080 },
-        { width: 1024, height: 768 },
-        { width: 768, height: 1024 },
-        { width: 375, height: 667 },
-      ];
-      await responsiveTests.verifySelectionLayoutAcrossViewports(page, content, viewports);
-    });
-  });
-
-  test.describe('Robustness and Re-renders', () => {
-    test('should not duplicate containers or tables on re-render', async () => {
-      await robustTests.verifyNoDuplicateContainersOrTablesOnReRender(page, content);
-    });
-
-    test('selection toggles once per click (no duplicate listeners)', async () => {
-      await robustTests.verifySelectionTogglesOncePerClick(page, content);
-    });
-
-    test('selected items persist across re-renders during a session', async () => {
-      await robustTests.verifySelectionPersistsAcrossRenders(page, content);
-    });
-
-    test('page reload recovers to a valid state without errors', async () => {
-      await robustTests.verifyReloadRecovers(page, content);
-    });
-  });
-
-  // DISABLED: Declarative Rendering tests (NON-FUNCTIONAL BETA)
-  test.describe.skip('Declarative Rendering - DISABLED (NON-FUNCTIONAL BETA)', () => {
-    test('NON-FUNCTIONAL: declarative rendering via JSON', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: property panel accessibility after JSON setup', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: Dashboard View configuration', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: Flexible Content View configuration', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: Error State View configuration', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: Loading State View configuration', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: fallback mechanism', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: declarative rendering with data configuration', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: responsive behavior across viewports', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: accessibility features', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: error handling', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
-
-    test('NON-FUNCTIONAL: performance', async () => {
-      test.skip(declarativeTests.disabled, 'Declarative rendering is NON-FUNCTIONAL BETA work in progress');
-    });
+    environmentTests(testContext);
+    extensionUnconfiguredTests(testContext);
   });
 });

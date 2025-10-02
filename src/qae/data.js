@@ -13,8 +13,14 @@ export default {
   targets: [
     {
       path: '/qHyperCubeDef',
-      // Additional data processing can be configured here
-      // Example: dimensions, measures, sorting, etc., often defined in object-properties.js
+      dimensions: {
+        min: 1,
+        max: 1,
+      },
+      measures: {
+        min: 0,
+        max: 1,
+      },
     },
   ],
 

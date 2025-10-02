@@ -8,7 +8,7 @@ function getNebulaQueryString() {
 
 async function getQlikServerAuthenticatedContext({ browser }) {
   const loginUrl = process.env.QLIK_WEB_INTEGRATION_ID
-    ? `https://${process.env.QLIK_ENGINE_HOST}/sense/app/${process.env.QLIK_APP_ID}/overview/hubUrl/%2Fanalytics%2Fhome`
+    ? `https://${process.env.QLIK_ENGINE_HOST}/sense/app/${process.env.QLIK_APP_ID}/overview`
     : `https://${process.env.QLIK_ENGINE_HOST}/${process.env.QLIK_VP_PREFIX}/sense/app/${process.env.QLIK_APP_ID}`;
 
   const context = await browser.newContext(
@@ -33,7 +33,7 @@ async function getQlikServerAuthenticatedContext({ browser }) {
     await page.getByRole('button', { name: 'Log In' }).click();
   }
 
-  await page.waitForURL(`${loginUrl}${process.env.QLIK_WEB_INTEGRATION_ID ? '' : '/overview'}`);
+  await page.waitForURL(`${loginUrl}`);
 
   return context;
 }

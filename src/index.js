@@ -18,7 +18,7 @@ import {
 } from './state';
 import { createNoDataComponent, attachSelectionHandlers } from './components';
 import { createExtensionStateTemplate } from './templates';
-import { renderExtensionAuto } from './rendering';
+import { debugLog } from './utils';
 import './styles.css';
 
 /**
@@ -50,6 +50,8 @@ export default function supernova(galaxy) {
       const selectionState = ensureSelectionState(element);
 
       useEffect(() => {
+        // Debug logging when enabled (checks URL params, extension props, or dev environment)
+        debugLog(layout, 'Rendering with layout:', layout);
         // Do not clear the root element up-front; we keep a stable container for data/selection
 
         try {
@@ -65,61 +67,35 @@ export default function supernova(galaxy) {
           // Process layout data for validation and extraction
           const processedData = processLayoutData(layout);
 
-          // Check for declarative rendering mode
-          // TODO: Fix property panel integration issues for declarative rendering
-          // Current issues:
-          // 1. Property panel dropdown may not be accessible in Qlik Sense environment
-          // 2. Changes to dropdown may not persist to JSON configuration properly
-          // 3. Controls may not appear in expected location alongside dimensions/measures
-          // Workaround: Use "Modify object properties" JSON dialog for reliable configuration
-          const useDeclarative = layout.props?.useDeclarativeRendering || false;
+          // Check for debug forced states (simplified)
+          const debugEnabled = layout.props?.debug?.enabled;
+          const forceState = layout.props?.debug?.forceState;
 
-          if (useDeclarative) {
-            // Declarative Rendering Path
-            const extensionState = {
-              state: !processedData.isValid ? 'no-data' : !processedData.hasData ? 'no-data' : 'data',
-              data: {
-                ...processedData,
-                localData: processedData.hasData
-                  ? updateLocalDataState(selectionState, processedData.dataMatrix, inSelection)
-                  : [],
-              },
-              inSelection,
-              layout,
-              element,
-            };
-
-            // Try declarative rendering
-            const declarativeSuccess = renderExtensionAuto(extensionState, {
-              configId: layout.props?.declarativeConfig || 'dataTableView',
-              preferDeclarative: true,
-            });
-
-            if (declarativeSuccess) {
-              // Update selection state for declarative rendering
-              updateLastSelectionState(selectionState, inSelection);
-
-              // Attach selection handlers if in data state
-              if (extensionState.state === 'data') {
-                const tbody = element.querySelector('tbody');
-                if (tbody) {
-                  attachSelectionHandlers(tbody, {
-                    selectionState,
-                    inSelection,
-                    selections,
-                  });
-                }
-              }
-              return;
-            }
-            // Fall through to template rendering if declarative fails
+          if (debugEnabled && forceState && forceState !== '') {
+            resetElementContainer(element);
+            element.appendChild(
+              createNoDataComponent(
+                processedData.counts.dimCount,
+                processedData.counts.measCount,
+                forceState,
+                `Debug: Simulating ${forceState} scenario`
+              )
+            );
+            return;
           }
 
           // Template Rendering Path (default)
           if (!processedData.isValid) {
             // Ensure we don't accumulate multiple .no-data nodes across renders
             resetElementContainer(element);
-            element.appendChild(createNoDataComponent(processedData.counts.dimCount, processedData.counts.measCount));
+            element.appendChild(
+              createNoDataComponent(
+                processedData.counts.dimCount,
+                processedData.counts.measCount,
+                processedData.errorType,
+                processedData.errorReason
+              )
+            );
             return;
           }
 
@@ -127,13 +103,15 @@ export default function supernova(galaxy) {
           if (!processedData.hasData) {
             resetElementContainer(element);
 
-            // Use state template for no-data scenario
-            const noDataTemplate = createExtensionStateTemplate('no-data', {
-              dimCount: processedData.counts.dimCount,
-              measCount: processedData.counts.measCount,
-            });
-
-            element.appendChild(noDataTemplate);
+            // Use no-data component for better error messaging
+            element.appendChild(
+              createNoDataComponent(
+                processedData.counts.dimCount,
+                processedData.counts.measCount,
+                processedData.errorType,
+                processedData.errorReason
+              )
+            );
             return;
           }
 
@@ -197,7 +175,7 @@ export default function supernova(galaxy) {
 
           element.appendChild(errorTemplate);
         }
-      }, [element, layout]);
+      }, [layout]);
     },
   };
 }
