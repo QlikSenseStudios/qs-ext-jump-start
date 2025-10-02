@@ -8,7 +8,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ## [Unreleased]
 
-_No changes yet._
+### Enhanced
+
+- **Debug Utilities**: Consolidated debug detection and logging functionality in `src/utils.js` with `isDebugEnabled()` and `debugLog()` functions
 
 ## [0.5.0] - 2025-09-04
 

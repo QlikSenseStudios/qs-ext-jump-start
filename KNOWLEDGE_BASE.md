@@ -76,6 +76,15 @@ See [README.md](./README.md) for detailed quick start instructions.
 - Use per-element `WeakMap` for state instead of attaching data to functions or globals
 - Prevent duplicate stateful nodes (like `.no-data`) across renders
 
+### Debug System
+
+The extension includes centralized debug utilities in `src/utils.js`:
+
+- **`isDebugEnabled()`** - Detects debug mode from URL parameters (`debug=true`), extension properties, or localhost environment
+- **`debugLog()`** - Outputs console messages only when debug mode is active
+
+Debug mode activates automatically on localhost or when explicitly enabled. The extension uses these utilities consistently across components for conditional development features and logging.
+
 ### Selection Mode Detection
 
 - Treat selection mode as a modifier class on the container: `.extension-container.in-selection`

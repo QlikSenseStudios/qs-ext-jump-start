@@ -26,7 +26,7 @@ This document explains the purpose and typical usage of each file and folder.
 - `index.js` — Supernova entrypoint that wires Stardust hooks to component rendering
 - `ext.js` — Extension configuration (support flags, property panel container)
 - `styles.css` — Basic styles; update for your UI
-- `utils.js` — Reusable helpers for DOM creation and safe property access
+- `utils.js` — Reusable helpers for DOM creation, safe property access, and debug functionality
 - `meta.json` — Minimal metadata for packaging
 
 ### Component-Based Architecture (`src/components/`)

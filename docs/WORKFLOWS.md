@@ -50,7 +50,7 @@ Tips:
 
 ### Render Custom UI
 
-- Edit `src/index.js`; use `useElement`, `useLayout`, and helpers in `src/utils.js`
+- Edit `src/index.js`; use `useElement`, `useLayout`, and helpers in `src/utils.js` (includes debug utilities)
 
 ### Write a New Test
 

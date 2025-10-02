@@ -17,7 +17,7 @@
  *  property defaults. Reference to package.json here is used for simplicity but is not
  *  intended to make it seem like it is authoritative for any of its usage.
  *
- * @returns {Object} Expected configuration values with data constraints
+ * @returns {Object} Expected configuration values with data constraints and qType
  */
 function getExpectedConfigurationDefaults() {
   // Import actual configuration values from source files
@@ -58,6 +58,9 @@ function getExpectedConfigurationDefaults() {
     // Data constraints from data.js
     dimensions: dimensionConstraints,
     measures: measureConstraints,
+
+    // qType name from package.json (same source as object-properties.js)
+    qType: pkg.name,
   };
 }
 

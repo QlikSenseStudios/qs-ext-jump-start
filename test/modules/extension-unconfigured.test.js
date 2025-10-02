@@ -10,6 +10,11 @@ const { IDENTIFIERS, TIMEOUTS } = require('../lib/core/identifiers');
 const { CONFIGURATION_IDENTIFIERS, CONFIGURATION_TIMEOUTS } = require('../lib/core/configuration-identifiers');
 const { getExpectedConfigurationDefaults } = require('../lib/utilities/configuration-defaults');
 const { analyzePropsStructure } = require('../lib/utilities/props-structure-analyzer');
+const {
+  getJsonEditorContent,
+  validateJsonStructure,
+  expandMonacoEditorContent,
+} = require('../lib/utilities/json-editor');
 
 /**
  * Extension unconfigured state validation tests.
@@ -251,6 +256,196 @@ function extensionUnconfiguredTests(testContext) {
         type: 'info',
         description: 'Custom properties validation using exact MUI DOM structure patterns',
       });
+    });
+
+    test('validates JSON configuration matches object-properties.js defaults', async () => {
+      const { hub } = testContext;
+      let dialogIsOpen = false;
+
+      try {
+        // Get expected configuration values dynamically from source files
+        const expectedDefaults = await getExpectedConfigurationDefaults();
+
+        // Give the page a moment to settle after previous tests
+        await hub.page.waitForTimeout(2000);
+
+        // Open properties dialog using the same approach as teardown
+        const dialogOpened = await hub.openPropertiesDialog();
+        if (!dialogOpened) {
+          // Fail test with meaningful error message for environment issues
+          const errorMsg =
+            'Properties dialog failed to open. This could indicate:\n' +
+            '  • Extension not properly loaded in test environment\n' +
+            '  • Previous test interference with dialog state\n' +
+            '  • Network connectivity issues with Qlik Sense\n' +
+            '  • Browser/page state corruption\n\n' +
+            'Please verify test environment and re-run tests.';
+
+          // Use expect.fail for clear test failure reporting
+          expect(dialogOpened).toBe(true);
+          throw new Error(errorMsg);
+        }
+
+        dialogIsOpen = true;
+
+        // Additional wait for dialog stabilization
+        await hub.page.waitForTimeout(CONFIGURATION_TIMEOUTS.PANEL_STABILIZATION);
+
+        // Try to expand Monaco Editor content first
+        await expandMonacoEditorContent(hub.page);
+        await hub.page.waitForTimeout(CONFIGURATION_TIMEOUTS.ELEMENT_TRANSITION);
+
+        // Get the JSON content from the properties editor
+        const jsonResult = await getJsonEditorContent(hub.page);
+
+        // Validate that we successfully retrieved JSON content
+        expect(jsonResult.success).toBe(true);
+        expect(jsonResult.content).toBeDefined();
+        expect(jsonResult.content.length).toBeGreaterThan(0);
+        console.log(`JSON retrieved using: ${jsonResult.method}`);
+
+        // Validate that we're getting proper Monaco Editor (indicates correct dialog state)
+        if (jsonResult.method === 'Input Field') {
+          const errorMsg =
+            'Dialog state issue: Expected Monaco Editor but got Input Field. This suggests:\n' +
+            '  • Properties dialog did not open correctly\n' +
+            '  • UI framework version mismatch\n' +
+            '  • Dialog content not fully loaded\n\n' +
+            'Please check the test environment and ensure the properties dialog opens properly.';
+
+          // Fail test with proper expect assertion and helpful error message
+          expect(jsonResult.method).not.toBe('Input Field');
+          throw new Error(errorMsg);
+        }
+
+        // Build required sections dynamically - only core sections that are always visible
+        const requiredSections = ['qInfo', 'qType', 'qHyperCubeDef'];
+
+        // Add sections that are likely to be visible in collapsed JSON
+        const coreConfigSections = ['showTitles', 'props'];
+        coreConfigSections.forEach((section) => {
+          if (expectedDefaults[section] !== undefined && !requiredSections.includes(section)) {
+            requiredSections.push(section);
+          }
+        });
+
+        // Get the expected qType from configuration defaults (uses same source as object-properties.js)
+        const expectedQType = expectedDefaults.qType;
+
+        // Use the extracted validation utility with flexible property path mapping
+        const validationResult = validateJsonStructure(jsonResult.content, {
+          allowPartialJson: true,
+          requiredSections: requiredSections,
+          propertyPaths: {
+            qType: 'qInfo.qType', // qType is nested in qInfo section
+          },
+          expectedValues: {
+            qType: expectedQType, // Validate qType matches expected value
+          },
+        });
+
+        // Enhanced validation for qType using improved validation system
+        if (validationResult.isPartialJson) {
+          // For partial JSON, ensure qType section was found and validated
+          if (requiredSections.includes('qType')) {
+            expect(validationResult.foundSections).toContain('qType');
+            console.log(`✓ Verified qType matches object-properties.js: ${expectedQType}`);
+          }
+        }
+
+        // Assert that validation was successful
+        expect(validationResult.success).toBe(true);
+        expect(validationResult.foundSections.length).toBeGreaterThan(0);
+
+        // Validate core required sections
+        expect(validationResult.foundSections).toContain('qInfo');
+        expect(validationResult.foundSections).toContain('qHyperCubeDef');
+
+        // Validate configuration sections that exist in expected defaults
+        if (expectedDefaults.showTitles !== undefined) {
+          expect(validationResult.foundSections).toContain('showTitles');
+        }
+        if (expectedDefaults.props) {
+          expect(validationResult.foundSections).toContain('props');
+        }
+
+        // Log validation details for debugging
+        console.log('📋 JSON Validation Summary:');
+        console.log(`   Extension: ${expectedQType} (from object-properties.js)`);
+        console.log(`   Expected sections: ${requiredSections.join(', ')}`);
+        validationResult.validationDetails.forEach((detail) => console.log(`   ${detail}`));
+
+        if (validationResult.isPartialJson) {
+          console.log('⚠️  Validated partial JSON due to Monaco Editor collapsed display');
+          test.info().annotations.push({
+            type: 'info',
+            description: `JSON structure validation for ${expectedQType} (Monaco Editor collapsed view)`,
+          });
+        } else {
+          console.log('✅ Full JSON parsing and validation completed');
+
+          // Additional validation for complete JSON using dynamic values
+          expect(validationResult.jsonObject).toBeDefined();
+          expect(typeof validationResult.jsonObject).toBe('object');
+          expect(validationResult.jsonObject).not.toBe(null);
+
+          // Validate qInfo section with expected qType
+          if (validationResult.jsonObject.qInfo) {
+            expect(validationResult.jsonObject.qInfo.qType).toBe(expectedQType);
+            console.log(`✓ qInfo.qType validated: ${expectedQType}`);
+          }
+
+          // Validate caption properties against expected defaults
+          Object.keys(expectedDefaults).forEach((key) => {
+            if (key !== 'props' && key !== 'debug' && key !== 'dimensions' && key !== 'measures') {
+              if (validationResult.jsonObject[key] !== undefined) {
+                console.log(`✓ Found expected property: ${key} = ${validationResult.jsonObject[key]}`);
+              }
+            }
+          });
+
+          // Validate qHyperCubeDef structure in complete JSON
+          if (validationResult.jsonObject.qHyperCubeDef) {
+            expect(validationResult.jsonObject.qHyperCubeDef).toHaveProperty('qDimensions');
+            expect(validationResult.jsonObject.qHyperCubeDef).toHaveProperty('qMeasures');
+            expect(Array.isArray(validationResult.jsonObject.qHyperCubeDef.qDimensions)).toBe(true);
+            expect(Array.isArray(validationResult.jsonObject.qHyperCubeDef.qMeasures)).toBe(true);
+            console.log('✓ qHyperCubeDef structure validated');
+          }
+
+          test.info().annotations.push({
+            type: 'info',
+            description: `Complete JSON configuration validation for ${expectedQType} against object-properties.js defaults`,
+          });
+        }
+
+        console.log(
+          `📊 Found ${validationResult.foundSections.length} required sections out of ${requiredSections.length} expected sections`
+        );
+      } catch (testError) {
+        console.error('❌ Test execution failed:', testError.message);
+        throw testError;
+      } finally {
+        // Always attempt to close dialog if it was opened, even if test fails
+        if (dialogIsOpen) {
+          try {
+            const cancelBtn = hub.page.locator('button:has-text("Cancel")');
+            if (await cancelBtn.isVisible()) {
+              await cancelBtn.click();
+              console.log('🔒 Closed properties dialog via Cancel button');
+
+              // Wait for dialog to close
+              const dialog = hub.page.locator('[role="dialog"]:has-text("Modify object properties")');
+              await dialog.waitFor({ state: 'hidden', timeout: 3000 });
+              await hub.page.waitForTimeout(500);
+            } else {
+              console.log('⚠️  Cancel button not found, dialog may close automatically');
+            }
+          } catch (closeError) {
+            console.log('⚠️  Dialog cancel failed:', closeError.message);
+          }
+        }
+      }
     });
   });
 }

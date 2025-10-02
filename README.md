@@ -139,7 +139,7 @@ src/
 │   ├── data.js           # 📊 Data processing
 │   └── object-properties.js  # 🎛️ Property panel setup
 ├── styles.css            # 🎨 Extension styling
-├── utils.js              # 🔧 Utility functions
+├── utils.js              # 🔧 Utility functions (debug, DOM helpers)
 └── meta.json            # 📋 Extension metadata
 
 test/
@@ -214,6 +214,12 @@ See deployment guides for your environment.
 4. **Test Coverage** → Add tests to the existing framework
 
 See [Testing Guide](./docs/TESTING.md) for more information.
+
+### Development Tips
+
+**Debug Mode**: The extension includes debug utilities that activate automatically on localhost or when URL contains `debug=true`. Debug mode enables additional logging and development features.
+
+**Console Logging**: Use `debugLog()` from `src/utils.js` for conditional logging that only outputs when debug mode is active.
 
 ## 🆘 Need Help?
 

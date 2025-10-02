@@ -18,6 +18,7 @@ import {
 } from './state';
 import { createNoDataComponent, attachSelectionHandlers } from './components';
 import { createExtensionStateTemplate } from './templates';
+import { debugLog } from './utils';
 import './styles.css';
 
 /**
@@ -49,8 +50,8 @@ export default function supernova(galaxy) {
       const selectionState = ensureSelectionState(element);
 
       useEffect(() => {
-        // TODO: Check build variable (BUILD_DEBUG) for console logging
-        // console.log('Rendering with layout:', layout);
+        // Debug logging when enabled (checks URL params, extension props, or dev environment)
+        debugLog(layout, 'Rendering with layout:', layout);
         // Do not clear the root element up-front; we keep a stable container for data/selection
 
         try {
