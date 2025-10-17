@@ -55,7 +55,7 @@
     "@nebula.js/cli-sense": "^5.17.0",
     "@nebula.js/cli-serve": "^5.17.0",
     "@playwright/test": "^1.55.0",
-    "dotenv": "^17.2.2",
+    "dotenv": "^17.2.3",
     "eslint": "^9.37.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.3",
