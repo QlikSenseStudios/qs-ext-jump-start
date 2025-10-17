@@ -50,10 +50,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
-    "@nebula.js/cli": "^5.17.0",
-    "@nebula.js/cli-build": "^5.17.0",
-    "@nebula.js/cli-sense": "^5.17.0",
-    "@nebula.js/cli-serve": "^5.17.0",
+    "@nebula.js/cli": "^6.0.1",
+    "@nebula.js/cli-build": "^6.0.1",
+    "@nebula.js/cli-sense": "^6.0.1",
+    "@nebula.js/cli-serve": "^6.0.1",
     "@playwright/test": "^1.55.0",
     "dotenv": "^17.2.3",
     "eslint": "^9.37.0",
@@ -62,7 +62,7 @@
     "prettier": "^3.6.2"
   },
   "peerDependencies": {
-    "@nebula.js/stardust": "^5.17.0"
+    "@nebula.js/stardust": "^6.0.1"
   },
   "lint-staged": {
     "*.{js,jsx,mjs,cjs}": [
