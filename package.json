@@ -52,7 +52,7 @@
     "@eslint/js": "^9.36.0",
     "@nebula.js/cli": "^5.17.0",
     "@nebula.js/cli-build": "^5.17.0",
-    "@nebula.js/cli-sense": "^5.17.0",
+    "@nebula.js/cli-sense": "^6.0.1",
     "@nebula.js/cli-serve": "^5.17.0",
     "@playwright/test": "^1.55.0",
     "dotenv": "^17.2.3",
