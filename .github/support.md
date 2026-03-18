@@ -6,7 +6,6 @@ For help and support with your extension or contributing to the QS-Ext-Jump-Star
 
 - [README.md](../README.md) - Quick start guide
 - [Setup Guides](../docs/) - Environment configuration
-- [Knowledge Base](../KNOWLEDGE_BASE.md) - Best practices and common tasks
 
 ## Reporting Issues
 
