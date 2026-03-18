@@ -50,13 +50,6 @@ export default [
       'no-console': 'off',
     },
   },
-  // But allow ESM for specific test files that use import/export
-  {
-    files: ['test/qs-ext.fixture.js'],
-    languageOptions: {
-      sourceType: 'module',
-    },
-  },
   {
     ignores: ['node_modules/**', 'dist/**', 'bundle-analysis.html', 'test/report/**', '*.config.js'],
   },
