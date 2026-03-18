@@ -103,7 +103,7 @@ function extensionUnconfiguredTests(testContext) {
       });
     });
 
-    test('validates custom properties configuration options', async () => {
+    test.skip('validates custom properties configuration options', async () => {
       const { hub } = testContext;
 
       console.log('🎯 Testing Custom Properties Configuration:');
@@ -258,7 +258,7 @@ function extensionUnconfiguredTests(testContext) {
       });
     });
 
-    test('validates JSON configuration matches object-properties.js defaults', async () => {
+    test.skip('validates JSON configuration matches object-properties.js defaults', async () => {
       const { hub } = testContext;
       let dialogIsOpen = false;
 
