@@ -58,11 +58,14 @@ Items that exist solely to support this template's own development process do no
 Items specific to the example implementation (`src/` — the example table visualization) are acceptable but must be clearly understood as "example — replace with your own implementation."
 
 ## Upcoming Work
-*Forward-looking only. No history.*
+*Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
 
-- **Fix known issues** (branch: `fix/known-issues`): Remove declarative rendering dead code; full ESM migration — add `"type": "module"` to `package.json` and migrate `test/` from CommonJS to ESM; rename `sandbox/` to `.sandbox/`; confirm version alignment across `package.json` and `docs/CHANGELOG.md`
+- **Fix known issues** (branch: `fix/known-issues`):
+  - Remove declarative rendering dead code
+  - Full ESM migration — add `"type": "module"` to `package.json` and migrate `test/` from CommonJS to ESM
 - **GitHub Actions CI/CD** (branch: `ci/github-actions`): Add `lint.yml`, `build.yml`, and `package.yml` workflows; resolve how to handle the Playwright environment-gated constraint in `test.yml` (Playwright tests require a live Qlik environment and cannot run in standard CI)
 - **Documentation rewrite** (branch: `docs/rewrite`): Rewrite `README.md` as a template-first entry point; rewrite `CONTRIBUTING.md` as a pure contributor guide; split `docs/WORKFLOWS.md` into template-user and extension-developer sections; add `docs/TEMPLATE_USAGE.md`; remove `docs/AUDIT.md` once findings are resolved
+- **Restore Playwright testing coverage** (branch: `fix/playwright-coverage`): Investigate and resolve the 2 skipped tests caused by Nebula Hub DOM drift with latest `@nebula.js/cli-serve`; restore full test suite to passing
 
 ### Optional Enhancements
 *Not scheduled — consider for future branches*
