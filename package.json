@@ -1,6 +1,6 @@
 {
   "name": "qs-ext-jump-start",
-  "description": "Template for Qlik Sense extension development with component system, template system, declarative rendering, Nebula CLI and Playwright testing.",
+  "description": "Template for Qlik Sense extension development with component system, template system, Nebula CLI and Playwright testing.",
   "keywords": [
     "qlik",
     "qlik-sense",
@@ -8,7 +8,6 @@
     "nebula",
     "playwright",
     "template",
-    "declarative-rendering",
     "component-system",
     "ui-templates"
   ],

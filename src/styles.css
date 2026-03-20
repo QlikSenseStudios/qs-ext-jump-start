@@ -3,8 +3,6 @@
  * Includes accessibility and responsive design considerations
  */
 
-/* Removed declarative rendering styles import - focusing on debug testing only */
-
 .extension-container {
   font-family: 'Source Sans Pro', Arial, sans-serif;
   padding: 16px;

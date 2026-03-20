@@ -61,7 +61,6 @@ Items specific to the example implementation (`src/` — the example table visua
 *Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
 
 - **Fix known issues** (branch: `fix/known-issues`):
-  - Remove declarative rendering dead code
   - Full ESM migration — add `"type": "module"` to `package.json` and migrate `test/` from CommonJS to ESM
 - **GitHub Actions CI/CD** (branch: `ci/github-actions`): Add `lint.yml`, `build.yml`, and `package.yml` workflows; resolve how to handle the Playwright environment-gated constraint in `test.yml` (Playwright tests require a live Qlik environment and cannot run in standard CI)
 - **Documentation rewrite** (branch: `docs/rewrite`): Rewrite `README.md` as a template-first entry point; rewrite `CONTRIBUTING.md` as a pure contributor guide; split `docs/WORKFLOWS.md` into template-user and extension-developer sections; add `docs/TEMPLATE_USAGE.md`; remove `docs/AUDIT.md` once findings are resolved
