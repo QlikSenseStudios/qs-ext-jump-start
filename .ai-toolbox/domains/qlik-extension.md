@@ -114,11 +114,10 @@ npm test         # Playwright E2E (requires .env + live Qlik)
 ```
 
 ## Module System
-*Mixed: `src/` uses ESM, `test/` uses CommonJS — migration in progress*
 
-- `src/` — ESM (`import`/`export`) ✅
-- `test/` — CommonJS (`require`/`module.exports`)
-- `eslint.config.mjs` — sets `sourceType: 'commonjs'` for `test/**/*.js`
+- `src/` — ESM (`import`/`export`)
+- `test/` — ESM (`import`/`export`)
+- `package.json` — `"type": "module"` (all `.js` files are ESM)
 
 ## OSS Reference Patterns
 When generating new extension code, prefer patterns from Qlik's first-party `sn-*` repositories on GitHub (`github.com/qlik-oss`) as the authoritative reference for idiomatic Nebula.js usage.

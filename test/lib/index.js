@@ -9,15 +9,12 @@
  */
 
 // Core validation function (used directly by e2e tests)
-const { clearValidationCache } = require('./core/validation');
+import { clearValidationCache } from './core/validation.js';
 
 // Page objects (main interface for e2e tests)
-const { NebulaHubPage } = require('./page-objects/nebula-hub');
+import { NebulaHubPage } from './page-objects/nebula-hub.js';
 
-module.exports = {
-  // Validation functions (used directly by e2e tests)
+export {
   clearValidationCache,
-
-  // Page objects (main interface for e2e tests)
   NebulaHubPage,
 };

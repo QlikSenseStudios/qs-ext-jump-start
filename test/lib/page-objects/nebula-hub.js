@@ -9,11 +9,11 @@
  * @since 1.0.0
  */
 
-const { IDENTIFIERS } = require('../core/identifiers');
-const { validateEnvironmentComponents, clearValidationCache, waitForEnvironmentReady } = require('../core/validation');
-const { clickWithBackdropHandling, clickFirstVisible } = require('../utilities/dom');
-const { setJsonEditorContent } = require('../utilities/json-editor');
-const { WAIT_TIMES } = require('../core/constants');
+import { IDENTIFIERS } from '../core/identifiers.js';
+import { validateEnvironmentComponents, clearValidationCache, waitForEnvironmentReady } from '../core/validation.js';
+import { clickWithBackdropHandling, clickFirstVisible } from '../utilities/dom.js';
+import { setJsonEditorContent } from '../utilities/json-editor.js';
+import { WAIT_TIMES } from '../core/constants.js';
 
 /**
  * Page Object Model for Qlik Sense Nebula Hub interactions.
@@ -258,4 +258,4 @@ class NebulaHubPage {
   }
 }
 
-module.exports = { NebulaHubPage };
+export { NebulaHubPage };

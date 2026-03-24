@@ -1,4 +1,4 @@
-require('dotenv').config();
+import 'dotenv/config';
 
 function getNebulaQueryString() {
   return process.env.QLIK_WEB_INTEGRATION_ID
@@ -38,5 +38,4 @@ async function getQlikServerAuthenticatedContext({ browser }) {
   return context;
 }
 
-exports.getNebulaQueryString = getNebulaQueryString;
-exports.getQlikServerAuthenticatedContext = getQlikServerAuthenticatedContext;
+export { getNebulaQueryString, getQlikServerAuthenticatedContext };
