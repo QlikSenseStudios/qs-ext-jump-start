@@ -100,7 +100,7 @@ function createConfigurationLocator(page, selector) {
   return page.locator(CONFIGURATION_IDENTIFIERS.CONFIGURATION_PANEL).locator(selector);
 }
 
-module.exports = {
+export {
   CONFIGURATION_IDENTIFIERS,
   CONFIGURATION_TIMEOUTS,
   createConfigurationLocator,

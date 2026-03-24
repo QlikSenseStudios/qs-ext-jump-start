@@ -9,6 +9,9 @@
  * @since 1.0.0
  */
 
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
 const pkg = require('../../../package.json');
 
 /**
@@ -74,7 +77,7 @@ const TIMEOUTS = Object.freeze({
   NETWORK: 10000,
 });
 
-module.exports = {
+export {
   IDENTIFIERS,
   TIMEOUTS,
 };

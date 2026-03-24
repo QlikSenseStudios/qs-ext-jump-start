@@ -5,7 +5,7 @@
  * Failure indicates incorrect environment setup requiring user intervention.
  */
 
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 /**
  * Connection validation tests.
@@ -53,4 +53,4 @@ function connectionTests(testContext) {
   });
 }
 
-module.exports = { connectionTests };
+export { connectionTests };

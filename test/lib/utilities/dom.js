@@ -90,7 +90,7 @@ async function clickFirstVisible(page, locators) {
   return false;
 }
 
-module.exports = {
+export {
   clickWithBackdropHandling,
   clickFirstVisible,
 };

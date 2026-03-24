@@ -3,9 +3,7 @@
  * Provides templates for different extension states with consistent structure
  */
 
-import { createElement } from '../utils';
 import {
-  createNoDataComponent,
   createErrorComponent,
   createHeaderComponent,
   createTableComponent,
@@ -18,33 +16,6 @@ import { createBaseTemplate, createLayoutTemplate } from './base-template';
  * @property {Object} [containerConfig] - Configuration for the container
  * @property {Object} [layoutConfig] - Configuration for the layout
  */
-
-/**
- * Creates a no-data state template with consistent structure.
- * @param {Object} config - No-data state configuration
- * @param {number} config.dimCount - Number of dimensions
- * @param {number} config.measCount - Number of measures
- * @param {ExtensionStateConfig} [stateConfig={}] - Extension state configuration
- * @returns {HTMLDivElement} The no-data state template
- */
-export function createNoDataStateTemplate(config, stateConfig = {}) {
-  const { dimCount, measCount } = config;
-  const { containerConfig = {} } = stateConfig;
-
-  // Create the no-data component
-  const noDataComponent = createNoDataComponent(dimCount, measCount);
-
-  // Wrap in base template for consistency
-  const container = createBaseTemplate({
-    className: 'extension-no-data-state',
-    role: 'main',
-    ariaLabel: 'No data state',
-    ...containerConfig,
-  });
-
-  container.appendChild(noDataComponent);
-  return container;
-}
 
 /**
  * Creates an error state template with consistent structure.
@@ -128,37 +99,6 @@ export function createDataStateTemplate(config, stateConfig = {}) {
 }
 
 /**
- * Creates a loading state template for async operations.
- * @param {Object} config - Loading state configuration
- * @param {string} [config.message='Loading...'] - Loading message
- * @param {boolean} [config.showSpinner=true] - Whether to show a spinner
- * @param {ExtensionStateConfig} [stateConfig={}] - Extension state configuration
- * @returns {HTMLDivElement} The loading state template
- */
-export function createLoadingStateTemplate(config = {}, stateConfig = {}) {
-  const { message = 'Loading...', showSpinner = true } = config;
-  const { containerConfig = {} } = stateConfig;
-
-  const container = createBaseTemplate({
-    className: 'extension-loading-state',
-    role: 'status',
-    ariaLabel: 'Loading content',
-    attributes: { 'aria-live': 'polite' },
-    ...containerConfig,
-  });
-
-  if (showSpinner) {
-    const spinner = createElement('div', { className: 'loading-spinner', 'aria-hidden': 'true' });
-    container.appendChild(spinner);
-  }
-
-  const messageElement = createElement('div', { className: 'loading-message' }, message);
-  container.appendChild(messageElement);
-
-  return container;
-}
-
-/**
  * Factory function to create extension state templates based on state type.
  * @param {string} stateType - Type of state ('no-data', 'error', 'data', 'loading')
  * @param {Object} config - State-specific configuration
@@ -167,14 +107,10 @@ export function createLoadingStateTemplate(config = {}, stateConfig = {}) {
  */
 export function createExtensionStateTemplate(stateType, config, stateConfig = {}) {
   switch (stateType) {
-    case 'no-data':
-      return createNoDataStateTemplate(config, stateConfig);
     case 'error':
       return createErrorStateTemplate(config, stateConfig);
     case 'data':
       return createDataStateTemplate(config, stateConfig);
-    case 'loading':
-      return createLoadingStateTemplate(config, stateConfig);
     default:
       throw new Error(`Unknown state type: ${stateType}`);
   }

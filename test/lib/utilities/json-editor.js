@@ -9,8 +9,7 @@
  * @since 1.0.0
  */
 
-// Import safeGet utility for safe property access from existing project utils
-const { safeGet } = require('../../../src/utils');
+import { safeGet } from '../../../src/utils.js';
 
 /**
  * @typedef {Object} JsonEditorResult
@@ -412,7 +411,7 @@ async function clearJsonEditorContent(page) {
   return await setJsonEditorContent(page, emptyConfig);
 }
 
-module.exports = {
+export {
   setJsonEditorContent,
   getJsonEditorContent,
   validateJsonStructure,

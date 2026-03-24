@@ -9,6 +9,12 @@
  * @since 1.0.0
  */
 
+import { createRequire } from 'node:module';
+import dataConfig from '../../../src/qae/data.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../../../package.json');
+
 /**
  * Gets the expected default values from object-properties.js for validation.
  * This ensures tests validate against the actual configured defaults.
@@ -20,12 +26,8 @@
  * @returns {Object} Expected configuration values with data constraints and qType
  */
 function getExpectedConfigurationDefaults() {
-  // Import actual configuration values from source files
-  const pkg = require('../../../package.json');
-  const dataConfig = require('../../../src/qae/data.js');
-
   // Extract data constraints from data.js targets
-  const dataTarget = dataConfig.default?.targets?.[0] || {};
+  const dataTarget = dataConfig?.targets?.[0] || {};
   const dimensionConstraints = dataTarget.dimensions || { min: 0, max: 0 };
   const measureConstraints = dataTarget.measures || { min: 0, max: 0 };
 
@@ -64,6 +66,6 @@ function getExpectedConfigurationDefaults() {
   };
 }
 
-module.exports = {
+export {
   getExpectedConfigurationDefaults,
 };

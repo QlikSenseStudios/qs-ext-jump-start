@@ -92,7 +92,7 @@
 - **Gitignore Awareness**: Respect .gitignore patterns for file usage in project structure, but reference or use ignored files when contextually relevant
 
 ## Version Control Integration
-- **User Exclusions**: `context.local.md` (covered by `*.local.*` in .gitignore), `sandbox/` (gitignored), excluded via .gitignore
+- **User Exclusions**: `context.local.md` (covered by `*.local.*` in .gitignore), `.sandbox/` (gitignored), excluded via .gitignore
 - **Project Files**: All project infrastructure committed and versioned
 - **Reference Usage**: Can examine ignored files (node_modules, dist/, *-ext/) for context without including in commits
 

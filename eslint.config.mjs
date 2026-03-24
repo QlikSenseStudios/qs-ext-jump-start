@@ -39,12 +39,8 @@ export default [
       curly: 'error',
     },
   },
-  // Allow CommonJS in test files (Playwright test modules use require/module.exports here)
   {
     files: ['test/**/*.js'],
-    languageOptions: {
-      sourceType: 'commonjs',
-    },
     rules: {
       // Allow console logs in tests for debugging and traceability
       'no-console': 'off',

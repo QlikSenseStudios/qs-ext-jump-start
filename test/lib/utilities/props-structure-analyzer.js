@@ -92,7 +92,7 @@ function analyzePropsStructure(propsObject) {
   return properties;
 }
 
-module.exports = {
+export {
   createMuiAccordionSelector,
   createMuiFormControlSelector,
   analyzePropsStructure,

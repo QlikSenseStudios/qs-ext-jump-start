@@ -9,7 +9,7 @@
  * @since 1.0.0
  */
 
-const { IDENTIFIERS, TIMEOUTS } = require('./identifiers');
+import { IDENTIFIERS, TIMEOUTS } from './identifiers.js';
 
 /**
  * Cache for validation results to avoid redundant DOM queries during tests.
@@ -188,7 +188,7 @@ async function waitForEnvironmentReady(page) {
   }
 }
 
-module.exports = {
+export {
   validateEnvironmentComponents,
   getCachedValidationResults,
   clearValidationCache,

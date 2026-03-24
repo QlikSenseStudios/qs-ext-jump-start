@@ -32,6 +32,6 @@ const WAIT_TIMES = Object.freeze({
   EXTRA_LONG: 1000,
 });
 
-module.exports = {
+export {
   WAIT_TIMES,
 };

@@ -4,11 +4,11 @@
  * Centralizes all test modules for easy importing and organization.
  */
 
-const { connectionTests } = require('./connection.test');
-const { environmentTests } = require('./environment.test');
-const { extensionUnconfiguredTests } = require('./extension-unconfigured.test');
+import { connectionTests } from './connection.test.js';
+import { environmentTests } from './environment.test.js';
+import { extensionUnconfiguredTests } from './extension-unconfigured.test.js';
 
-module.exports = {
+export {
   connectionTests,
   environmentTests,
   extensionUnconfiguredTests,

@@ -5,7 +5,7 @@
  * Failure indicates environment setup issues requiring user intervention.
  */
 
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 /**
  * Environment validation tests.
@@ -38,4 +38,4 @@ function environmentTests(testContext) {
   });
 }
 
-module.exports = { environmentTests };
+export { environmentTests };

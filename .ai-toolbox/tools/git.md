@@ -24,7 +24,7 @@ This project's Git conventions. AI agents apply these when generating commit mes
 - PR template: `.github/pull_request_template.md`
 
 ## Configuration
-- Key `.gitignore` patterns: `node_modules/`, `dist/`, `*-ext/`, `sandbox/`, `*.local.*`, `.env`, `test/artifacts/`, `test/report/`
+- Key `.gitignore` patterns: `node_modules/`, `dist/`, `*-ext/`, `.sandbox/`, `*.local.*`, `.env`, `test/artifacts/`, `test/report/`
 - Git hooks: Husky + lint-staged (ESLint auto-fix on staged JS files, runs on pre-commit)
 - `package.json` changes: always run `npm install` afterward to keep `package-lock.json` in sync — commit both files together
 - Dependabot: weekly npm updates configured in `.github/dependabot.yml`

@@ -37,10 +37,13 @@ General development patterns that work across project types.
 - Workspace trees and module listings in context.state.md and README files reflect all files in this change set — treat them as current
 - Recently Completed Work in context.state.md and context.backlog.md is current — any project deliverable items completed in this change set are recorded with contributor name and date; context system maintenance is not recorded
 - Auto-sync targets (root README.md, context.state.md, context.backlog.md) are consistent with current content — if out of sync, fix immediately as a dependency
+- Staged/unstaged cross-check: any reference in a staged file to another file (import, path, link) must resolve against staged content — an unstaged file referenced by committed code will break anyone pulling the branch
+- Dependent context files updated: all context files (domains/, tools/, commands/, context.*.md) that reference deleted or renamed code, APIs, or file paths are updated in this change set
 
 ## Describe Change Set
 **Purpose**: Generate a descriptive summary of the current change set suitable for recording (commit message, PR description, changelog entry, etc.)
-**Pattern**: First retrieve the complete list of version-controlled files in the current change set (exclude gitignored and intentionally untracked files). Then for each file, diff against the previously committed version and describe only what is different now — not the session history of how the changes were made. Produce output covering ALL files in the change set in the exact plain text format below. No markdown, no bold, no extra formatting.
+**Precondition**: All files intended for this commit must be staged before running this command — `git diff --cached` only reflects staged content.
+**Pattern**: First retrieve the complete list of version-controlled files in the current change set (exclude gitignored and intentionally untracked files). Then for each file, run `git diff --cached` against the previously committed version and describe only what the diff shows — not what editing steps were taken during the session to produce it. If the diff shows rule A replaced by rule B, describe rule B's content relative to rule A; do not describe intermediate steps like "merged two rules." Produce output covering ALL files in the change set in the exact plain text format below. No markdown, no bold, no extra formatting.
 **Context**: context.global.md + all version-controlled files in the current change set + their prior recorded history
 **Output format** (plain text, copy-paste ready):
 ```

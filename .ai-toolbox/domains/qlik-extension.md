@@ -114,16 +114,10 @@ npm test         # Playwright E2E (requires .env + live Qlik)
 ```
 
 ## Module System
-*Mixed: `src/` uses ESM, `test/` uses CommonJS — migration in progress*
 
-- `src/` — ESM (`import`/`export`) ✅
-- `test/` — CommonJS (`require`/`module.exports`)
-- `eslint.config.mjs` — sets `sourceType: 'commonjs'` for `test/**/*.js`
-
-## Declarative Rendering (Dead Code — Pending Removal)
-The codebase contains a declarative rendering path that is **non-functional**. The `shouldUseDeclarativeRendering()` function never returns true despite valid configuration. All five view types (`dataTableView`, `dashboardView`, `flexibleContentView`, `errorStateView`, `loadingStateView`) have no effect. The template system infrastructure exists in the codebase but is never activated. All declarative rendering tests are disabled.
-
-This code is slated for removal. Do not attempt to activate or extend it — treat it as inert dead code until the removal branch (`fix/known-issues`) addresses it.
+- `src/` — ESM (`import`/`export`)
+- `test/` — ESM (`import`/`export`)
+- `package.json` — `"type": "module"` (all `.js` files are ESM)
 
 ## OSS Reference Patterns
 When generating new extension code, prefer patterns from Qlik's first-party `sn-*` repositories on GitHub (`github.com/qlik-oss`) as the authoritative reference for idiomatic Nebula.js usage.

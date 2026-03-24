@@ -5,16 +5,16 @@
  * configuration panel options, and JSON structure when no data is configured.
  */
 
-const { test, expect } = require('@playwright/test');
-const { IDENTIFIERS, TIMEOUTS } = require('../lib/core/identifiers');
-const { CONFIGURATION_IDENTIFIERS, CONFIGURATION_TIMEOUTS } = require('../lib/core/configuration-identifiers');
-const { getExpectedConfigurationDefaults } = require('../lib/utilities/configuration-defaults');
-const { analyzePropsStructure } = require('../lib/utilities/props-structure-analyzer');
-const {
+import { test, expect } from '@playwright/test';
+import { IDENTIFIERS, TIMEOUTS } from '../lib/core/identifiers.js';
+import { CONFIGURATION_IDENTIFIERS, CONFIGURATION_TIMEOUTS } from '../lib/core/configuration-identifiers.js';
+import { getExpectedConfigurationDefaults } from '../lib/utilities/configuration-defaults.js';
+import { analyzePropsStructure } from '../lib/utilities/props-structure-analyzer.js';
+import {
   getJsonEditorContent,
   validateJsonStructure,
   expandMonacoEditorContent,
-} = require('../lib/utilities/json-editor');
+} from '../lib/utilities/json-editor.js';
 
 /**
  * Extension unconfigured state validation tests.
@@ -450,4 +450,4 @@ function extensionUnconfiguredTests(testContext) {
   });
 }
 
-module.exports = { extensionUnconfiguredTests };
+export { extensionUnconfiguredTests };

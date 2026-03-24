@@ -10,10 +10,10 @@
  * - Extension Unconfigured: Tests extension unconfigured state behavior
  */
 
-const { test } = require('@playwright/test');
-const { getNebulaQueryString, getQlikServerAuthenticatedContext } = require('./qs-ext.connect');
-const { NebulaHubPage } = require('./lib');
-const { connectionTests, environmentTests, extensionUnconfiguredTests } = require('./modules');
+import { test } from '@playwright/test';
+import { getNebulaQueryString, getQlikServerAuthenticatedContext } from './qs-ext.connect.js';
+import { NebulaHubPage, clearValidationCache } from './lib/index.js';
+import { connectionTests, environmentTests, extensionUnconfiguredTests } from './modules/index.js';
 
 /**
  * Pauses execution when running in headed mode to allow visual inspection.
@@ -95,7 +95,6 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
         await slowForShow(test.info(), page, 3000);
 
         // Clear validation cache for clean state between tests
-        const { clearValidationCache } = require('./lib/core/validation');
         clearValidationCache(page);
         console.log('🧹 Cleared validation cache for clean state');
 
