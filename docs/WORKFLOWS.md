@@ -1,76 +1,40 @@
 # Workflows & Common Tasks
 
-This guide shows two primary workflows and common tasks with examples.
+Common tasks for extension developers building on this template.
 
-## Workflow A — Contribute as a Fork
+## Rename & Rebrand
 
-1. Fork the original repository
-2. Create a feature branch
-3. Make focused changes (docs, tests, code)
-4. Run tests locally: `npm test`
-5. Open a pull request with a clear description and references
+After creating your repo from this template:
 
-Tips:
+1. Update `package.json` — name, description, repository, homepage, bugs
+2. Update `src/meta.json` — name, icon, preview
+3. Update titles and labels in `src/qae/object-properties.js`
+4. Update `README.md` to reflect your extension's name and purpose
 
-- Keep PRs small and cohesive
-- Update docs when behavior changes
-- Reference code: `src/`, `test/`
+## Customize the Extension
 
-## Workflow B — Use as a Starter Template
+| Goal | Where to start |
+| --- | --- |
+| Change extension logic | `src/index.js` |
+| Add or modify property panel fields | `src/qae/object-properties.js` |
+| Change data shape (dimensions/measures) | `src/qae/data.js` |
+| Change styles | `src/styles.css` |
+| Add utility functions | `src/utils.js` |
 
-1. Use this template to create your repo
-2. Rename the extension
-   - Update package name and metadata in `package.json`
-   - Adjust titles or labels in `src/qae/object-properties.js`
-3. Update repository origin
-   - Point Git remote to your project repository
-4. Remove references to the original template if needed (README sections, links)
-5. Customize code under `src/` and tests in `test/`
-6. Run and validate locally: `npm run serve`, `npm test`
-7. Package when ready: `npm run package`
+## Development Loop
 
-### Rename & Rebrand Checklist (optional)
+```bash
+npm run serve     # start dev server at localhost:8000
+# edit src/ — changes reload automatically
+npm run lint      # check for lint errors
+npm test          # run E2E tests (requires live Qlik environment)
+npm run package   # package for deployment when ready
+```
 
-- Update `package.json`: name, description, repository, homepage, bugs
-- Update `src/meta.json`: name, icon, preview
-- Update titles/labels in `src/qae/object-properties.js`
-- Replace icons/screenshots if any (e.g., assets folder if you add one)
-- Refresh README to reflect your project name and links
+## Write a New Test
 
-## Common Tasks
+Extend `test/qs-ext.e2e.js` using the patterns in the existing suite. See [Testing Guide](./TESTING.md) for setup and troubleshooting.
 
-### Add a Property to the Property Panel
+## Deploy
 
-- Edit `src/qae/object-properties.js`
-- Example: add a boolean toggle under a `settings` section
-
-### Configure Dimensions and Measures
-
-- Update `src/qae/data.js` targets or extend `qHyperCubeDef` in `object-properties.js`
-
-### Render Custom UI
-
-- Edit `src/index.js`; use `useElement`, `useLayout`, and helpers in `src/utils.js` (includes debug utilities)
-
-### Write a New Test
-
-- Extend the existing test framework in `test/qs-ext.e2e.js`
-- See existing tests for patterns and fixtures
-
-### Qlik Cloud/Enterprise Setup
-
-- Follow `docs/QLIK_CLOUD_SETUP.md` or `docs/QLIK_ENTERPRISE_SETUP.md`
-
-### Deployment
-
-- Build package: `npm run package`
-- Upload zip to Qlik Sense (see `docs/DEPLOYMENT.md`)
-
-## Recommended VS Code Extensions
-
-- ESLint — linting (dbaeumer.vscode-eslint)
-- Prettier — formatting (esbenp.prettier-vscode)
-- Playwright Test for VSCode — test explorer (ms-playwright.playwright)
-- EditorConfig — consistent editor settings (EditorConfig.EditorConfig)
-- Markdown All in One — docs editing (yzhang.markdown-all-in-one)
-- GitHub Pull Requests and Issues — PR flow (GitHub.vscode-pull-request-github)
+Build and package: `npm run package` — output goes to `<extension-name>-ext/`. Zip that folder and upload to Qlik Sense. See [Deployment](./DEPLOYMENT.md) for platform-specific steps.

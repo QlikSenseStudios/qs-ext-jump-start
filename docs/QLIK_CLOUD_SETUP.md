@@ -1,6 +1,6 @@
 # Qlik Cloud Setup Guide
 
-This guide describes how to set up Qlik Cloud for use developing an extension based on the QS-Ext-Jump-Start template. For technical details, see code files in `src/` and `test/` folders, including a data load script for a Qlik Sense app in `test/qlik-sense-app/`.
+This guide describes how to set up Qlik Cloud for extension development with this template.
 
 ## Prerequisites
 
