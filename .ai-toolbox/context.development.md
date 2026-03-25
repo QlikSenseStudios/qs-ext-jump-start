@@ -60,7 +60,6 @@ Items specific to the example implementation (`src/` — the example table visua
 ## Upcoming Work
 *Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
 
-- **GitHub Actions CI/CD** (branch: `ci/github-actions`): Add `lint.yml`, `build.yml`, and `package.yml` workflows; resolve how to handle the Playwright environment-gated constraint in `test.yml` (Playwright tests require a live Qlik environment and cannot run in standard CI)
 - **Documentation rewrite** (branch: `docs/rewrite`): Rewrite `README.md` as a template-first entry point; rewrite `CONTRIBUTING.md` as a pure contributor guide; split `docs/WORKFLOWS.md` into template-user and extension-developer sections; add `docs/TEMPLATE_USAGE.md`; remove `docs/AUDIT.md` once findings are resolved
 - **Restore Playwright testing coverage** (branch: `fix/playwright-coverage`): Investigate and resolve the 2 skipped tests caused by Nebula Hub DOM drift with latest `@nebula.js/cli-serve`; restore full test suite to passing
 
