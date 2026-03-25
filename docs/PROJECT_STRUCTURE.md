@@ -6,15 +6,13 @@ This document explains the purpose and typical usage of each file and folder.
 
 - `package.json` — Scripts, dependencies, and metadata
 - `playwright.config.js` — Playwright test configuration
-- `eslint.config.js` — ESLint v9 flat config
+- `eslint.config.mjs` — ESLint v9 flat config
 - `.editorconfig` — Editor defaults across IDEs
 - `.prettierrc` — Prettier formatting rules
 - `.vscode/` — Workspace settings
 - `license.txt` — License
 - `README.md` — Usage-focused docs
 - `CONTRIBUTING.md` — Contribution guidelines
-- `KNOWLEDGE_BASE.md` — Best practices and tips
-- `TODO.md` — Planned improvements
 - `docs/` — Setup guides, deployment, testing, changelog
 - `dist/` — Build output (generated)
 - `qs-ext-jump-start-ext/` — Packaged extension folder (generated)
@@ -38,13 +36,6 @@ This document explains the purpose and typical usage of each file and folder.
 - `selection-handler.js` — Advanced selection handling with keyboard navigation
 - `table-component.js` — Optimized table rendering with DocumentFragment
 
-### Template System (`src/templates/`)
-
-- `index.js` — Universal template factory with organized registry
-- `base-template.js` — Foundation templates for layouts and containers
-- `state-template.js` — State-specific templates (data, error, loading, no-data)
-- `table-template.js` — Advanced table templates with responsive design
-
 ### State Management (`src/state/`)
 
 - `index.js` — Centralized state management exports
@@ -52,19 +43,10 @@ This document explains the purpose and typical usage of each file and folder.
 - `render-state.js` — DOM container and data association management (WeakMap-based)
 - `selection-state.js` — Selection session tracking and element mapping
 
-### Declarative Rendering Framework (`src/rendering/`) - Beta
-
-- `index.js` — Declarative rendering exports
-- `declarative-config.js` — Configuration schema with validation
-- `declarative-examples.js` — Pre-built configuration examples
-- `declarative-integration.js` — Integration layer with extension infrastructure
-- `declarative-renderer.js` — Core rendering engine with component caching
-- `declarative-styles.css` — Styling framework for declarative components
-
 ### QAE Configuration (`src/qae/`)
 
 - `index.js` — Exports `properties` and `data`
-- `object-properties.js` — Property panel config with declarative rendering controls
+- `object-properties.js` — Property panel configuration
 - `data.js` — Data targets; customize dimensions/measures or hooks
 
 ## Tests (`test/`)
@@ -97,20 +79,17 @@ This document explains the purpose and typical usage of each file and folder.
 ### Component Development
 
 - Add a new component: Create file in `src/components/` and export from `src/components/index.js`
-- Create custom template: Add to `src/templates/` and register in template system
 - Implement state management: Add logic to appropriate `src/state/` module
 
 ### Extension Configuration
 
 - Add a new property: `src/qae/object-properties.js`
 - Change data source: `src/qae/data.js`
-- Update declarative rendering: Configure in `src/rendering/declarative-config.js`
 
 ### UI and Styling
 
 - Update component UI: Edit specific component files in `src/components/`
-- Modify templates: Update template files in `src/templates/`
-- Add global styles: `src/styles.css` or `src/rendering/declarative-styles.css`
+- Add global styles: `src/styles.css`
 
 ### Testing
 

@@ -39,4 +39,4 @@ If you encounter issues during deployment, check:
 - Administrator permissions
 - Qlik Sense version compatibility
 
-For more help, see [Support](../.github/support.md).
+For more help, see [GitHub Issues](https://github.com/QlikSenseStudios/qs-ext-jump-start/issues).
