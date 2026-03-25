@@ -57,7 +57,7 @@ Items specific to the example implementation (`src/` — the example table visua
 ## Upcoming Work
 *Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
 
-- **Documentation rewrite** (branch: `docs/rewrite`): Rewrite `README.md` as a template-first entry point; rewrite `CONTRIBUTING.md` as a pure contributor guide; split `docs/WORKFLOWS.md` into template-user and extension-developer sections; add `docs/TEMPLATE_USAGE.md`; remove `docs/AUDIT.md` once findings are resolved
+- **Documentation rewrite** (branch: `docs/rewrite`): Rewrite `README.md` as a template-first entry point; rewrite `CONTRIBUTING.md` as a pure contributor guide; split `docs/WORKFLOWS.md` into template-user and extension-developer sections
 - **Initialization command review** (branch: `chore/initialization`): Review and update `commands/initialization.md` for correctness and completeness; ensure `CONTRIBUTING.md` is removed or replaced during initialization (it describes template contribution, not extension development); validate all initialization steps work cleanly in a fresh template repo
 - **Restore Playwright testing coverage** (branch: `fix/playwright-coverage`): Investigate and resolve the 2 skipped tests caused by Nebula Hub DOM drift with latest `@nebula.js/cli-serve`; restore full test suite to passing
 
