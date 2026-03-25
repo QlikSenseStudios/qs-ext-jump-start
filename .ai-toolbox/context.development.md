@@ -34,14 +34,11 @@
 - **Avoid Development Language**: No "building", "creating", or "developing" references in user documentation
 - **Clean Separation**: Template infrastructure vs user extension development must be clearly distinguishable
 
-### Documentation Authority
-*This is the ONLY context file authorized to contain user documentation guidance*
-- **User Documentation Standards**: How to write documentation for template developers (not extension developers)
-- **Getting Started Focus**: User onboarding to use the template, not template development
-- **Local Context Guidance**: Help users customize their minimal personal preferences in context.local.md
-- **Implementation Guides**: Explain template usage patterns, not template architecture
-- **Minimal Context Enforcement**: Ensure context.local.md remains minimal with only essential user preferences
-- **docs/ Guide Structure**: Each guide in docs/ follows this pattern — common prompts first, what-belongs table, worked example (linking to the example file), how-to for adding new items
+### Documentation in Development Mode
+*Global documentation rules apply. These are development-mode-specific additions.*
+- **docs/ Scope**: `docs/` describes the template as it currently stands — its features, setup, architecture, and usage; no past-iteration references
+- **Contributor Scope**: `CONTRIBUTING.md` covers contributing to the template (fork → change → PR) — it does not describe extension development workflows
+- **AI Toolbox Docs Format**: Each guide in `.ai-toolbox/docs/` follows: common prompts first, what-belongs table, worked example with link to the example file, how-to for adding new items
 
 ### Template Content Eligibility Rules
 *Applied when adding or modifying any file in the template during this boilerplate template's development or enhancement*
@@ -61,6 +58,7 @@ Items specific to the example implementation (`src/` — the example table visua
 *Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
 
 - **Documentation rewrite** (branch: `docs/rewrite`): Rewrite `README.md` as a template-first entry point; rewrite `CONTRIBUTING.md` as a pure contributor guide; split `docs/WORKFLOWS.md` into template-user and extension-developer sections; add `docs/TEMPLATE_USAGE.md`; remove `docs/AUDIT.md` once findings are resolved
+- **Initialization command review** (branch: `chore/initialization`): Review and update `commands/initialization.md` for correctness and completeness; ensure `CONTRIBUTING.md` is removed or replaced during initialization (it describes template contribution, not extension development); validate all initialization steps work cleanly in a fresh template repo
 - **Restore Playwright testing coverage** (branch: `fix/playwright-coverage`): Investigate and resolve the 2 skipped tests caused by Nebula Hub DOM drift with latest `@nebula.js/cli-serve`; restore full test suite to passing
 
 ### Optional Enhancements
