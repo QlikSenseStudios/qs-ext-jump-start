@@ -54,6 +54,21 @@ Any item added to the template must satisfy at least one of these criteria:
 Items that exist solely to support this template's own development process do not qualify and must not be committed to the base template.
 Items specific to the example implementation (`src/` — the example table visualization) are acceptable but must be clearly understood as "example — replace with your own implementation."
 
+## CI — Dependency Audit
+
+Two workflows handle dependency security:
+
+- **`audit.yml`** — gate: runs `npm audit --audit-level=moderate` on every push and PR; fails if any moderate-or-above vulnerability is present
+- **`audit-fix.yml`** — scheduled fix: runs every Monday at 06:00 UTC; applies `npm audit fix` and opens a PR targeting `main` if `package-lock.json` changes
+
+**When a Dependabot PR fails the audit gate:**
+1. Trigger **Audit Fix** manually from the Actions UI
+2. Set `base-branch` to the Dependabot branch name
+3. A `chore/audit-fix` PR opens targeting that branch — merge it
+4. The audit gate on the Dependabot PR passes — merge as normal
+
+Dependabot handles direct dependency version bumps (`package.json` ranges). The audit-fix workflow handles transitive lockfile vulnerabilities. They run on the same day but serve different purposes.
+
 ## Upcoming Work
 *Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
 

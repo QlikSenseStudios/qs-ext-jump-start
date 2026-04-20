@@ -5,6 +5,7 @@ A Qlik Sense extension template built on Nebula.js. Includes a working selection
 [![Lint](https://github.com/QlikSenseStudios/qs-ext-jump-start/actions/workflows/lint.yml/badge.svg)](https://github.com/QlikSenseStudios/qs-ext-jump-start/actions/workflows/lint.yml)
 [![Build](https://github.com/QlikSenseStudios/qs-ext-jump-start/actions/workflows/build.yml/badge.svg)](https://github.com/QlikSenseStudios/qs-ext-jump-start/actions/workflows/build.yml)
 [![Package](https://github.com/QlikSenseStudios/qs-ext-jump-start/actions/workflows/package.yml/badge.svg)](https://github.com/QlikSenseStudios/qs-ext-jump-start/actions/workflows/package.yml)
+[![Audit](https://github.com/QlikSenseStudios/qs-ext-jump-start/actions/workflows/audit.yml/badge.svg)](https://github.com/QlikSenseStudios/qs-ext-jump-start/actions/workflows/audit.yml)
 
 ## Quick Start
 

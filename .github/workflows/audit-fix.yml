@@ -1,0 +1,44 @@
+name: Audit Fix
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      base-branch:
+        description: 'Branch to run audit fix against (defaults to main)'
+        required: false
+        default: 'main'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  audit-fix:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.base-branch || 'main' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm audit fix
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: 'chore: npm audit fix'
+          branch: chore/audit-fix
+          base: ${{ inputs.base-branch || 'main' }}
+          delete-branch: true
+          title: 'chore: npm audit fix'
+          body: |
+            Automated lockfile update from `npm audit fix`.
+
+            Resolves transitive dependency vulnerabilities at `moderate` level or above.
+            Review the changed packages in `package-lock.json` before merging.
+          labels: dependencies
