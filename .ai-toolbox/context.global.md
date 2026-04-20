@@ -2,7 +2,7 @@
 
 **AI Agent Entry Point**: Start here for all context loading. `context.local.md` automatically merged.
 
-**Initialization Required**: If `context.local.md` doesn't exist, this is a new project - follow initialization workflow in `./commands/initialization.md`.
+**Initialization Required**: If `context.local.md` doesn't exist, this workspace has not been initialized yet — the user has set up from the template but has not run the initialization workflow. Follow `./commands/initialization.md` before proceeding.
 
 ## Definitions
 - **Project**: The current project using this context management system
@@ -13,7 +13,7 @@
 ## Hierarchy Levels
 1. **Core**: context.global.md + context.local.md (auto-merged, generated if missing)
 2. **Operational**: context.state.md + available commands/
-3. **Domain**: domains/ (research.md example provided) + patterns/ (setup.md example provided) + tools/ (git.md example provided)
+3. **Domain**: domains/ (qlik-extension.md primary + research.md as additional example) + patterns/ (setup.md example provided) + tools/ (git.md — Git conventions and PR workflow)
 4. **Project**: project/ (pre-configured stubs — populate with your project details)
 
 ## Standard Loading Paths

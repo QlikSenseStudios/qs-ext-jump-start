@@ -72,7 +72,6 @@ Dependabot handles direct dependency version bumps (`package.json` ranges). The 
 ## Upcoming Work
 *Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
 
-- **Initialization command review** (branch: `chore/initialization`): Review and update `commands/initialization.md` for correctness and completeness; ensure `CONTRIBUTING.md` is removed or replaced during initialization (it describes template contribution, not extension development); validate all initialization steps work cleanly in a fresh template repo; consider a separate contributing initialization command that prompts contributors to record their fork/upstream topology in `context.local.md` (upstream = `QlikSenseStudios`, fork = contributor's remote) so GitHub URL references stay correct throughout development
 - **Restore Playwright testing coverage** (branch: `fix/playwright-coverage`): Investigate and resolve the 2 skipped tests caused by Nebula Hub DOM drift with latest `@nebula.js/cli-serve`; restore full test suite to passing
 
 ### Optional Enhancements
