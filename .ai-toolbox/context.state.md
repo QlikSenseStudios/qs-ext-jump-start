@@ -23,21 +23,20 @@ Current operational status for AI agents. Machine-readable only.
 - **Commands**: initialization.md (project setup), context.md (context management — includes List Commands), development.md (development workflows), project.md (project management)
 - **Documentation**: Getting Started.md, Local Context.md, Backlog.md, Project Context.md, Domains.md, Patterns.md, Tools.md, Commands.md
 - **Project Context**: overview.md, standards.md
-- **Domain Contexts**: research.md (example — add more as needed)
+- **Domain Contexts**: qlik-extension.md (Qlik Sense extension development), research.md (example — add more as needed)
 - **Pattern Contexts**: setup.md (example — add more as needed)
-- **Tool Contexts**: git.md (example — add more as needed)
+- **Tool Contexts**: git.md (Git conventions and PR workflow)
 - **Core Context**: System README.md
 
 ## Current Capabilities
-- System ready for project initialization
-- Project initialization workflow  
-- User preference collection and persistence
-- Local environment detection and adaptation
-- Context-aware development support
+- Project initialization workflow
+- Context-aware Qlik extension development support
+- Git conventions, PR methodology, and milestone workflow
+- Qlik Sense / Nebula.js domain context
 
 ## Workspace Structure
 ```
-ai-project-workspace/            # Project root
+<your-extension>/                # Project root
 ├── .ai-toolbox/                 # Context management system
 │   ├── context.global.md        # Clean project-focused routing
 │   ├── context.state.md         # Project status tracking

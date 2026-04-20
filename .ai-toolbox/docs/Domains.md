@@ -35,15 +35,17 @@ Keep domain contexts focused on the domain — not on your specific project. Pro
 
 ---
 
-## Example Domain: research.md
+## Included Domain: qlik-extension.md
 
-[domains/research.md](../domains/research.md) is a working example showing the structure. It covers research and discovery workflows with patterns, tools, and cross-references to related contexts.
+[domains/qlik-extension.md](../domains/qlik-extension.md) is the primary domain context for this template. It covers the Nebula.js Supernova API, state management patterns, safe DOM practices, and the test infrastructure. Load it when working on extension source code, property panel configuration, or tests.
+
+[domains/research.md](../domains/research.md) is an additional example showing the structure for adding other domain types.
 
 ---
 
 ## Adding a New Domain
 
-1. Create `domains/{name}.md` following the structure of [domains/research.md](../domains/research.md)
+1. Create `domains/{name}.md` following the structure of [domains/qlik-extension.md](../domains/qlik-extension.md) or [domains/research.md](../domains/research.md)
 2. Add it to the Available Domains list in [domains/README.md](../domains/README.md)
 3. Update [context.global.md](../context.global.md) Available Contexts if you want agents to discover it
 
