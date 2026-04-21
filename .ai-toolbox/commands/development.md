@@ -39,10 +39,11 @@ General development patterns that work across project types.
 - Auto-sync targets (root README.md, context.state.md, context.backlog.md) are consistent with current content — if out of sync, fix immediately as a dependency
 - Staged/unstaged cross-check: any reference in a staged file to another file (import, path, link) must resolve against staged content — an unstaged file referenced by committed code will break anyone pulling the branch
 - Dependent context files updated: all context files (domains/, tools/, commands/, context.*.md) that reference deleted or renamed code, APIs, or file paths are updated in this change set
+- Knowledge capture: identify any framework behavior, fragile patterns, or tool internals discovered during this work — verify they are captured in the appropriate context files per the Knowledge Capture rule before closing
 
 ## Describe Change Set
 **Purpose**: Generate a descriptive summary of the current change set suitable for recording (commit message, PR description, changelog entry, etc.)
-**Precondition**: All files intended for this commit must be staged before running this command — `git diff --cached` only reflects staged content.
+**Precondition**: All files intended for this commit must be staged before running this command — `git diff --cached` only reflects staged content. If files are not yet staged, stop and report that staging is required; do not attempt to describe the change set from session memory.
 **Pattern**: First retrieve the complete list of version-controlled files in the current change set (exclude gitignored and intentionally untracked files). Then for each file, run `git diff --cached` against the previously committed version and describe only what the diff shows — not what editing steps were taken during the session to produce it. If the diff shows rule A replaced by rule B, describe rule B's content relative to rule A; do not describe intermediate steps like "merged two rules." Produce output covering ALL files in the change set in the exact plain text format below. No markdown, no bold, no extra formatting.
 **Context**: context.global.md + all version-controlled files in the current change set + their prior recorded history
 **Output format** (plain text, copy-paste ready):
