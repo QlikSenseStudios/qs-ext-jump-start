@@ -7,6 +7,7 @@
 - **State**: Template enhancement and maintenance
 - **Context Hierarchy**: This file → context.global.md → operational contexts
 - **Scope**: Template architecture, boilerplate improvements, documentation, and context system enhancements
+- **Context Placement**: Anything that applies only while working ON the template — and is not relevant to extension developers — belongs in this file. This file is deleted at initialization, so anything here must be safe to lose from the extension developer's perspective. If a rule or principle is useful to extension developers, it belongs in `context.global.md` or another surviving context file instead.
 
 ## Dual Context Overview
 *The two distinct ways this project is used. (The context struggle is real)*
@@ -72,7 +73,9 @@ Dependabot handles direct dependency version bumps (`package.json` ranges). The 
 ## Upcoming Work
 *Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
 
-- **Restore Playwright testing coverage** (branch: `fix/playwright-coverage`): Investigate and resolve the 2 skipped tests caused by Nebula Hub DOM drift with latest `@nebula.js/cli-serve`; restore full test suite to passing
+*`context.state.md` is not used to track template development progress — it represents the initial delivered state that extension developers inherit and evolve. Template development progress lives only in this section.*
+
+- **Restore Playwright testing coverage** (branch: `fix/playwright-coverage`): Investigate and resolve the 2 skipped tests caused by Nebula Hub DOM drift with latest `@nebula.js/cli-serve`; restore full test suite to passing.
 
 ### Optional Enhancements
 *Not scheduled — consider for future branches*
@@ -81,7 +84,8 @@ Dependabot handles direct dependency version bumps (`package.json` ranges). The 
 - **Visual regression tests**: Screenshot-based regression coverage for rendered extension states
 - **Keyboard shortcut for selection**: Add keyboard confirm/cancel shortcut for active selection sessions
 - **i18n support**: Internationalization scaffolding for extensions targeting multi-language tenants
-- **Automated version management**: Automatic version bump and changelog verification as part of the release workflow
+- **Versioning convention**: Establish when template version increments (patch/minor/major criteria), what version the initialization step resets the project to, and whether version bumping is a PR checklist step or release-point decision — prerequisite to automation
+- **Automated version management**: Automatic version bump and changelog verification as part of the release workflow — depends on versioning convention being defined first
 
 ## System Development Lifecycle Management
 **This context file gets deleted during extension project initialization** - ensures clean user experience with context.global.md as primary entry point.

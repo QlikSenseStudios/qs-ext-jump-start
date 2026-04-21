@@ -23,6 +23,7 @@ Collect from user:
 - **Extension name**: The name of your extension — used in `package.json`, `src/meta.json`, `README.md`, and the packaged output folder
 - **Description**: What does this extension do? What problem does it solve?
 - **Target platform**: Qlik Cloud, Qlik Sense Enterprise, or both
+- **Starting version**: The initial version for the extension project — default `0.1.0` if the user has no preference; the template version in `package.json` is not meaningful to the extension project and must be replaced
 
 ### Step 3 — Work Style Preferences
 
@@ -42,7 +43,7 @@ Generate `context.local.md` with:
 ### Step 5 — Apply Extension Identity
 
 Apply the name and description from Step 2 to:
-- **`package.json`**: Update `name` and `description` fields
+- **`package.json`**: Update `name`, `description`, and `version` fields — reset version to the value collected in Step 2
 - **`src/meta.json`**: Update `name` field
 - **`README.md`**: Replace the template title, description, and purpose with the extension's name and purpose; replace the Quick Start section with extension-specific setup steps (remove "Use this template" and AI initialization instructions — those are complete; retain `npm install`, environment setup links, `npm run serve`); remove the Contributing section (references `CONTRIBUTING.md` which is deleted in Step 6)
 - **`project/overview.md`**: Populate mission, goals, and scope from the collected extension purpose
