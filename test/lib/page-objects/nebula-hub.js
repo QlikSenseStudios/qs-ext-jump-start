@@ -73,8 +73,8 @@ class NebulaHubPage {
       const success = await clickWithBackdropHandling(this.page, propertiesButton);
 
       if (success) {
-        // Wait for dialog to appear
-        const dialog = this.page.locator('.MuiDialog-root [role="dialog"], [role="dialog"]').last();
+        // MuiDialog-root has role="presentation"; the actual dialog is the MuiDialog-paper child
+        const dialog = this.page.locator('div[role="dialog"].MuiDialog-paper');
         await dialog.waitFor({ state: 'visible', timeout: 5000 });
         await this.page.waitForTimeout(WAIT_TIMES.MEDIUM);
       }

@@ -103,47 +103,16 @@ function extensionUnconfiguredTests(testContext) {
       });
     });
 
-    test.skip('validates custom properties configuration options', async () => {
+    test('validates custom properties configuration options', async () => {
       const { hub } = testContext;
 
       console.log('🎯 Testing Custom Properties Configuration:');
       const expectedDefaults = getExpectedConfigurationDefaults();
 
-      /**
-       * MUI DOM Navigation Strategy for Custom Properties Testing
-       *
-       * Challenge: Nebula hub uses Material-UI components with auto-generated CSS classes
-       * Solution: Use property cache checkbox as stable anchor point, then traverse DOM tree
-       *
-       * Process:
-       * 1. Locate property cache checkbox (stable identifier)
-       * 2. Traverse up DOM ancestors to find configuration container
-       * 3. Use MUI-specific selectors for accordion and form controls
-       * 4. Dynamically validate against object-properties.js structure
-       */
-
-      // Use property cache checkbox as anchor - validate environment first
+      // Use property cache checkbox as anchor to confirm panel is ready
       const propertyCacheCheckbox = hub.page.locator(IDENTIFIERS.PROPERTY_CACHE_CHECKBOX);
-
-      // Validate that the configuration environment is accessible
       await expect(propertyCacheCheckbox).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
       console.log('   • Environment validation: ✅ Property cache checkbox confirmed accessible');
-
-      // Find parent container with multiple form elements
-      let configContainer = null;
-      for (let i = 1; i <= 4; i++) {
-        const testContainer = propertyCacheCheckbox.locator(`xpath=./ancestor::div[${i}]`);
-        const formElementCount = await testContainer.locator('input, select, textarea').count();
-        console.log(`   • Container level ${i}: Found ${formElementCount} form elements`);
-        if (formElementCount > 1 && !configContainer) {
-          configContainer = testContainer;
-          break;
-        }
-      }
-
-      // Assert that configuration container is found - critical for all custom properties
-      expect(configContainer).toBeTruthy();
-      console.log(`   • Configuration container: ✅ Found with multiple form elements`);
 
       // Analyze the props structure dynamically from object-properties.js
       const propsStructure = analyzePropsStructure(expectedDefaults.props);
@@ -176,11 +145,8 @@ function extensionUnconfiguredTests(testContext) {
       );
 
       // Look for props accordion with framework identifier
-      const propsAccordion = configContainer.locator(CONFIGURATION_IDENTIFIERS.MUI_PROPS_ACCORDION).first();
-      const propsAccordionVisible = await propsAccordion.isVisible().catch(() => false);
-
-      // Assert that props accordion is found - critical for custom properties access
-      expect(propsAccordionVisible).toBe(true);
+      const propsAccordion = hub.page.locator(CONFIGURATION_IDENTIFIERS.MUI_PROPS_ACCORDION).first();
+      await expect(propsAccordion).toBeVisible({ timeout: TIMEOUTS.STANDARD });
       console.log('   • Props accordion: ✅ Found MUI Accordion with exact structure');
 
       // Expand props accordion using framework identifier
@@ -199,11 +165,8 @@ function extensionUnconfiguredTests(testContext) {
         console.log(`   • Validating accordion group: ${accordionGroup.name}`);
 
         // Look for the accordion using dynamic selector
-        const accordion = configContainer.locator(accordionGroup.selector).first();
-        const accordionVisible = await accordion.isVisible().catch(() => false);
-
-        // Assert that accordion is found
-        expect(accordionVisible).toBe(true);
+        const accordion = hub.page.locator(accordionGroup.selector).first();
+        await expect(accordion).toBeVisible({ timeout: TIMEOUTS.STANDARD });
         console.log(`   • ${accordionGroup.name} accordion: ✅ Found`);
 
         // Expand accordion
@@ -226,11 +189,8 @@ function extensionUnconfiguredTests(testContext) {
 
         // Validate each property in the group
         for (const property of groupProperties) {
-          const element = configContainer.locator(property.selector).first();
-          const elementVisible = await element.isVisible().catch(() => false);
-
-          // Assert that property element is found
-          expect(elementVisible).toBe(true);
+          const element = hub.page.locator(property.selector).first();
+          await expect(element).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
           console.log(`   • ${property.name} (${property.type}): ✅ Found`);
 
           // Get the actual form control and validate its value
@@ -258,7 +218,7 @@ function extensionUnconfiguredTests(testContext) {
       });
     });
 
-    test.skip('validates JSON configuration matches object-properties.js defaults', async () => {
+    test('validates JSON configuration matches object-properties.js defaults', async () => {
       const { hub } = testContext;
       let dialogIsOpen = false;
 
@@ -266,8 +226,10 @@ function extensionUnconfiguredTests(testContext) {
         // Get expected configuration values dynamically from source files
         const expectedDefaults = await getExpectedConfigurationDefaults();
 
-        // Give the page a moment to settle after previous tests
-        await hub.page.waitForTimeout(2000);
+        // Wait for Modify Properties button to be enabled — the ZI hook loads properties async
+        // and keeps the button disabled until getProperties() resolves
+        const propertiesButton = hub.page.locator(IDENTIFIERS.MODIFY_PROPERTIES_BUTTON);
+        await expect(propertiesButton).toBeEnabled({ timeout: TIMEOUTS.NETWORK });
 
         // Open properties dialog using the same approach as teardown
         const dialogOpened = await hub.openPropertiesDialog();

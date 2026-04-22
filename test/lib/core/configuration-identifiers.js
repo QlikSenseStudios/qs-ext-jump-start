@@ -43,9 +43,10 @@ const CONFIGURATION_IDENTIFIERS = Object.freeze({
     '.MuiAccordionSummary-content.MuiAccordionSummary-contentGutters:has(.MuiTypography-root.MuiTypography-body1:has-text("props"))',
 
   /**
-   * MUI Accordion Button - role="button" ancestor for expanding accordions
+   * MUI Accordion Button - the MuiAccordionSummary-root button that wraps the content span.
+   * The content span is a child of the button, not inside a role="button" ancestor.
    */
-  MUI_ACCORDION_BUTTON: 'xpath=./ancestor::*[@role="button"]',
+  MUI_ACCORDION_BUTTON: 'xpath=./parent::button',
 
   /**
    * MUI Checkbox Input - specific input element within FormControlLabel

@@ -93,15 +93,38 @@ test/
 └── modules/
     ├── connection.test.js              # Validates Nebula Hub URL + version
     ├── environment.test.js             # Validates Nebula Hub UI components
-    └── extension-unconfigured.test.js  # Extension unconfigured state (2 tests skip — Nebula Hub DOM drift)
+    └── extension-unconfigured.test.js  # Extension unconfigured state
 ```
 
 **Environment setup**: See `docs/QLIK_CLOUD_SETUP.md` or `docs/QLIK_ENTERPRISE_SETUP.md`
+
+## Test Commands
+
+```bash
+npm test                                              # Run all tests
+SKIP_OPEN_REPORT=1 npx playwright test --reporter=list                    # All tests, terminal output only
+SKIP_OPEN_REPORT=1 npx playwright test --grep "test name" --reporter=list # Target by test/describe name
+SKIP_OPEN_REPORT=1 npx playwright test --headed --reporter=list           # Headed mode for visual inspection
+```
+
+`SKIP_OPEN_REPORT=1` suppresses the automatic browser report on failure. `--grep` matches against test and describe block names.
+
+## Nebula Hub DOM Patterns
+*Verified against `@nebula.js/cli-serve` 6.8.0. Re-verify after version bumps.*
+
+**Properties dialog**: `MuiDialog-root` carries `role="presentation"` — the actual dialog element is the child `div[role="dialog"].MuiDialog-paper`. Waiting on `.MuiDialog-root [role="dialog"]` will not resolve.
+
+**MUI Accordion button**: The `MuiAccordionSummary-content` span is a direct child of a `<button class="MuiAccordionSummary-root">` tag. There is no `role="button"` ancestor — use `xpath=./parent::button` to reach the clickable element, not `xpath=./ancestor::*[@role="button"]`.
+
+**Monaco editor — read**: `window.monaco` is not exposed in Nebula Hub. Read content by collecting all `.view-line` element text after expanding the editor container to force Monaco to render all lines (Monaco virtualizes rows — only visible lines exist in the DOM). Rendered text uses non-breaking spaces (U+00A0) for indentation — sanitize with `/[^\x20-\x7E\n]/g` before passing to `JSON.parse`.
+
+**Monaco editor — write**: The `.monaco-editor textarea` is read-only by design. Write by clicking `.monaco-editor .view-lines` to focus, pressing `Control+a` to select all, then typing the replacement content via `page.keyboard.type()`.
 
 ## Playwright Robustness Patterns
 - Re-query locators after interactions — do not cache handles across actions (avoids stale element errors)
 - Prefer keyboard-first interactions (Enter/Space); use bottom-most list items to avoid overlay interference
 - Add small waits after modal confirmations in headed mode for visibility stability
+- Use `hub.page.locator()` for all selectors — never scope off a cached ancestor locator across async boundaries (stale element errors)
 
 ## Build and Package
 
