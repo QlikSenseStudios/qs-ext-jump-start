@@ -99,6 +99,9 @@ class NebulaHubPage {
       const result = await setJsonEditorContent(this.page, jsonString);
 
       if (result.success) {
+        // Brief pause so the pasted content is visible in headed mode before confirming
+        await this.page.waitForTimeout(WAIT_TIMES.MEDIUM);
+
         // Apply the configuration
         const confirmButtons = [
           this.page.locator('button:has-text("Confirm")'),

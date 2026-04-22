@@ -1,68 +1,42 @@
 /**
  * @fileoverview Configuration defaults provider.
  *
- * This module provides configuration defaults by importing from the actual
- * source files (object-properties.js, data.js, package.json) to ensure
- * tests validate against the actual configured values.
+ * Derives expected test values directly from the extension source files so that
+ * tests always validate against the actual configured defaults. Changing
+ * object-properties.js or data.js will immediately surface in test failures if
+ * the Nebula Hub panel does not reflect the new values.
  *
  * @module ConfigurationDefaults
  * @since 1.0.0
  */
 
-import { createRequire } from 'node:module';
+import objectProperties from '../../../src/qae/object-properties.js';
 import dataConfig from '../../../src/qae/data.js';
 
-const require = createRequire(import.meta.url);
-const pkg = require('../../../package.json');
-
 /**
- * Gets the expected default values from object-properties.js for validation.
- * This ensures tests validate against the actual configured defaults.
- *
- * NOTE: object-properties.js and data.js files are the single source of truth for all
- *  property defaults. Reference to package.json here is used for simplicity but is not
- *  intended to make it seem like it is authoritative for any of its usage.
+ * Gets the expected default values from the extension source files for validation.
  *
  * @returns {Object} Expected configuration values with data constraints and qType
  */
 function getExpectedConfigurationDefaults() {
-  // Extract data constraints from data.js targets
   const dataTarget = dataConfig?.targets?.[0] || {};
-  const dimensionConstraints = dataTarget.dimensions || { min: 0, max: 0 };
-  const measureConstraints = dataTarget.measures || { min: 0, max: 0 };
-
-  // Replicate the exact values from object-properties.js
-  // These match the caption_properties and custom_props objects
-  const caption_properties = {
-    showTitles: true,
-    title: `${pkg.name}`,
-    subtitle: `v${pkg.version}`,
-    footnote: 'This is a template project for creating Qlik Sense extensions',
-  };
-
-  const custom_props = {
-    debug: {
-      enabled: false,
-      forceState: '',
-    },
-  };
 
   return {
-    // Caption properties matching object-properties.js exactly
-    ...caption_properties,
+    // Caption properties — sourced directly from object-properties.js
+    showTitles: objectProperties.showTitles,
+    title: objectProperties.title,
+    subtitle: objectProperties.subtitle,
+    footnote: objectProperties.footnote,
 
     // Complete props object for traversal in tests
-    props: custom_props,
-
-    // Individual debug properties for backward compatibility
-    debug: custom_props.debug,
+    props: objectProperties.props,
 
     // Data constraints from data.js
-    dimensions: dimensionConstraints,
-    measures: measureConstraints,
+    dimensions: dataTarget.dimensions || { min: 0, max: 0 },
+    measures: dataTarget.measures || { min: 0, max: 0 },
 
-    // qType name from package.json (same source as object-properties.js)
-    qType: pkg.name,
+    // qType matches pkg.name — Nebula sets qInfo.qType to the extension name at runtime
+    qType: objectProperties.title,
   };
 }
 

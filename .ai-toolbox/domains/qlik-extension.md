@@ -120,9 +120,24 @@ SKIP_OPEN_REPORT=1 npx playwright test --headed --reporter=list           # Head
 
 **Monaco editor — read**: `window.monaco` is not exposed in Nebula Hub. Read content by collecting all `.view-line` element text after expanding the editor container to force Monaco to render all lines (Monaco virtualizes rows — only visible lines exist in the DOM). Rendered text uses non-breaking spaces (U+00A0) for indentation — sanitize with `/[^\x20-\x7E\n]/g` before passing to `JSON.parse`.
 
-**Monaco editor — write**: The `.monaco-editor textarea` is read-only by design. Write by clicking `.monaco-editor .view-lines` to focus, pressing `Control+a` to select all, then typing the replacement content via `page.keyboard.type()`.
+**Monaco editor — write**: The `.monaco-editor textarea` is read-only by design. Write via clipboard paste — `page.keyboard.type()` triggers Monaco's bracket-matching autocomplete (typing `{` inserts `{}`, so `{}` becomes `{}}` and the JSON becomes invalid). Instead: click `.monaco-editor .view-lines` to focus, `Control+a` to select all, write content to the clipboard via `page.evaluate(() => navigator.clipboard.writeText(content))`, then `Control+v` to paste. Requires `permissions: ['clipboard-read', 'clipboard-write']` in the Playwright project config — clipboard API is blocked by default in headless Chromium.
 
 **Extension name aria-label ambiguity**: Nebula Hub renders both the extension container `div` and a title `h6` with `aria-label` equal to the extension name. An unscoped `[aria-label="name"]` selector triggers Playwright strict mode violations — always scope to the element type: `div[aria-label="name"]`.
+
+## Test Teardown — Why resetConfiguration() Matters
+
+`hub.resetConfiguration()` in `afterEach` writes `{}` to the Monaco editor and confirms. This is not cosmetic cleanup — Nebula Hub caches the extension's property object in memory for the session. Without this reset, configured values (dimensions, measures, custom props) survive page reload within the same browser context and bleed into the next test. Tests that look isolated can fail or produce wrong results when run in sequence. Any test that configures the extension (adds dimensions/measures, changes props values) **must** have teardown that calls `resetConfiguration()` — or the suite is order-dependent.
+
+## Test Utilities — Single Source of Truth
+
+Test utilities that validate extension defaults must import directly from the source files:
+
+```javascript
+import objectProperties from '../../../src/qae/object-properties.js';
+import dataConfig from '../../../src/qae/data.js';
+```
+
+`src/qae/object-properties.js` imports `package.json` with `with { type: 'json' }` — required for Node's native ESM loader (Nebula's webpack build does not need this assertion, but the Playwright test runner does). Do not create mirror/hardcoded copies of these values in test utilities — changes to source files must immediately surface as test failures.
 
 ## Playwright Robustness Patterns
 - Re-query locators after interactions — do not cache handles across actions (avoids stale element errors)

@@ -46,7 +46,9 @@ export default {
       headless: true,
       use: {
         ...devices['Desktop Chrome'],
-        //  ADD: Helpful for Qlik extensions
+        // clipboard-write permission required for Monaco editor write strategy —
+        // navigator.clipboard.writeText() is blocked by default in headless Chromium
+        permissions: ['clipboard-read', 'clipboard-write'],
         launchOptions: {
           args: ['--disable-web-security', '--disable-features=VizDisplayCompositor'],
         },

@@ -163,13 +163,16 @@ async function setJsonEditorContent(page, jsonContent) {
     {
       name: 'Monaco Editor',
       selector: '.monaco-editor .view-lines',
-      // Monaco does not expose window.monaco in Nebula Hub — use keyboard to write:
-      // click to focus, select all existing content, then type the replacement
+      // Monaco does not expose window.monaco in Nebula Hub — write via clipboard paste.
+      // page.keyboard.type() triggers Monaco's bracket-matching autocomplete (e.g. typing '{'
+      // inserts '{}'  making '{}' become '{}}'), so we write to the clipboard and paste instead,
+      // which bypasses Monaco's key handlers entirely.
       verifyViaInputValue: false,
       method: async (element) => {
         await element.click();
         await page.keyboard.press('Control+a');
-        await page.keyboard.type(jsonContent, { delay: 0 });
+        await page.evaluate((content) => navigator.clipboard.writeText(content), jsonContent);
+        await page.keyboard.press('Control+v');
       },
     },
     {
