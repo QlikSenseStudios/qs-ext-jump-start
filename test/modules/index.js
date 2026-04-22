@@ -5,11 +5,11 @@
  */
 
 import { connectionTests } from './connection.test.js';
-import { environmentTests } from './environment.test.js';
+import { hubReadyTests } from './hub-ready.test.js';
 import { extensionUnconfiguredTests } from './extension-unconfigured.test.js';
 
 export {
   connectionTests,
-  environmentTests,
+  hubReadyTests,
   extensionUnconfiguredTests,
 };

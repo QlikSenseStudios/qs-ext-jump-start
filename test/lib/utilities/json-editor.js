@@ -55,47 +55,14 @@ async function getJsonEditorContent(page) {
       },
     },
     {
-      name: 'Monaco Editor - Direct',
-      selector: '.monaco-editor',
-      method: async (element) => {
-        // Try to get Monaco editor content using global monaco reference
-        return await element.evaluate((_editorElement) => {
-          // Try accessing Monaco through global objects
-          if (typeof window.monaco !== 'undefined' && window.monaco.editor) {
-            const editors = window.monaco.editor.getEditors();
-            if (editors && editors.length > 0) {
-              return editors[0].getValue();
-            }
-          }
-
-          return null;
-        });
-      },
-    },
-    {
-      name: 'Monaco Editor - Textarea',
-      selector: '.monaco-editor textarea',
-      method: async (element) => {
-        // For Monaco editor, we need to get the full content, not just the input value
-        return await element.evaluate((el) => {
-          // Try to get the Monaco editor instance
-          const monacoEditor = el.closest('.monaco-editor');
-          if (monacoEditor && monacoEditor.monacoEditor) {
-            return monacoEditor.monacoEditor.getValue();
-          }
-
-          // Fallback to textarea value
-          return el.value || el.textContent || '';
-        });
-      },
-    },
-    {
-      name: 'Monaco Editor - All Text',
+      name: 'Monaco Editor',
       selector: '.monaco-editor .view-lines',
+      // Nebula Hub does not expose window.monaco — read by collecting all rendered .view-line
+      // elements. Call expandMonacoEditorContent() first so Monaco renders the full document.
       method: async (element) => {
-        // Get all text from Monaco editor lines
-        return await element.evaluate((linesElement) => {
-          return linesElement.textContent || linesElement.innerText || '';
+        return await element.evaluate((container) => {
+          const lines = [...container.querySelectorAll('.view-line')];
+          return lines.map((l) => l.textContent).join('\n');
         });
       },
     },
@@ -131,10 +98,13 @@ async function getJsonEditorContent(page) {
           const content = await strategy.method(element);
 
           if (content && content.trim().length > 0) {
+            // Monaco uses non-breaking spaces (U+00A0) for indentation — strip all
+            // non-printable/non-ASCII-printable chars so JSON.parse works correctly
+            const sanitized = content.replace(/[^\x20-\x7E\n]/g, ' ').trim();
             return {
               success: true,
               method: strategy.name,
-              content: content.trim(),
+              content: sanitized,
             };
           }
         }
@@ -179,8 +149,9 @@ async function setJsonEditorContent(page, jsonContent) {
     {
       name: 'CodeMirror Editor',
       selector: '.CodeMirror textarea',
+      // CodeMirror sets value via its own API; verify via inputValue after
+      verifyViaInputValue: true,
       method: async (element) => {
-        // CodeMirror requires special handling
         await element.evaluate((el, content) => {
           if (el.CodeMirror) {
             el.CodeMirror.setValue(content);
@@ -191,17 +162,23 @@ async function setJsonEditorContent(page, jsonContent) {
     },
     {
       name: 'Monaco Editor',
-      selector: '.monaco-editor textarea',
+      selector: '.monaco-editor .view-lines',
+      // Monaco does not expose window.monaco in Nebula Hub — write via clipboard paste.
+      // page.keyboard.type() triggers Monaco's bracket-matching autocomplete (e.g. typing '{'
+      // inserts '{}'  making '{}' become '{}}'), so we write to the clipboard and paste instead,
+      // which bypasses Monaco's key handlers entirely.
+      verifyViaInputValue: false,
       method: async (element) => {
-        // Monaco editor handling
-        await element.fill(jsonContent);
-        await page.keyboard.press('Control+A');
-        await page.keyboard.type(jsonContent);
+        await element.click();
+        await page.keyboard.press('Control+a');
+        await page.evaluate((content) => navigator.clipboard.writeText(content), jsonContent);
+        await page.keyboard.press('Control+v');
       },
     },
     {
       name: 'Standard Textarea',
       selector: 'textarea[data-testid*="json"], textarea.json-editor, .json-input textarea',
+      verifyViaInputValue: true,
       method: async (element) => {
         await element.fill('');
         await element.fill(jsonContent);
@@ -210,6 +187,7 @@ async function setJsonEditorContent(page, jsonContent) {
     {
       name: 'Generic Textarea',
       selector: 'textarea',
+      verifyViaInputValue: true,
       method: async (element) => {
         await element.fill('');
         await element.fill(jsonContent);
@@ -218,6 +196,7 @@ async function setJsonEditorContent(page, jsonContent) {
     {
       name: 'Input Field',
       selector: 'input[type="text"]',
+      verifyViaInputValue: true,
       method: async (element) => {
         await element.fill('');
         await element.fill(jsonContent);
@@ -233,14 +212,14 @@ async function setJsonEditorContent(page, jsonContent) {
         if (await element.isVisible()) {
           await strategy.method(element);
 
-          // Verify the content was set correctly
-          const currentValue = await element.inputValue().catch(() => element.textContent().catch(() => ''));
+          if (!strategy.verifyViaInputValue) {
+            // method() throws on failure, so reaching here means success
+            return { success: true, method: strategy.name };
+          }
 
+          const currentValue = await element.inputValue().catch(() => element.textContent().catch(() => ''));
           if (currentValue.trim() === jsonContent.trim()) {
-            return {
-              success: true,
-              method: strategy.name,
-            };
+            return { success: true, method: strategy.name };
           }
         }
       }
@@ -374,22 +353,20 @@ async function expandMonacoEditorContent(page) {
   try {
     const monacoEditor = page.locator('.monaco-editor');
     if (await monacoEditor.isVisible()) {
-      // Click on Monaco editor to focus it
-      await monacoEditor.click();
-      await page.waitForTimeout(300);
-
-      // Try Ctrl+A to select all content
-      await page.keyboard.press('Control+a');
-      await page.waitForTimeout(200);
-
-      // Try keyboard shortcut to expand all (Ctrl+Shift+])
-      await page.keyboard.press('Control+Shift+]');
-      await page.waitForTimeout(300);
-
-      // Try alternative expansion shortcut
-      await page.keyboard.press('Control+Shift+ArrowRight');
-      await page.waitForTimeout(200);
-
+      // Expand the dialog content and editor height so Monaco renders all lines at once.
+      // Monaco virtualizes rows — only visible lines are in the DOM — so we must make the
+      // viewport tall enough to hold the full document before reading via .view-line elements.
+      await page.evaluate(() => {
+        const content = document.querySelector('.MuiDialogContent-root');
+        if (content) {
+          content.style.maxHeight = 'none';
+          content.style.height = '8000px';
+          content.style.overflow = 'visible';
+        }
+        const editor = document.querySelector('.monaco-editor');
+        if (editor) { editor.style.height = '8000px'; }
+      });
+      await page.waitForTimeout(400);
       return true;
     }
   } catch (error) {

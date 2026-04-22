@@ -91,17 +91,72 @@ test/
 │   ├── utilities/         # dom.js, json-editor.js, configuration-defaults.js, props-structure-analyzer.js
 │   └── page-objects/      # nebula-hub.js — Page Object Model for Nebula Hub UI
 └── modules/
-    ├── connection.test.js              # Validates Nebula Hub URL + version
-    ├── environment.test.js             # Validates Nebula Hub UI components
-    └── extension-unconfigured.test.js  # Extension unconfigured state (2 tests skip — Nebula Hub DOM drift)
+    ├── connection.test.js              # Validates Nebula Hub URL + version (user intervention required on failure)
+    ├── hub-ready.test.js               # Validates Nebula Hub controls + extension loaded (user intervention required on failure)
+    └── extension-unconfigured.test.js  # Extension unconfigured state
 ```
 
 **Environment setup**: See `docs/QLIK_CLOUD_SETUP.md` or `docs/QLIK_ENTERPRISE_SETUP.md`
+
+**Test module responsibilities**: `connection.test.js` and `hub-ready.test.js` are infrastructure tests — failure means the environment is misconfigured and requires user intervention; the agent cannot fix these. `extension-unconfigured.test.js` and any subsequent extension modules are code tests — failure indicates an extension bug or selector drift the agent can investigate and fix.
+
+## Test App Broken State
+
+Nebula Hub occasionally fails to open the Qlik app and shows a modal dialog: `dialog:has-text("An error occurred")` with body text "Some parameters are empty." When this happens, every test in the suite will fail with element-not-found errors — none of those failures are code bugs.
+
+**Cause**: The underlying Qlik app has lost its data connection or entered an invalid state. This is unrelated to `.env` configuration, authentication tokens, or extension code.
+
+**Detection**: `connection.test.js` races `div[data-nebulajs-version]` (successful init) against `dialog:has-text("An error occurred")` (app failure). If the dialog wins, the test fails immediately with a message directing the developer to intervene — rather than timing out and letting every downstream test also time out with misleading errors.
+
+**Fix** (requires Qlik tenant admin access): log into the Qlik tenant, open the test app, and re-run the load data script. Then re-run the tests.
+
+**Do not** investigate test selectors or extension code when this dialog is present in the error-context snapshot — the environment is broken, not the code.
+
+## Test Commands
+
+```bash
+npm test                                              # Run all tests
+SKIP_OPEN_REPORT=1 npx playwright test --reporter=list                    # All tests, terminal output only
+SKIP_OPEN_REPORT=1 npx playwright test --grep "test name" --reporter=list # Target by test/describe name
+SKIP_OPEN_REPORT=1 npx playwright test --headed --reporter=list           # Headed mode for visual inspection
+```
+
+`SKIP_OPEN_REPORT=1` suppresses the automatic browser report on failure. `--grep` matches against test and describe block names.
+
+## Nebula Hub DOM Patterns
+*Verified against `@nebula.js/cli-serve` 6.8.0. Re-verify after version bumps.*
+
+**Properties dialog**: `MuiDialog-root` carries `role="presentation"` — the actual dialog element is the child `div[role="dialog"].MuiDialog-paper`. Waiting on `.MuiDialog-root [role="dialog"]` will not resolve.
+
+**MUI Accordion button**: The `MuiAccordionSummary-content` span is a direct child of a `<button class="MuiAccordionSummary-root">` tag. There is no `role="button"` ancestor — use `xpath=./parent::button` to reach the clickable element, not `xpath=./ancestor::*[@role="button"]`.
+
+**Monaco editor — read**: `window.monaco` is not exposed in Nebula Hub. Read content by collecting all `.view-line` element text after expanding the editor container to force Monaco to render all lines (Monaco virtualizes rows — only visible lines exist in the DOM). Rendered text uses non-breaking spaces (U+00A0) for indentation — sanitize with `/[^\x20-\x7E\n]/g` before passing to `JSON.parse`.
+
+**Monaco editor — write**: The `.monaco-editor textarea` is read-only by design. Write via clipboard paste — `page.keyboard.type()` triggers Monaco's bracket-matching autocomplete (typing `{` inserts `{}`, so `{}` becomes `{}}` and the JSON becomes invalid). Instead: click `.monaco-editor .view-lines` to focus, `Control+a` to select all, write content to the clipboard via `page.evaluate(() => navigator.clipboard.writeText(content))`, then `Control+v` to paste. Requires `permissions: ['clipboard-read', 'clipboard-write']` in the Playwright project config — clipboard API is blocked by default in headless Chromium.
+
+**Extension name aria-label ambiguity**: Nebula Hub renders both the extension container `div` and a title `h6` with `aria-label` equal to the extension name. An unscoped `[aria-label="name"]` selector triggers Playwright strict mode violations — always scope to the element type: `div[aria-label="name"]`.
+
+## Test Teardown — Why resetConfiguration() Matters
+
+`hub.resetConfiguration()` in `afterEach` writes `{}` to the Monaco editor and confirms. This is not cosmetic cleanup — Nebula Hub caches the extension's property object in memory for the session. Without this reset, configured values (dimensions, measures, custom props) survive page reload within the same browser context and bleed into the next test. Tests that look isolated can fail or produce wrong results when run in sequence. Any test that configures the extension (adds dimensions/measures, changes props values) **must** have teardown that calls `resetConfiguration()` — or the suite is order-dependent.
+
+## Test Utilities — Single Source of Truth
+
+Test utilities that validate extension defaults must import directly from the source files:
+
+```javascript
+import objectProperties from '../../../src/qae/object-properties.js';
+import dataConfig from '../../../src/qae/data.js';
+```
+
+`src/qae/object-properties.js` imports `package.json` with `with { type: 'json' }` — required for Node's native ESM loader (Nebula's webpack build does not need this assertion, but the Playwright test runner does). Do not create mirror/hardcoded copies of these values in test utilities — changes to source files must immediately surface as test failures.
 
 ## Playwright Robustness Patterns
 - Re-query locators after interactions — do not cache handles across actions (avoids stale element errors)
 - Prefer keyboard-first interactions (Enter/Space); use bottom-most list items to avoid overlay interference
 - Add small waits after modal confirmations in headed mode for visibility stability
+- Use `hub.page.locator()` for all selectors — never scope off a cached ancestor locator across async boundaries (stale element errors)
+- **Infrastructure test failure messages**: pass a user-facing message as the second argument to `expect()` — `await expect(locator, 'message explaining cause and action').toBeVisible()` — this surfaces directly in the Playwright failure output without requiring try/catch; use this pattern in `connection.test.js` and `hub-ready.test.js` where failures require developer action, not code fixes
 
 ## Build and Package
 

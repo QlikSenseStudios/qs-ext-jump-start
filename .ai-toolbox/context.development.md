@@ -75,7 +75,8 @@ Dependabot handles direct dependency version bumps (`package.json` ranges). The 
 
 *`context.state.md` is not used to track template development progress — it represents the initial delivered state that extension developers inherit and evolve. Template development progress lives only in this section.*
 
-- **Restore Playwright testing coverage** (branch: `fix/playwright-coverage`): Investigate and resolve the 2 skipped tests caused by Nebula Hub DOM drift with latest `@nebula.js/cli-serve`; restore full test suite to passing.
+- **Playwright: selection mode testing** (follow-on branch): Add test coverage for the extension's selection mode — entering, confirming, and cancelling selections; validating the `.in-selection` modifier class and `useSelections()` state changes.
+- **Playwright: configured extension state testing** (follow-on branch): Add test coverage for the extension with dimensions and measures configured — rendering a complete visualization, validating data is displayed, and validating the transition from incomplete to complete state.
 
 ### Optional Enhancements
 *Not scheduled — consider for future branches*

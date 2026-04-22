@@ -29,192 +29,132 @@ function extensionUnconfiguredTests(testContext) {
     test('validates incomplete visualization display when unconfigured', async () => {
       const { page } = testContext;
 
-      // Validate extension shows incomplete visualization when no configuration is provided
+      // Nebula Hub renders [data-tid="error-title"] when qHyperCubeDef has no dimensions or measures.
+      // This confirms the extension enters the expected incomplete state rather than crashing or rendering blank.
       const incompleteTitle = page.locator(IDENTIFIERS.INCOMPLETE_VISUALIZATION);
-      await expect(incompleteTitle).toBeVisible({ timeout: TIMEOUTS.NETWORK });
+      await expect(
+        incompleteTitle,
+        'Incomplete visualization title not found — extension may have loaded without error state, ' +
+          'or [data-tid="error-title"] selector has drifted. Verify extension renders unconfigured state correctly.'
+      ).toBeVisible({ timeout: TIMEOUTS.NETWORK });
 
-      const titleText = await incompleteTitle.textContent();
-      expect(titleText).toBe('Incomplete visualization');
+      await expect(incompleteTitle).toHaveText('Incomplete visualization');
       console.log('   • Incomplete visualization message: ✅ Displayed correctly');
-
-      test.info().annotations.push({
-        type: 'info',
-        description: 'Extension shows incomplete visualization when unconfigured',
-      });
     });
 
-    test('validates configuration panel options for unconfigured extension', async () => {
+    test('validates data panel shows dimension and measure controls', async () => {
       const { hub } = testContext;
 
-      console.log('🧪 Testing Configuration Form Elements:');
-
-      // Dynamic validation against object-properties.js defaults
+      // Confirms the data binding UI matches the constraints defined in data.js.
+      // Add Dimension and Add Measure buttons must be visible and enabled so the user
+      // can configure the extension — if either is missing, the data.js targets are not
+      // being surfaced correctly by Nebula Hub.
       const expectedDefaults = getExpectedConfigurationDefaults();
 
-      // Test data configuration buttons
       const addDimensionBtn = hub.page.locator(CONFIGURATION_IDENTIFIERS.ADD_DIMENSION_BUTTON);
-      await expect(addDimensionBtn).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-
-      const isDimensionBtnEnabled = await addDimensionBtn.isEnabled();
-      expect(isDimensionBtnEnabled).toBe(true);
+      await expect(
+        addDimensionBtn,
+        'Add Dimension button not visible — data panel may not be rendered or selector has drifted.'
+      ).toBeVisible({ timeout: TIMEOUTS.STANDARD });
+      await expect(addDimensionBtn).toBeEnabled();
       console.log(
-        `   • Add Dimension button: ✅ Available and enabled (min: ${expectedDefaults.dimensions.min} required, max: ${expectedDefaults.dimensions.max} allowed)`
+        `   • Add Dimension button: ✅ Visible and enabled (min: ${expectedDefaults.dimensions.min}, max: ${expectedDefaults.dimensions.max})`
       );
 
       const addMeasureBtn = hub.page.locator(CONFIGURATION_IDENTIFIERS.ADD_MEASURE_BUTTON);
-      await expect(addMeasureBtn).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-
-      const isMeasureBtnEnabled = await addMeasureBtn.isEnabled();
-      expect(isMeasureBtnEnabled).toBe(true);
+      await expect(
+        addMeasureBtn,
+        'Add Measure button not visible — data panel may not be rendered or selector has drifted.'
+      ).toBeVisible({ timeout: TIMEOUTS.STANDARD });
+      await expect(addMeasureBtn).toBeEnabled();
       console.log(
-        `   • Add Measure button: ✅ Available and enabled (min: ${expectedDefaults.measures.min} required, max: ${expectedDefaults.measures.max} allowed)`
+        `   • Add Measure button: ✅ Visible and enabled (min: ${expectedDefaults.measures.min}, max: ${expectedDefaults.measures.max})`
       );
+    });
 
-      // Test caption properties with dynamic validation
+    test('validates caption properties match object-properties defaults', async () => {
+      const { hub } = testContext;
+
+      // Confirms the caption property defaults defined in object-properties.js are reflected
+      // in the Nebula Hub property panel. Drift here means object-properties.js was changed
+      // without updating the test, or the panel is loading stale values.
+      const expectedDefaults = getExpectedConfigurationDefaults();
+
       const showTitlesCheckbox = hub.page.locator(CONFIGURATION_IDENTIFIERS.SHOW_TITLES_CHECKBOX);
-      await expect(showTitlesCheckbox).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
-      const isChecked = await showTitlesCheckbox.isChecked();
-      expect(isChecked).toBe(expectedDefaults.showTitles);
-      console.log(
-        `   • Show Titles checkbox: ✅ Available and matches default configuration (${isChecked ? 'checked' : 'unchecked'})`
-      );
+      await expect(
+        showTitlesCheckbox,
+        'Show Titles checkbox not visible — caption properties section may not be rendered or selector has drifted.'
+      ).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
+      await expect(showTitlesCheckbox).toBeChecked();
+      console.log(`   • Show Titles: ✅ Checked (matches default: ${expectedDefaults.showTitles})`);
 
       const titleInput = hub.page.getByRole('textbox', { name: 'title', exact: true });
       await expect(titleInput).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
-      const titleValue = await titleInput.inputValue();
-      expect(titleValue).toBe(expectedDefaults.title);
-      console.log(`   • Title input field: ✅ Available and matches default configuration ("${titleValue}")`);
+      await expect(titleInput).toHaveValue(expectedDefaults.title);
+      console.log(`   • Title: ✅ "${expectedDefaults.title}"`);
 
       const subtitleInput = hub.page.getByRole('textbox', { name: 'subtitle' });
       await expect(subtitleInput).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
-      const subtitleValue = await subtitleInput.inputValue();
-      expect(subtitleValue).toBe(expectedDefaults.subtitle);
-      console.log(`   • Subtitle input field: ✅ Available and matches default configuration ("${subtitleValue}")`);
+      await expect(subtitleInput).toHaveValue(expectedDefaults.subtitle);
+      console.log(`   • Subtitle: ✅ "${expectedDefaults.subtitle}"`);
 
       const footnoteInput = hub.page.getByRole('textbox', { name: 'footnote' });
       await expect(footnoteInput).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
-      const footnoteValue = await footnoteInput.inputValue();
-      expect(footnoteValue).toBe(expectedDefaults.footnote);
-      console.log(`   • Footnote input field: ✅ Available and matches default configuration ("${footnoteValue}")`);
-
-      test.info().annotations.push({
-        type: 'info',
-        description: 'Configuration panel caption properties validated against object-properties.js defaults',
-      });
+      await expect(footnoteInput).toHaveValue(expectedDefaults.footnote);
+      console.log(`   • Footnote: ✅ "${expectedDefaults.footnote}"`);
     });
 
-    test.skip('validates custom properties configuration options', async () => {
+    test('validates custom props section renders with correct defaults', async () => {
       const { hub } = testContext;
 
-      console.log('🎯 Testing Custom Properties Configuration:');
+      // Confirms that the props object from object-properties.js is surfaced in the Nebula Hub
+      // property panel with the correct MUI accordion structure and default values.
+      // analyzePropsStructure() derives selectors dynamically from the props shape so this
+      // test adapts automatically when props are added or removed.
       const expectedDefaults = getExpectedConfigurationDefaults();
-
-      /**
-       * MUI DOM Navigation Strategy for Custom Properties Testing
-       *
-       * Challenge: Nebula hub uses Material-UI components with auto-generated CSS classes
-       * Solution: Use property cache checkbox as stable anchor point, then traverse DOM tree
-       *
-       * Process:
-       * 1. Locate property cache checkbox (stable identifier)
-       * 2. Traverse up DOM ancestors to find configuration container
-       * 3. Use MUI-specific selectors for accordion and form controls
-       * 4. Dynamically validate against object-properties.js structure
-       */
-
-      // Use property cache checkbox as anchor - validate environment first
-      const propertyCacheCheckbox = hub.page.locator(IDENTIFIERS.PROPERTY_CACHE_CHECKBOX);
-
-      // Validate that the configuration environment is accessible
-      await expect(propertyCacheCheckbox).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
-      console.log('   • Environment validation: ✅ Property cache checkbox confirmed accessible');
-
-      // Find parent container with multiple form elements
-      let configContainer = null;
-      for (let i = 1; i <= 4; i++) {
-        const testContainer = propertyCacheCheckbox.locator(`xpath=./ancestor::div[${i}]`);
-        const formElementCount = await testContainer.locator('input, select, textarea').count();
-        console.log(`   • Container level ${i}: Found ${formElementCount} form elements`);
-        if (formElementCount > 1 && !configContainer) {
-          configContainer = testContainer;
-          break;
-        }
-      }
-
-      // Assert that configuration container is found - critical for all custom properties
-      expect(configContainer).toBeTruthy();
-      console.log(`   • Configuration container: ✅ Found with multiple form elements`);
-
-      // Analyze the props structure dynamically from object-properties.js
       const propsStructure = analyzePropsStructure(expectedDefaults.props);
-      console.log(`   • Props structure analysis: Found ${propsStructure.length} properties to validate`);
 
-      // Skip validation if props structure is empty
       if (propsStructure.length === 0) {
-        console.log('   • Props validation: ⚠️ No properties found - extension may have empty props object');
-        test.info().annotations.push({
-          type: 'info',
-          description: 'Extension has no custom properties to validate',
-        });
+        test.skip(true, 'No custom props defined in object-properties.js — nothing to validate');
         return;
       }
 
-      // Find the first top-level accordion property dynamically
-      const topLevelAccordions = propsStructure.filter((prop) => prop.type === 'accordion' && prop.path.length === 1);
-
-      if (topLevelAccordions.length === 0) {
-        console.log('   • Props validation: ⚠️ No top-level accordion properties found');
-        test.info().annotations.push({
-          type: 'info',
-          description: 'No accordion properties found in props structure',
-        });
-        return;
-      }
-
-      console.log(
-        `   • Found ${topLevelAccordions.length} top-level accordion(s): ${topLevelAccordions.map((p) => p.name).join(', ')}`
-      );
-
-      // Look for props accordion with framework identifier
-      const propsAccordion = configContainer.locator(CONFIGURATION_IDENTIFIERS.MUI_PROPS_ACCORDION).first();
-      const propsAccordionVisible = await propsAccordion.isVisible().catch(() => false);
-
-      // Assert that props accordion is found - critical for custom properties access
-      expect(propsAccordionVisible).toBe(true);
-      console.log('   • Props accordion: ✅ Found MUI Accordion with exact structure');
-
-      // Expand props accordion using framework identifier
-      const accordionButton = propsAccordion.locator(CONFIGURATION_IDENTIFIERS.MUI_ACCORDION_BUTTON).first();
-      const isExpanded = await accordionButton.getAttribute('aria-expanded').catch(() => 'false');
-      if (isExpanded === 'false') {
-        await accordionButton.click();
-        await hub.page.waitForTimeout(CONFIGURATION_TIMEOUTS.ELEMENT_TRANSITION);
-      }
-
-      // Dynamically validate each accordion group and its properties
       const accordionGroups = propsStructure.filter((prop) => prop.type === 'accordion');
-      console.log(`   • Found ${accordionGroups.length} accordion groups to validate`);
+      if (accordionGroups.length === 0) {
+        test.skip(true, 'Props object has no nested groups — no accordion structure to validate');
+        return;
+      }
+
+      console.log(`   • Props structure: ${accordionGroups.length} accordion group(s) — ${accordionGroups.map((p) => p.name).join(', ')}`);
+
+      // Expand the top-level props accordion so nested groups become visible.
+      // MUI_ACCORDION_BUTTON is an xpath selector so it must be chained via .locator(), not interpolated.
+      const propsAccordionBtn = hub.page
+        .locator(CONFIGURATION_IDENTIFIERS.MUI_PROPS_ACCORDION)
+        .locator(CONFIGURATION_IDENTIFIERS.MUI_ACCORDION_BUTTON)
+        .first();
+      const propsIsExpanded = await propsAccordionBtn.getAttribute('aria-expanded').catch(() => 'false');
+      if (propsIsExpanded === 'false') {
+        await propsAccordionBtn.click();
+      }
 
       for (const accordionGroup of accordionGroups) {
-        console.log(`   • Validating accordion group: ${accordionGroup.name}`);
+        const accordion = hub.page.locator(accordionGroup.selector).first();
+        await expect(
+          accordion,
+          `"${accordionGroup.name}" accordion not visible — props panel may not be rendered or MUI selector has drifted.`
+        ).toBeVisible({ timeout: TIMEOUTS.STANDARD });
 
-        // Look for the accordion using dynamic selector
-        const accordion = configContainer.locator(accordionGroup.selector).first();
-        const accordionVisible = await accordion.isVisible().catch(() => false);
-
-        // Assert that accordion is found
-        expect(accordionVisible).toBe(true);
-        console.log(`   • ${accordionGroup.name} accordion: ✅ Found`);
-
-        // Expand accordion
-        const groupAccordionButton = accordion.locator(CONFIGURATION_IDENTIFIERS.MUI_ACCORDION_BUTTON).first();
-        const groupIsExpanded = await groupAccordionButton.getAttribute('aria-expanded').catch(() => 'false');
-        if (groupIsExpanded === 'false') {
-          await groupAccordionButton.click();
-          await hub.page.waitForTimeout(CONFIGURATION_TIMEOUTS.ELEMENT_TRANSITION);
+        const accordionButton = hub.page
+          .locator(accordionGroup.selector)
+          .locator(CONFIGURATION_IDENTIFIERS.MUI_ACCORDION_BUTTON)
+          .first();
+        const isExpanded = await accordionButton.getAttribute('aria-expanded').catch(() => 'false');
+        if (isExpanded === 'false') {
+          await accordionButton.click();
         }
 
-        // Find all properties within this accordion group
+        // Find direct child properties of this accordion group
         const groupProperties = propsStructure.filter(
           (prop) =>
             !prop.hasChildren &&
@@ -222,227 +162,121 @@ function extensionUnconfiguredTests(testContext) {
             prop.path.slice(0, -1).join('.') === accordionGroup.path.join('.')
         );
 
-        console.log(`   • Validating ${groupProperties.length} properties in ${accordionGroup.name} group`);
-
-        // Validate each property in the group
         for (const property of groupProperties) {
-          const element = configContainer.locator(property.selector).first();
-          const elementVisible = await element.isVisible().catch(() => false);
+          const element = hub.page.locator(property.selector).first();
+          await expect(
+            element,
+            `"${property.name}" control not visible after expanding "${accordionGroup.name}" accordion.`
+          ).toBeVisible({ timeout: CONFIGURATION_TIMEOUTS.FORM_ELEMENT });
 
-          // Assert that property element is found
-          expect(elementVisible).toBe(true);
-          console.log(`   • ${property.name} (${property.type}): ✅ Found`);
-
-          // Get the actual form control and validate its value
-          let actualValue;
           if (property.type === 'checkbox') {
-            const checkbox = element.locator(CONFIGURATION_IDENTIFIERS.MUI_CHECKBOX_INPUT).first();
-            actualValue = await checkbox.isChecked();
+            const checkbox = hub.page.locator(`${property.selector} ${CONFIGURATION_IDENTIFIERS.MUI_CHECKBOX_INPUT}`).first();
+            if (property.expectedValue) {
+              await expect(checkbox).toBeChecked();
+            } else {
+              await expect(checkbox).not.toBeChecked();
+            }
+            console.log(`   • ${property.name}: ✅ ${property.expectedValue ? 'checked' : 'unchecked'}`);
           } else if (property.type === 'textfield') {
-            const textInput = element.locator(CONFIGURATION_IDENTIFIERS.MUI_TEXT_INPUT).first();
-            actualValue = await textInput.inputValue();
+            const textInput = hub.page.locator(`${property.selector} ${CONFIGURATION_IDENTIFIERS.MUI_TEXT_INPUT}`).first();
+            await expect(textInput).toHaveValue(String(property.expectedValue));
+            console.log(`   • ${property.name}: ✅ "${property.expectedValue}"`);
           }
-
-          // Validate against expected value from object-properties.js
-          expect(actualValue).toBe(property.expectedValue);
-          const displayValue = property.type === 'textfield' ? `"${actualValue}"` : actualValue;
-          console.log(`   • ${property.name}: ✅ Validated (${displayValue})`);
         }
+
+        console.log(`   • ${accordionGroup.name}: ✅ All ${groupProperties.length} properties validated`);
       }
-
-      console.log('   • Custom Properties: ✅ All props structure validated dynamically with exact MUI structure');
-
-      test.info().annotations.push({
-        type: 'info',
-        description: 'Custom properties validation using exact MUI DOM structure patterns',
-      });
     });
 
-    test.skip('validates JSON configuration matches object-properties.js defaults', async () => {
+    test('validates JSON configuration matches object-properties defaults', async () => {
       const { hub } = testContext;
       let dialogIsOpen = false;
 
       try {
-        // Get expected configuration values dynamically from source files
-        const expectedDefaults = await getExpectedConfigurationDefaults();
+        const expectedDefaults = getExpectedConfigurationDefaults();
 
-        // Give the page a moment to settle after previous tests
-        await hub.page.waitForTimeout(2000);
+        // Nebula Hub keeps the Modify Properties button disabled until getProperties() resolves
+        // asynchronously — wait for it to become enabled before attempting to open the dialog.
+        const propertiesButton = hub.page.locator(IDENTIFIERS.MODIFY_PROPERTIES_BUTTON);
+        await expect(propertiesButton).toBeEnabled({ timeout: TIMEOUTS.NETWORK });
 
-        // Open properties dialog using the same approach as teardown
         const dialogOpened = await hub.openPropertiesDialog();
-        if (!dialogOpened) {
-          // Fail test with meaningful error message for environment issues
-          const errorMsg =
-            'Properties dialog failed to open. This could indicate:\n' +
-            '  • Extension not properly loaded in test environment\n' +
-            '  • Previous test interference with dialog state\n' +
-            '  • Network connectivity issues with Qlik Sense\n' +
-            '  • Browser/page state corruption\n\n' +
-            'Please verify test environment and re-run tests.';
-
-          // Use expect.fail for clear test failure reporting
-          expect(dialogOpened).toBe(true);
-          throw new Error(errorMsg);
-        }
-
+        expect(
+          dialogOpened,
+          'Properties dialog failed to open — extension may not be loaded or a previous test left the UI in a bad state.'
+        ).toBe(true);
         dialogIsOpen = true;
 
-        // Additional wait for dialog stabilization
-        await hub.page.waitForTimeout(CONFIGURATION_TIMEOUTS.PANEL_STABILIZATION);
+        // Wait for Monaco to be present before attempting to expand and read it
+        await expect(hub.page.locator('.monaco-editor')).toBeVisible({ timeout: TIMEOUTS.STANDARD });
 
-        // Try to expand Monaco Editor content first
+        // Resize the dialog and editor to force Monaco to render all lines — Monaco virtualizes
+        // rows so only visible lines exist in the DOM without this step.
         await expandMonacoEditorContent(hub.page);
-        await hub.page.waitForTimeout(CONFIGURATION_TIMEOUTS.ELEMENT_TRANSITION);
 
-        // Get the JSON content from the properties editor
         const jsonResult = await getJsonEditorContent(hub.page);
+        expect(
+          jsonResult.success,
+          `Failed to read JSON from Monaco editor — strategy used: ${jsonResult.method ?? 'none'}. ` +
+            'Verify the properties dialog opened correctly and Monaco rendered.'
+        ).toBe(true);
+        expect(
+          jsonResult.method,
+          'Expected Monaco Editor but got a fallback strategy — dialog may not have opened correctly.'
+        ).toBe('Monaco Editor');
+        console.log(`   • JSON read via: ${jsonResult.method}`);
 
-        // Validate that we successfully retrieved JSON content
-        expect(jsonResult.success).toBe(true);
-        expect(jsonResult.content).toBeDefined();
-        expect(jsonResult.content.length).toBeGreaterThan(0);
-        console.log(`JSON retrieved using: ${jsonResult.method}`);
-
-        // Validate that we're getting proper Monaco Editor (indicates correct dialog state)
-        if (jsonResult.method === 'Input Field') {
-          const errorMsg =
-            'Dialog state issue: Expected Monaco Editor but got Input Field. This suggests:\n' +
-            '  • Properties dialog did not open correctly\n' +
-            '  • UI framework version mismatch\n' +
-            '  • Dialog content not fully loaded\n\n' +
-            'Please check the test environment and ensure the properties dialog opens properly.';
-
-          // Fail test with proper expect assertion and helpful error message
-          expect(jsonResult.method).not.toBe('Input Field');
-          throw new Error(errorMsg);
-        }
-
-        // Build required sections dynamically - only core sections that are always visible
-        const requiredSections = ['qInfo', 'qType', 'qHyperCubeDef'];
-
-        // Add sections that are likely to be visible in collapsed JSON
-        const coreConfigSections = ['showTitles', 'props'];
-        coreConfigSections.forEach((section) => {
-          if (expectedDefaults[section] !== undefined && !requiredSections.includes(section)) {
-            requiredSections.push(section);
-          }
-        });
-
-        // Get the expected qType from configuration defaults (uses same source as object-properties.js)
-        const expectedQType = expectedDefaults.qType;
-
-        // Use the extracted validation utility with flexible property path mapping
+        // Validate structure against object-properties.js — all top-level keys must be present
+        // and parseable as complete JSON (partial/collapsed JSON means the expand step failed).
+        const requiredSections = ['qInfo', 'qHyperCubeDef', 'showTitles', 'props'];
         const validationResult = validateJsonStructure(jsonResult.content, {
-          allowPartialJson: true,
-          requiredSections: requiredSections,
-          propertyPaths: {
-            qType: 'qInfo.qType', // qType is nested in qInfo section
-          },
-          expectedValues: {
-            qType: expectedQType, // Validate qType matches expected value
-          },
+          allowPartialJson: false,
+          requiredSections,
         });
 
-        // Enhanced validation for qType using improved validation system
-        if (validationResult.isPartialJson) {
-          // For partial JSON, ensure qType section was found and validated
-          if (requiredSections.includes('qType')) {
-            expect(validationResult.foundSections).toContain('qType');
-            console.log(`✓ Verified qType matches object-properties.js: ${expectedQType}`);
-          }
-        }
+        expect(
+          validationResult.isPartialJson,
+          'Monaco editor returned collapsed JSON — expandMonacoEditorContent did not fully render all lines.'
+        ).toBe(false);
+        expect(validationResult.success, `Missing sections: ${validationResult.missingSections.join(', ')}`).toBe(true);
 
-        // Assert that validation was successful
-        expect(validationResult.success).toBe(true);
-        expect(validationResult.foundSections.length).toBeGreaterThan(0);
+        const json = validationResult.jsonObject;
 
-        // Validate core required sections
-        expect(validationResult.foundSections).toContain('qInfo');
-        expect(validationResult.foundSections).toContain('qHyperCubeDef');
+        // qInfo.qType must match the extension name (pkg.name via object-properties.js)
+        expect(json.qInfo.qType).toBe(expectedDefaults.qType);
+        console.log(`   • qInfo.qType: ✅ "${expectedDefaults.qType}"`);
 
-        // Validate configuration sections that exist in expected defaults
-        if (expectedDefaults.showTitles !== undefined) {
-          expect(validationResult.foundSections).toContain('showTitles');
-        }
-        if (expectedDefaults.props) {
-          expect(validationResult.foundSections).toContain('props');
-        }
+        // qHyperCubeDef must have empty dimension and measure arrays (unconfigured state)
+        expect(Array.isArray(json.qHyperCubeDef.qDimensions)).toBe(true);
+        expect(Array.isArray(json.qHyperCubeDef.qMeasures)).toBe(true);
+        expect(json.qHyperCubeDef.qDimensions).toHaveLength(0);
+        expect(json.qHyperCubeDef.qMeasures).toHaveLength(0);
+        console.log('   • qHyperCubeDef: ✅ empty qDimensions and qMeasures arrays');
 
-        // Log validation details for debugging
-        console.log('📋 JSON Validation Summary:');
-        console.log(`   Extension: ${expectedQType} (from object-properties.js)`);
-        console.log(`   Expected sections: ${requiredSections.join(', ')}`);
-        validationResult.validationDetails.forEach((detail) => console.log(`   ${detail}`));
+        // Caption properties must match object-properties.js defaults
+        expect(json.showTitles).toBe(expectedDefaults.showTitles);
+        expect(json.title).toBe(expectedDefaults.title);
+        expect(json.subtitle).toBe(expectedDefaults.subtitle);
+        expect(json.footnote).toBe(expectedDefaults.footnote);
+        console.log('   • Caption properties: ✅ match object-properties defaults');
 
-        if (validationResult.isPartialJson) {
-          console.log('⚠️  Validated partial JSON due to Monaco Editor collapsed display');
-          test.info().annotations.push({
-            type: 'info',
-            description: `JSON structure validation for ${expectedQType} (Monaco Editor collapsed view)`,
-          });
-        } else {
-          console.log('✅ Full JSON parsing and validation completed');
+        // props object must be present with correct debug defaults
+        expect(json.props).toBeDefined();
+        expect(json.props.debug.enabled).toBe(expectedDefaults.props.debug.enabled);
+        expect(json.props.debug.forceState).toBe(expectedDefaults.props.debug.forceState);
+        console.log('   • props.debug: ✅ defaults match object-properties');
 
-          // Additional validation for complete JSON using dynamic values
-          expect(validationResult.jsonObject).toBeDefined();
-          expect(typeof validationResult.jsonObject).toBe('object');
-          expect(validationResult.jsonObject).not.toBe(null);
-
-          // Validate qInfo section with expected qType
-          if (validationResult.jsonObject.qInfo) {
-            expect(validationResult.jsonObject.qInfo.qType).toBe(expectedQType);
-            console.log(`✓ qInfo.qType validated: ${expectedQType}`);
-          }
-
-          // Validate caption properties against expected defaults
-          Object.keys(expectedDefaults).forEach((key) => {
-            if (key !== 'props' && key !== 'debug' && key !== 'dimensions' && key !== 'measures') {
-              if (validationResult.jsonObject[key] !== undefined) {
-                console.log(`✓ Found expected property: ${key} = ${validationResult.jsonObject[key]}`);
-              }
-            }
-          });
-
-          // Validate qHyperCubeDef structure in complete JSON
-          if (validationResult.jsonObject.qHyperCubeDef) {
-            expect(validationResult.jsonObject.qHyperCubeDef).toHaveProperty('qDimensions');
-            expect(validationResult.jsonObject.qHyperCubeDef).toHaveProperty('qMeasures');
-            expect(Array.isArray(validationResult.jsonObject.qHyperCubeDef.qDimensions)).toBe(true);
-            expect(Array.isArray(validationResult.jsonObject.qHyperCubeDef.qMeasures)).toBe(true);
-            console.log('✓ qHyperCubeDef structure validated');
-          }
-
-          test.info().annotations.push({
-            type: 'info',
-            description: `Complete JSON configuration validation for ${expectedQType} against object-properties.js defaults`,
-          });
-        }
-
-        console.log(
-          `📊 Found ${validationResult.foundSections.length} required sections out of ${requiredSections.length} expected sections`
-        );
-      } catch (testError) {
-        console.error('❌ Test execution failed:', testError.message);
-        throw testError;
       } finally {
-        // Always attempt to close dialog if it was opened, even if test fails
+        // Close the dialog on both pass and fail so teardown starts from a clean state.
+        // resetConfiguration() in afterEach also opens the dialog — leaving it open here
+        // would cause that to fail.
         if (dialogIsOpen) {
           try {
             const cancelBtn = hub.page.locator('button:has-text("Cancel")');
-            if (await cancelBtn.isVisible()) {
-              await cancelBtn.click();
-              console.log('🔒 Closed properties dialog via Cancel button');
-
-              // Wait for dialog to close
-              const dialog = hub.page.locator('[role="dialog"]:has-text("Modify object properties")');
-              await dialog.waitFor({ state: 'hidden', timeout: 3000 });
-              await hub.page.waitForTimeout(500);
-            } else {
-              console.log('⚠️  Cancel button not found, dialog may close automatically');
-            }
+            await cancelBtn.click();
+            await hub.page.locator('div[role="dialog"].MuiDialog-paper').waitFor({ state: 'hidden', timeout: 3000 });
           } catch (closeError) {
-            console.log('⚠️  Dialog cancel failed:', closeError.message);
+            console.log(`⚠️  Dialog close failed: ${closeError.message}`);
           }
         }
       }

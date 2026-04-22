@@ -36,9 +36,9 @@ const IDENTIFIERS = Object.freeze({
 
   /**
    * Extension view container that validates the extension is loaded in nebula hub.
-   * Uses the extension name from package.json as the aria-label value.
+   * Scoped to div to avoid matching the title heading which shares the same aria-label.
    */
-  EXTENSION_VIEW: `[aria-label="${pkg.name}"]`,
+  EXTENSION_VIEW: `div[aria-label="${pkg.name}"]`,
 
   /**
    * Property cache configuration checkbox in the nebula hub settings panel.
