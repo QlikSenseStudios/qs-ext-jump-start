@@ -58,16 +58,30 @@ function connectionTests(testContext) {
           'Verify QLIK_ENGINE_HOST and QLIK_APP_ID are set in your .env file.'
       ).toContain('engine_url=');
 
-      // Nebula.js version element — confirms nebula.js initialised successfully in the page.
-      // Failing: nebula.js failed to load or the Qlik engine connection was rejected.
-      // Action: check the browser console for auth errors; verify your Qlik credentials in .env.
+      // Race between successful init and the Qlik app error dialog.
+      // Nebula Hub shows dialog "An error occurred / Some parameters are empty." when the
+      // app fails to open — the test app is in a broken state requiring manual intervention.
+      // If the dialog wins the race, fail immediately rather than timing out on every
+      // downstream assertion and hiding the real cause.
       const versionDiv = page.locator('div[data-nebulajs-version]');
-      await expect(
-        versionDiv,
-        'Nebula.js version element not found — nebula.js did not initialise. ' +
-          'Check the browser console for connection or authentication errors. ' +
-          'Verify your Qlik credentials and engine URL in .env.'
-      ).toBeAttached({ timeout: TIMEOUTS.NETWORK });
+      const authErrorDialog = page.locator('dialog:has-text("An error occurred")');
+
+      const initResult = await Promise.race([
+        versionDiv.waitFor({ state: 'attached', timeout: TIMEOUTS.NETWORK }).then(() => 'ready'),
+        authErrorDialog.waitFor({ state: 'visible', timeout: TIMEOUTS.NETWORK }).then(() => 'auth-error'),
+      ]).catch(() => 'timeout');
+
+      expect(
+        initResult,
+        initResult === 'auth-error'
+          ? 'Qlik app failed to open — Nebula Hub shows "An error occurred / Some parameters are empty." ' +
+              'The test app is in a broken state and requires manual intervention: ' +
+              'log into your Qlik tenant as admin, open the app, and re-run the load data script. ' +
+              'Then re-run the tests.'
+          : 'Nebula.js version element not found — nebula.js did not initialise. ' +
+              'Check the browser console for connection or authentication errors. ' +
+              'Verify your Qlik credentials and engine URL in .env.'
+      ).toBe('ready');
 
       const version = await versionDiv.getAttribute('data-nebulajs-version');
       expect(

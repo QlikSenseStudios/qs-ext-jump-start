@@ -8,11 +8,7 @@
  * @since 1.0.0
  */
 
-// Core validation function (used directly by e2e tests)
-import { clearValidationCache } from './core/validation.js';
-
-// Page objects (main interface for e2e tests)
-import { NebulaHubPage } from './page-objects/nebula-hub.js';
+import { NebulaHubPage, clearValidationCache } from './page-objects/nebula-hub.js';
 
 export {
   clearValidationCache,

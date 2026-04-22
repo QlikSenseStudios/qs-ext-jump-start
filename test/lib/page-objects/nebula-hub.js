@@ -10,10 +10,21 @@
  */
 
 import { IDENTIFIERS } from '../core/identifiers.js';
-import { validateEnvironmentComponents, clearValidationCache, waitForEnvironmentReady } from '../core/validation.js';
 import { clickWithBackdropHandling, clickFirstVisible } from '../utilities/dom.js';
 import { setJsonEditorContent } from '../utilities/json-editor.js';
 import { WAIT_TIMES } from '../core/constants.js';
+
+// Per-page state cache — WeakMap ensures automatic cleanup when pages are disposed
+const _validationCache = new WeakMap();
+
+/**
+ * Clears the per-page state cache between tests to prevent state bleeding across runs.
+ *
+ * @param {import('@playwright/test').Page} page
+ */
+function clearValidationCache(page) {
+  _validationCache.delete(page);
+}
 
 /**
  * Page Object Model for Qlik Sense Nebula Hub interactions.
@@ -41,25 +52,6 @@ class NebulaHubPage {
    */
   constructor(page) {
     this.page = page;
-  }
-
-  /**
-   * Waits for the Nebula Hub environment to be ready for testing.
-   *
-   * @returns {Promise<boolean>} True if environment is ready
-   */
-  async waitForReady() {
-    return await waitForEnvironmentReady(this.page);
-  }
-
-  /**
-   * Validates that all essential environment components are present.
-   *
-   * @param {boolean} [forceRefresh=false] - Skip cache and force fresh validation
-   * @returns {Promise<import('../core/validation').ValidationResult>} Validation results
-   */
-  async validateEnvironment(forceRefresh = false) {
-    return await validateEnvironmentComponents(this.page, forceRefresh);
   }
 
   /**
@@ -261,4 +253,4 @@ class NebulaHubPage {
   }
 }
 
-export { NebulaHubPage };
+export { NebulaHubPage, clearValidationCache };

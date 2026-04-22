@@ -100,6 +100,18 @@ test/
 
 **Test module responsibilities**: `connection.test.js` and `hub-ready.test.js` are infrastructure tests — failure means the environment is misconfigured and requires user intervention; the agent cannot fix these. `extension-unconfigured.test.js` and any subsequent extension modules are code tests — failure indicates an extension bug or selector drift the agent can investigate and fix.
 
+## Test App Broken State
+
+Nebula Hub occasionally fails to open the Qlik app and shows a modal dialog: `dialog:has-text("An error occurred")` with body text "Some parameters are empty." When this happens, every test in the suite will fail with element-not-found errors — none of those failures are code bugs.
+
+**Cause**: The underlying Qlik app has lost its data connection or entered an invalid state. This is unrelated to `.env` configuration, authentication tokens, or extension code.
+
+**Detection**: `connection.test.js` races `div[data-nebulajs-version]` (successful init) against `dialog:has-text("An error occurred")` (app failure). If the dialog wins, the test fails immediately with a message directing the developer to intervene — rather than timing out and letting every downstream test also time out with misleading errors.
+
+**Fix** (requires Qlik tenant admin access): log into the Qlik tenant, open the test app, and re-run the load data script. Then re-run the tests.
+
+**Do not** investigate test selectors or extension code when this dialog is present in the error-context snapshot — the environment is broken, not the code.
+
 ## Test Commands
 
 ```bash
