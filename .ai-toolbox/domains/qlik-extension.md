@@ -91,12 +91,14 @@ test/
 │   ├── utilities/         # dom.js, json-editor.js, configuration-defaults.js, props-structure-analyzer.js
 │   └── page-objects/      # nebula-hub.js — Page Object Model for Nebula Hub UI
 └── modules/
-    ├── connection.test.js              # Validates Nebula Hub URL + version
-    ├── environment.test.js             # Validates Nebula Hub UI components
+    ├── connection.test.js              # Validates Nebula Hub URL + version (user intervention required on failure)
+    ├── hub-ready.test.js               # Validates Nebula Hub controls + extension loaded (user intervention required on failure)
     └── extension-unconfigured.test.js  # Extension unconfigured state
 ```
 
 **Environment setup**: See `docs/QLIK_CLOUD_SETUP.md` or `docs/QLIK_ENTERPRISE_SETUP.md`
+
+**Test module responsibilities**: `connection.test.js` and `hub-ready.test.js` are infrastructure tests — failure means the environment is misconfigured and requires user intervention; the agent cannot fix these. `extension-unconfigured.test.js` and any subsequent extension modules are code tests — failure indicates an extension bug or selector drift the agent can investigate and fix.
 
 ## Test Commands
 
@@ -120,11 +122,14 @@ SKIP_OPEN_REPORT=1 npx playwright test --headed --reporter=list           # Head
 
 **Monaco editor — write**: The `.monaco-editor textarea` is read-only by design. Write by clicking `.monaco-editor .view-lines` to focus, pressing `Control+a` to select all, then typing the replacement content via `page.keyboard.type()`.
 
+**Extension name aria-label ambiguity**: Nebula Hub renders both the extension container `div` and a title `h6` with `aria-label` equal to the extension name. An unscoped `[aria-label="name"]` selector triggers Playwright strict mode violations — always scope to the element type: `div[aria-label="name"]`.
+
 ## Playwright Robustness Patterns
 - Re-query locators after interactions — do not cache handles across actions (avoids stale element errors)
 - Prefer keyboard-first interactions (Enter/Space); use bottom-most list items to avoid overlay interference
 - Add small waits after modal confirmations in headed mode for visibility stability
 - Use `hub.page.locator()` for all selectors — never scope off a cached ancestor locator across async boundaries (stale element errors)
+- **Infrastructure test failure messages**: pass a user-facing message as the second argument to `expect()` — `await expect(locator, 'message explaining cause and action').toBeVisible()` — this surfaces directly in the Playwright failure output without requiring try/catch; use this pattern in `connection.test.js` and `hub-ready.test.js` where failures require developer action, not code fixes
 
 ## Build and Package
 
