@@ -63,6 +63,12 @@ const CONFIGURATION_IDENTIFIERS = Object.freeze({
    * Use this to scope searches within the configuration area
    */
   CONFIGURATION_PANEL: '.pp-content, [class*="pp-"], .property-panel',
+
+  /**
+   * Field picker search input — appears after clicking Add dimension or Add measure.
+   * The field picker renders a search input div and a sibling nav element containing field buttons.
+   */
+  FIELD_PICKER_SEARCH: '[placeholder*="Search"]',
 });
 
 /**

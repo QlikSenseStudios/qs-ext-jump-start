@@ -2,6 +2,16 @@
 
 Context for developing Qlik Sense extensions using the Nebula.js Supernova API. Load when working on extension source code, property panel configuration, or test infrastructure.
 
+## Learning Protocol — Undocumented Environment Behavior
+
+This domain file is the **authoritative record of what is known** about the Nebula Hub and Qlik environment. The environment is complex and not well-documented externally.
+
+**Rule**: If a required interaction — selector, timing, API behavior, DOM structure, Qlik Engine behavior — is not documented in this file, do not guess. Stop and ask the developer. Validate the real behavior. Then document it here before proceeding.
+
+The correct sequence: **consult this file → if undocumented, ask → validate → act → capture**.
+
+Attempting, failing, and then capturing is not acceptable — the wrong conclusion may be captured. The Nebula Hub DOM Patterns section below is the single source of truth for verified selectors and interactions.
+
 ## Technology Stack
 - **Framework**: Nebula.js Supernova API (`@nebula.js/stardust ^6.0.1`)
 - **Build**: Nebula CLI (`nebula build`, `nebula serve`, `nebula sense`)
@@ -87,18 +97,27 @@ test/
 ├── qs-ext.e2e.js          # Main test orchestrator (imports all modules)
 ├── qs-ext.connect.js      # Auth and connection utilities (.env driven)
 ├── lib/
-│   ├── core/              # identifiers.js, configuration-identifiers.js, validation.js
-│   ├── utilities/         # dom.js, json-editor.js, configuration-defaults.js, props-structure-analyzer.js
+│   ├── core/              # identifiers.js, configuration-identifiers.js, constants.js
+│   ├── utilities/         # dom.js, json-editor.js, configuration-defaults.js, props-structure-analyzer.js, dom-snapshot.js
 │   └── page-objects/      # nebula-hub.js — Page Object Model for Nebula Hub UI
 └── modules/
     ├── connection.test.js              # Validates Nebula Hub URL + version (user intervention required on failure)
     ├── hub-ready.test.js               # Validates Nebula Hub controls + extension loaded (user intervention required on failure)
-    └── extension-unconfigured.test.js  # Extension unconfigured state
+    ├── extension-unconfigured.test.js  # Extension unconfigured state — incomplete visualization, data panel controls, caption/props defaults, JSON structure via properties dialog
+    └── extension-configured.test.js   # Extension configured state — UI transitions (dimension selection, disabled button, complete visualization) + JSON round-trip validation via properties dialog
 ```
 
 **Environment setup**: See `docs/QLIK_CLOUD_SETUP.md` or `docs/QLIK_ENTERPRISE_SETUP.md`
 
-**Test module responsibilities**: `connection.test.js` and `hub-ready.test.js` are infrastructure tests — failure means the environment is misconfigured and requires user intervention; the agent cannot fix these. `extension-unconfigured.test.js` and any subsequent extension modules are code tests — failure indicates an extension bug or selector drift the agent can investigate and fix.
+**Test module responsibilities**: `connection.test.js` and `hub-ready.test.js` are infrastructure tests — failure means the environment is misconfigured and requires user intervention; the agent cannot fix these. `extension-unconfigured.test.js`, `extension-configured.test.js`, and any subsequent extension modules are code tests — failure indicates an extension bug or selector drift the agent can investigate and fix.
+
+## Test Browser Session Model
+
+Each test gets a **fresh page (tab)** within a shared authenticated browser context. The context is created once in `beforeAll` via `getQlikServerAuthenticatedContext()` — this is the Qlik tenant login. Each `beforeEach` opens a new page and navigates to the Nebula Hub URL; each `afterEach` closes the page. Credentials are not re-entered between tests.
+
+**Implication for page load timing**: `waitUntil: 'domcontentloaded'` fires before Nebula Hub has connected to the Qlik engine. The data panel (dimensions, measures) and the Modify Properties button render asynchronously after engine connection. Always use `TIMEOUTS.NETWORK` (10s) when waiting for hub UI elements at test start — `TIMEOUTS.STANDARD` (5s) is too short on a fresh page load.
+
+**Implication for selector scope**: All test interactions happen within the Nebula Hub tab. The Qlik app's own UI (app overview, sheets panel) can appear in error-context screenshots if a click navigates away from Nebula Hub — treat this as a selector or interaction bug, not an environment bug.
 
 ## Test App Broken State
 
@@ -135,6 +154,10 @@ SKIP_OPEN_REPORT=1 npx playwright test --headed --reporter=list           # Head
 **Monaco editor — write**: The `.monaco-editor textarea` is read-only by design. Write via clipboard paste — `page.keyboard.type()` triggers Monaco's bracket-matching autocomplete (typing `{` inserts `{}`, so `{}` becomes `{}}` and the JSON becomes invalid). Instead: click `.monaco-editor .view-lines` to focus, `Control+a` to select all, write content to the clipboard via `page.evaluate(() => navigator.clipboard.writeText(content))`, then `Control+v` to paste. Requires `permissions: ['clipboard-read', 'clipboard-write']` in the Playwright project config — clipboard API is blocked by default in headless Chromium.
 
 **Extension name aria-label ambiguity**: Nebula Hub renders both the extension container `div` and a title `h6` with `aria-label` equal to the extension name. An unscoped `[aria-label="name"]` selector triggers Playwright strict mode violations — always scope to the element type: `div[aria-label="name"]`.
+
+**Field picker (Add dimension / Add measure)**: Clicking "Add dimension" or "Add measure" in the Nebula Hub data panel opens an inline field picker — it does not navigate away from Nebula Hub. The picker renders a search input (`[placeholder*="Search"]`) and a sibling `nav` element containing one `button` per available field. The nav renders asynchronously after the search input fills — wait for `nav` to be visible before querying field buttons. Use `page.getByRole('button', { name: 'FieldName', exact: true })` to select a specific field; CSS selectors into the nav's internal structure are fragile. After selecting a field that reaches the `max` constraint defined in `data.js`, the Add dimension/measure button becomes disabled — assert this to confirm the constraint is enforced.
+
+**DOM snapshot utility**: `test/lib/utilities/dom-snapshot.js` provides `logAriaSnapshot(page, label)` for printing the ARIA tree to the console during headed test development, and `saveAriaSnapshot(page, label)` for writing snapshot files to `test/snapshots/` as drift detection baselines. Playwright's `ariaSnapshot()` with `interestingOnly: true` (the default) omits elements with no accessible role — use `interestingOnly: false` to see the full tree when debugging missing elements.
 
 ## Test Teardown — Why resetConfiguration() Matters
 
@@ -183,6 +206,16 @@ When generating new extension code, prefer patterns from Qlik's first-party `sn-
 3. Upload via QMC (Enterprise) or Tenant Admin (Cloud)
 
 See `docs/DEPLOYMENT.md` for full instructions.
+
+## Known Environment Unknowns
+*Areas not yet investigated or verified. Do not guess — ask the developer before attempting.*
+
+- **Selection mode Nebula Hub DOM**: The selectors, timing, and state transitions for entering, confirming, and cancelling a selection session in Nebula Hub have not been tested or documented. Do not assume they follow the same patterns as data panel interactions.
+- **Nebula Hub version drift**: DOM patterns documented in this file were verified against `@nebula.js/cli-serve` 6.8.0. Behavior after version bumps is unverified — re-verify after any Nebula CLI upgrade.
+- **Qlik Engine API surface**: Only `useSelections()` is documented for this project. Other engine API hooks (bookmark, variable, data fetch behaviors) are not verified in this environment.
+- **Multi-extension Nebula Hub sessions**: All documented patterns assume a single extension loaded in Nebula Hub. Behavior with multiple extensions is unknown.
+
+*When an unknown is investigated and verified, move it to the appropriate documented section above and remove it from this list.*
 
 ---
 *Load this domain when working on extension source, test infrastructure, or property panel configuration.*
