@@ -8,12 +8,13 @@
  * - Connection: Validates Qlik Cloud connection and Nebula Hub access
  * - Hub Ready: Validates Nebula Hub controls and extension are accessible
  * - Extension Unconfigured: Tests extension unconfigured state behavior
+ * - Extension Configured: Tests extension behavior after dimension/measure configuration
  */
 
 import { test } from '@playwright/test';
 import { getNebulaQueryString, getQlikServerAuthenticatedContext } from './qs-ext.connect.js';
 import { NebulaHubPage, clearValidationCache } from './lib/index.js';
-import { connectionTests, hubReadyTests, extensionUnconfiguredTests } from './modules/index.js';
+import { connectionTests, hubReadyTests, extensionUnconfiguredTests, extensionConfiguredTests } from './modules/index.js';
 
 /**
  * Pauses execution when running in headed mode to allow visual inspection.
@@ -111,5 +112,6 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
 
     hubReadyTests(testContext);
     extensionUnconfiguredTests(testContext);
+    extensionConfiguredTests(testContext);
   });
 });

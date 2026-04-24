@@ -11,16 +11,23 @@ async function getQlikServerAuthenticatedContext({ browser }) {
     ? `https://${process.env.QLIK_ENGINE_HOST}/sense/app/${process.env.QLIK_APP_ID}/overview`
     : `https://${process.env.QLIK_ENGINE_HOST}/${process.env.QLIK_VP_PREFIX}/sense/app/${process.env.QLIK_APP_ID}`;
 
-  const context = await browser.newContext(
-    process.env.QLIK_WEB_INTEGRATION_ID
-      ? {}
-      : {
-          httpCredentials: {
-            username: process.env.QLIK_USERNAME,
-            password: process.env.QLIK_PASSWORD,
-          },
-        }
-  );
+  // clipboard-write/read permissions must be granted on the context directly —
+  // playwright.config.js project-level permissions are not forwarded to manually
+  // created contexts, causing navigator.clipboard.writeText() to fail silently
+  // in headless mode (the Monaco editor write strategy depends on clipboard paste)
+  const baseContext = process.env.QLIK_WEB_INTEGRATION_ID
+    ? {}
+    : {
+        httpCredentials: {
+          username: process.env.QLIK_USERNAME,
+          password: process.env.QLIK_PASSWORD,
+        },
+      };
+
+  const context = await browser.newContext({
+    ...baseContext,
+    permissions: ['clipboard-read', 'clipboard-write'],
+  });
 
   const page = await context.newPage();
   await page.goto(loginUrl);
