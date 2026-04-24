@@ -91,8 +91,24 @@ class NebulaHubPage {
       const result = await setJsonEditorContent(this.page, jsonString);
 
       if (result.success) {
-        // Brief pause so the pasted content is visible in headed mode before confirming
-        await this.page.waitForTimeout(WAIT_TIMES.MEDIUM);
+        // Wait for Monaco to reflect the pasted content before clicking Confirm.
+        // In headless mode the paste lands asynchronously — polling until the view-lines
+        // match the expected content ensures Confirm applies the intended JSON, not the
+        // prior state. Fall back to a fixed wait if the poll times out.
+        await this.page.waitForFunction(
+          (expected) => {
+            const lines = [...document.querySelectorAll('.monaco-editor .view-line')];
+            if (lines.length === 0) {return false;}
+            const actual = lines
+              .map((l) => l.textContent)
+              .join('\n')
+              .replace(/[^\x20-\x7E\n]/g, ' ')
+              .trim();
+            return actual === expected;
+          },
+          jsonString,
+          { timeout: 3000 }
+        ).catch(() => this.page.waitForTimeout(WAIT_TIMES.EXTRA_LONG));
 
         // Apply the configuration
         const confirmButtons = [
@@ -145,7 +161,11 @@ class NebulaHubPage {
   /**
    * Resets the extension configuration to an empty state.
    *
-   * @returns {Promise<boolean>} True if reset successful
+   * Confirming {} in Nebula Hub empties <div id="app"> entirely — this is the
+   * expected reset behavior. We verify the app div is empty after Confirm to
+   * catch cases where the paste did not land and the prior JSON was confirmed instead.
+   *
+   * @returns {Promise<boolean>} True if reset successful and app div is empty
    */
   async resetConfiguration() {
     const dialogOpened = await this.openPropertiesDialog();
@@ -153,7 +173,29 @@ class NebulaHubPage {
       return false;
     }
 
-    return await this.setConfiguration({});
+    const confirmed = await this.setConfiguration({});
+    if (!confirmed) {
+      return false;
+    }
+
+    // Verify the app div emptied — if it still has children, {} was not applied
+    try {
+      await this.page.waitForFunction(
+        () => {
+          const app = document.querySelector('div#app');
+          return app && app.children.length === 0;
+        },
+        { timeout: 3000 }
+      );
+      console.log('   • Configuration reset: div#app confirmed empty');
+      await this.page.waitForTimeout(WAIT_TIMES.EXTRA_LONG);
+      console.log('   • Configuration reset: engine settle wait complete');
+    } catch {
+      console.warn('   • Configuration reset: ⚠️ app div not emptied after confirm — paste may not have landed');
+      return false;
+    }
+
+    return true;
   }
 
   /**

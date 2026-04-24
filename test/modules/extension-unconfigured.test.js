@@ -8,6 +8,7 @@
 import { test, expect } from '@playwright/test';
 import { IDENTIFIERS, TIMEOUTS } from '../lib/core/identifiers.js';
 import { CONFIGURATION_IDENTIFIERS, CONFIGURATION_TIMEOUTS } from '../lib/core/configuration-identifiers.js';
+import { assertCleanExtensionState, closePropertiesDialog } from '../lib/utilities/test-setup.js';
 import { getExpectedConfigurationDefaults } from '../lib/utilities/configuration-defaults.js';
 import { analyzePropsStructure } from '../lib/utilities/props-structure-analyzer.js';
 import {
@@ -26,6 +27,10 @@ import {
  */
 function extensionUnconfiguredTests(testContext) {
   test.describe('Extension Unconfigured State', () => {
+    test.beforeEach(async () => {
+      await assertCleanExtensionState(testContext);
+    });
+
     test('validates incomplete visualization display when unconfigured', async () => {
       const { page } = testContext;
 
@@ -270,15 +275,7 @@ function extensionUnconfiguredTests(testContext) {
         // Close the dialog on both pass and fail so teardown starts from a clean state.
         // resetConfiguration() in afterEach also opens the dialog — leaving it open here
         // would cause that to fail.
-        if (dialogIsOpen) {
-          try {
-            const cancelBtn = hub.page.locator('button:has-text("Cancel")');
-            await cancelBtn.click();
-            await hub.page.locator('div[role="dialog"].MuiDialog-paper').waitFor({ state: 'hidden', timeout: 3000 });
-          } catch (closeError) {
-            console.log(`⚠️  Dialog close failed: ${closeError.message}`);
-          }
-        }
+        await closePropertiesDialog(hub.page, dialogIsOpen);
       }
     });
   });
