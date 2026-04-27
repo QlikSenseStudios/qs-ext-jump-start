@@ -14,7 +14,7 @@
 import { test } from '@playwright/test';
 import { getNebulaQueryString, getQlikServerAuthenticatedContext } from './qs-ext.connect.js';
 import { NebulaHubPage, clearValidationCache } from './lib/index.js';
-import { connectionTests, hubReadyTests, extensionUnconfiguredTests, extensionConfiguredTests } from './modules/index.js';
+import { connectionTests, hubReadyTests, extensionUnconfiguredTests, extensionConfiguredTests, extensionSelectionsQlikTests } from './modules/index.js';
 
 /**
  * Pauses execution when running in headed mode to allow visual inspection.
@@ -113,5 +113,6 @@ test.describe('Qlik Sense Extension E2E Tests', () => {
     hubReadyTests(testContext);
     extensionUnconfiguredTests(testContext);
     extensionConfiguredTests(testContext);
+    extensionSelectionsQlikTests(testContext);
   });
 });
