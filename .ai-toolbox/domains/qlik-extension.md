@@ -111,6 +111,10 @@ test/
 
 **Test module responsibilities**: `connection.test.js` and `hub-ready.test.js` are infrastructure tests — failure means the environment is misconfigured and requires user intervention; the agent cannot fix these. `extension-unconfigured.test.js`, `extension-configured.test.js`, and any subsequent extension modules are code tests — failure indicates an extension bug or selector drift the agent can investigate and fix.
 
+**Test file naming convention — two categories**:
+- `extension-*-qlik.test.js` — **Qlik behavioral tests**: E2E validation of interactions that drive the Qlik associative engine. These verify that the correct engine calls are made and state changes are reflected (e.g. selection mode enter/confirm/cancel, `useSelections()` state, engine-side data transitions). These tests are stable across extension implementations — they validate Qlik platform behavior, not presentation.
+- `extension-*-ext.test.js` — **Extension-specific tests**: presentational validation of how the extension renders in response to state. These are tightly coupled to the extension's own DOM structure and CSS classes. Because the jump-start's example implementation (the simple table) is expected to be replaced by extension developers, `extension-*-ext.test.js` files that test the example presentation are intentionally not implemented — they exist as a named, described space so developers know where their own presentational tests belong. Only implement these files for presentation behavior that is meant to survive into the final extension.
+
 ## Test Browser Session Model
 
 Each test gets a **fresh page (tab)** within a shared authenticated browser context. The context is created once in `beforeAll` via `getQlikServerAuthenticatedContext()` — this is the Qlik tenant login. Each `beforeEach` opens a new page and navigates to the Nebula Hub URL; each `afterEach` closes the page. Credentials are not re-entered between tests.
@@ -238,10 +242,29 @@ When generating new extension code, prefer patterns from Qlik's first-party `sn-
 
 See `docs/DEPLOYMENT.md` for full instructions.
 
+## Nebula Hub — Selection Mode DOM
+*Verified via developer inspection against `@nebula.js/cli-serve` 6.8.0.*
+
+**Entering selection mode**: Clicking a `.dim-cell` element calls `selections.begin()` then `selections.select()` via `selection-handler.js`. Nebula Hub responds by rendering a small inline selection menu in the DOM. The extension container (`div.extension-container`) gains the `.in-selection` modifier class while selection mode is active.
+
+**Inline selection menu** (appears after first dim cell click, closes on confirm or cancel):
+- `[aria-label="Clear selection"]` — clears the current working selections without exiting selection mode
+- `[aria-label="Cancel selection"]` — cancels the session and discards all working selections
+- `[aria-label="Confirm selection"]` — commits the working selections to the engine and exits selection mode
+
+**Selection bar** (always visible in Nebula Hub, regardless of whether selections are active):
+- One entry per dimension that has active selections; entries appear/disappear as selections are applied or cleared
+- Buttons in the selection bar use the **`title` attribute**, not `aria-label` — use `page.locator('[title="Clear all selections"]')`, not `getByLabel()`
+- `[title="Clear all selections"]` — clears all active selections across all dimensions
+- Each dimension entry has a `[title="Clear selection"]` button that clears selections for that dimension only
+- **Multi-dimension traversal**: When multiple dimensions have selections, finding the correct dimension's clear button requires traversing the bar entries by dimension name. This pattern is not yet documented — stop and ask the developer before implementing multi-dimension selection bar interactions.
+
+**Post-confirm re-render**: After confirming a selection, the Qlik engine filters the hypercube to the selected values and the extension re-renders. Only the selected dimension values remain visible as `.dim-cell` elements. Use `TIMEOUTS.NETWORK` when waiting for the re-render — engine round-trip timing applies.
+
+**Post-clear re-render**: After clicking "Clear all selections", the engine removes all filters and the extension re-renders with all dimension values. Use `TIMEOUTS.NETWORK` when waiting for all values to return.
+
 ## Known Environment Unknowns
 *Areas not yet investigated or verified. Do not guess — ask the developer before attempting.*
-
-- **Selection mode Nebula Hub DOM**: The selectors, timing, and state transitions for entering, confirming, and cancelling a selection session in Nebula Hub have not been tested or documented. Do not assume they follow the same patterns as data panel interactions.
 - **Nebula Hub version drift**: DOM patterns documented in this file were verified against `@nebula.js/cli-serve` 6.8.0. Behavior after version bumps is unverified — re-verify after any Nebula CLI upgrade.
 - **Qlik Engine API surface**: Only `useSelections()` is documented for this project. Other engine API hooks (bookmark, variable, data fetch behaviors) are not verified in this environment.
 - **Multi-extension Nebula Hub sessions**: All documented patterns assume a single extension loaded in Nebula Hub. Behavior with multiple extensions is unknown.
