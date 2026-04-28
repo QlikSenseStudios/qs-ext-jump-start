@@ -22,6 +22,7 @@ This project's Git conventions. AI agents apply these when generating commit mes
 
 ## PR Pattern
 - PR template: `.github/pull_request_template.md`
+- **Version bump labels**: apply one label per PR to trigger an automatic version bump on merge — `version:patch`, `version:minor`, or `version:major`. No label = no bump (correct for Dependabot, audit-fix, and infrastructure PRs). The bump runs after merge via `version-bump.yml` using `GITHUB_TOKEN`; the bump commit carries `[skip ci]` and does not trigger CI.
 
 ## Configuration
 - Key `.gitignore` patterns: `node_modules/`, `dist/`, `*-ext/`, `.sandbox/`, `*.local.*`, `.env`, `test/artifacts/`, `test/report/`
