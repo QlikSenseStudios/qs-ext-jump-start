@@ -17,4 +17,33 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm audit --audit-level=moderate
+      - name: Check for fixable vulnerabilities
+        run: |
+          npm audit --json --audit-level=moderate 2>/dev/null | node -e "
+            const chunks = [];
+            process.stdin.on('data', d => chunks.push(d));
+            process.stdin.on('end', () => {
+              const audit = JSON.parse(chunks.join(''));
+              const vulns = Object.values(audit.vulnerabilities || {});
+
+              const fixable = vulns.filter(v => v.fixAvailable !== false);
+              const unfixable = vulns.filter(v => v.fixAvailable === false);
+
+              if (unfixable.length > 0) {
+                console.warn('WARNING: ' + unfixable.length + ' unfixable vulnerability/vulnerabilities (no fix available — awaiting third-party update):');
+                unfixable.forEach(v => console.warn('  - ' + v.name + ' (' + v.severity + ')'));
+              }
+
+              if (fixable.length > 0) {
+                console.error('FAIL: ' + fixable.length + ' fixable vulnerability/vulnerabilities at moderate level or above:');
+                fixable.forEach(v => console.error('  - ' + v.name + ' (' + v.severity + ') fixAvailable: ' + JSON.stringify(v.fixAvailable)));
+                process.exit(1);
+              }
+
+              if (unfixable.length > 0) {
+                console.log('OK: No fixable vulnerabilities. ' + unfixable.length + ' unfixable vulnerability/vulnerabilities logged above — awaiting third-party updates.');
+              } else {
+                console.log('OK: No vulnerabilities found at moderate level or above.');
+              }
+            });
+          "

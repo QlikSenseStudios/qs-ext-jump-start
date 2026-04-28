@@ -40,22 +40,32 @@ Generate `context.local.md` with:
 - Clearly marked `<!-- USER EDITABLE SECTION -->` boundaries so automated updates never overwrite personal settings
 - Note to user: this file is not committed to version control — it is personal to this workspace
 
-### Step 5 — Apply Extension Identity
+### Step 5 — CI Workflow Decision
+
+The template includes five GitHub Actions workflows in `.github/workflows/`: `build.yml`, `lint.yml`, `audit.yml`, `audit-fix.yml`, and `version-bump.yml`. These are documented in `tools/github-actions.md`.
+
+Ask the user:
+> "The template includes CI workflows for build, lint, dependency auditing, and automatic version bumping on merge. Would you like to keep these as-is, or remove them and implement your own CI strategy?"
+
+- **Keep**: retain all workflows unchanged; remind the user to create the version bump labels (`version:patch`, `version:minor`, `version:major`) in the GitHub repo's Labels settings before the version-bump workflow can read them
+- **Remove**: delete the entire `.github/workflows/` directory; note that the user will need to set up their own CI
+
+### Step 6 — Apply Extension Identity
 
 Apply the name and description from Step 2 to:
 - **`package.json`**: Update `name`, `description`, and `version` fields — reset version to the value collected in Step 2
 - **`src/meta.json`**: Update `name` field
-- **`README.md`**: Replace the template title, description, and purpose with the extension's name and purpose; replace the Quick Start section with extension-specific setup steps (remove "Use this template" and AI initialization instructions — those are complete; retain `npm install`, environment setup links, `npm run serve`); remove the Contributing section (references `CONTRIBUTING.md` which is deleted in Step 6)
+- **`README.md`**: Replace the template title, description, and purpose with the extension's name and purpose; replace the Quick Start section with extension-specific setup steps (remove "Use this template" and AI initialization instructions — those are complete; retain `npm install`, environment setup links, `npm run serve`); remove the Contributing section (references `CONTRIBUTING.md` which is deleted in Step 7)
 - **`project/overview.md`**: Populate mission, goals, and scope from the collected extension purpose
 
-### Step 6 — Remove Template Artifacts
+### Step 7 — Remove Template Artifacts
 
 These files describe the template's own development process and are not relevant to extension development:
 - **Delete `CONTRIBUTING.md`**: Describes contributing to the template, not to your extension project
 - **Delete `.ai-toolbox/context.development.md`**: Template development rules; not applicable once initialized
 - **Delete `.ai-toolbox/docs/Getting Started.md`**: Initialization guide; superseded by the initialized `README.md`
 
-### Step 7 — Qlik Environment Setup
+### Step 8 — Qlik Environment Setup
 
 Direct the user to the appropriate setup guide based on the target platform from Step 2:
 - Qlik Cloud → `docs/QLIK_CLOUD_SETUP.md`
@@ -64,7 +74,7 @@ Direct the user to the appropriate setup guide based on the target platform from
 
 Confirm the user has a test application and connection string ready before they run `npm test`.
 
-### Step 8 — AI Agent Setup
+### Step 9 — AI Agent Setup
 
 Record in `context.local.md` and communicate clearly to the user:
 
@@ -75,10 +85,11 @@ Always start by loading context from './.ai-toolbox/context.global.md' and follo
 
 The `.ai-toolbox/` directory is the single source of truth for all project context. The AI agent loads domain context (`domains/qlik-extension.md`), project state (`context.state.md`), and user preferences (`context.local.md`) from there automatically. Add this prompt to your AI agent workspace configuration, session opener, or instructions file.
 
-### Step 9 — Validation & Handoff
+### Step 10 — Validation & Handoff
 
 - Confirm `context.local.md` created and populated correctly
 - Confirm `CONTRIBUTING.md` and `context.development.md` removed
+- Confirm CI workflows retained or removed per Step 5; if retained, remind user to create version bump labels in GitHub
 - Confirm `project/overview.md` reflects the extension's purpose
 - Report what was completed and what still requires manual action (e.g., git remote configuration, Qlik environment setup)
 - Provide the next steps: set up Qlik environment, run `npm install`, run `npm run serve` to verify the template extension loads

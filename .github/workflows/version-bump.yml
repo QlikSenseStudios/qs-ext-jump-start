@@ -1,0 +1,68 @@
+name: Version Bump
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Use GITHUB_TOKEN — bump commit intentionally does not trigger CI
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Resolve version bump type from PR label
+        id: bump
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find the PR that was merged into this push by matching the merge commit SHA.
+          # The GitHub API search endpoint returns PRs whose merge_commit_sha matches.
+          SHA="${{ github.sha }}"
+          REPO="${{ github.repository }}"
+
+          PR_LABELS=$(gh api \
+            "repos/${REPO}/commits/${SHA}/pulls" \
+            --jq '[.[0].labels[].name] | join(",")' 2>/dev/null || echo "")
+
+          echo "PR labels: $PR_LABELS"
+
+          if echo "$PR_LABELS" | grep -q "version:major"; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+          elif echo "$PR_LABELS" | grep -q "version:minor"; then
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          elif echo "$PR_LABELS" | grep -q "version:patch"; then
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=none" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump version and push
+        if: steps.bump.outputs.type != 'none'
+        run: |
+          BUMP_TYPE="${{ steps.bump.outputs.type }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          npm version "$BUMP_TYPE" --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          npm install --package-lock-only
+
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to ${NEW_VERSION} [skip ci]"
+          git push

@@ -13,7 +13,7 @@
 ## Hierarchy Levels
 1. **Core**: context.global.md + context.local.md (auto-merged, generated if missing)
 2. **Operational**: context.state.md + available commands/
-3. **Domain**: domains/ (qlik-extension.md primary + research.md as additional example) + patterns/ (setup.md example provided) + tools/ (git.md — Git conventions and PR workflow)
+3. **Domain**: domains/ (qlik-extension.md primary + research.md as additional example) + patterns/ (setup.md example provided) + tools/ (git.md — Git conventions and PR workflow; github-actions.md — CI/CD workflows)
 4. **Project**: project/ (pre-configured stubs — populate with your project details)
 
 ## Standard Loading Paths
@@ -44,6 +44,7 @@
 - `patterns/` - reusable patterns (setup.md example provided)
 - `tools/` - tool-specific contexts
   - `git.md` - Git conventions, PR methodology, and milestone workflow
+  - `github-actions.md` - CI/CD workflows, dependency audit, and version bump automation
 
 *Additional operational commands available in commands/ directory*
 
