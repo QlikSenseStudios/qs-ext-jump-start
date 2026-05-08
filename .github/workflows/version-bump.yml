@@ -61,7 +61,7 @@ jobs:
 
           npm version "$BUMP_TYPE" --no-git-tag-version --ignore-scripts
           NEW_VERSION=$(node -p "require('./package.json').version")
-          npm install --package-lock-only
+          npm install --package-lock-only --ignore-scripts
 
           git add package.json package-lock.json
           git commit -m "chore: bump version to ${NEW_VERSION} [skip ci]"
