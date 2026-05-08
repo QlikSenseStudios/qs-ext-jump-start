@@ -66,10 +66,15 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           npm install --package-lock-only --ignore-scripts
 
-          git checkout -b "chore/version-bump-${NEW_VERSION}"
+          BRANCH_NAME="chore/version-bump-${NEW_VERSION}"
+
+          # Delete existing branch if it exists
+          git push origin --delete "$BRANCH_NAME" 2>/dev/null || true
+
+          git checkout -b "$BRANCH_NAME"
           git add package.json package-lock.json
           git commit -m "chore: bump version to ${NEW_VERSION}"
-          git push origin "chore/version-bump-${NEW_VERSION}"
+          git push origin "$BRANCH_NAME"
 
           PR_URL=$(gh pr create \
             --title "chore: bump version to ${NEW_VERSION}" \
