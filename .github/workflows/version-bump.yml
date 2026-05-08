@@ -76,11 +76,18 @@ jobs:
           git commit -m "chore: bump version to ${NEW_VERSION}"
           git push origin "$BRANCH_NAME"
 
-          PR_URL=$(gh pr create \
+          # Create PR and capture PR number from output
+          PR_OUTPUT=$(gh pr create \
             --title "chore: bump version to ${NEW_VERSION}" \
             --body "Automated version bump" \
-            --base main \
-            --json url \
-            --jq .url)
+            --base main 2>&1)
 
-          gh pr merge "$PR_URL" --auto --squash
+          # Extract PR number from output (format: "https://github.com/owner/repo/pull/NUMBER")
+          PR_NUMBER=$(echo "$PR_OUTPUT" | grep -oP 'pull/\K[0-9]+' | head -1)
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "Failed to create PR. Output: $PR_OUTPUT"
+            exit 1
+          fi
+
+          gh pr merge "$PR_NUMBER" --auto --squash
