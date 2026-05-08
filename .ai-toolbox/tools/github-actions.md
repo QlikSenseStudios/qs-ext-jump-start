@@ -34,8 +34,9 @@ Triggers on every push to `main` in the origin repo only (`QlikSenseStudios/qs-e
 2. Runs `npm version patch|minor|major --no-git-tag-version --ignore-scripts`
 3. Updates `package.json` and `package-lock.json`
 4. Creates feature branch `chore/version-bump-${NEW_VERSION}`
-5. Creates a PR with auto-merge (squash merge) enabled
-6. PR merges automatically once all required status checks pass
+5. Creates a PR and captures its URL
+6. Enables auto-merge via `gh pr merge --auto --squash`
+7. PR merges automatically once all required status checks pass
 
 **Why this approach**: Branch protection on `main` requires all changes through PRs and mandates status checks. Direct commits are rejected. Auto-merge ensures the bump is fast-tracked after CI validation.
 

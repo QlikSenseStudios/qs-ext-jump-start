@@ -71,9 +71,11 @@ jobs:
           git commit -m "chore: bump version to ${NEW_VERSION}"
           git push origin "chore/version-bump-${NEW_VERSION}"
 
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "chore: bump version to ${NEW_VERSION}" \
             --body "Automated version bump" \
             --base main \
-            --auto-merge \
-            --merge-method squash
+            --json url \
+            --jq .url)
+
+          gh pr merge "$PR_URL" --auto --squash
