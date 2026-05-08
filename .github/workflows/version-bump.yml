@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   version-bump:
+    if: github.repository == 'QlikSenseStudios/qs-ext-jump-start'
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -51,8 +52,10 @@ jobs:
             echo "type=none" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Bump version and push
+      - name: Bump version and create PR
         if: steps.bump.outputs.type != 'none'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BUMP_TYPE="${{ steps.bump.outputs.type }}"
 
@@ -63,6 +66,14 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           npm install --package-lock-only --ignore-scripts
 
+          git checkout -b "chore/version-bump-${NEW_VERSION}"
           git add package.json package-lock.json
-          git commit -m "chore: bump version to ${NEW_VERSION} [skip ci]"
-          git push
+          git commit -m "chore: bump version to ${NEW_VERSION}"
+          git push origin "chore/version-bump-${NEW_VERSION}"
+
+          gh pr create \
+            --title "chore: bump version to ${NEW_VERSION}" \
+            --body "Automated version bump" \
+            --base main \
+            --auto-merge \
+            --merge-method squash
