@@ -8,6 +8,7 @@
 - **Context Hierarchy**: This file → context.global.md → operational contexts
 - **Scope**: Template architecture, boilerplate improvements, documentation, and context system enhancements
 - **Context Placement**: Anything that applies only while working ON the template — and is not relevant to extension developers — belongs in this file. This file is deleted at initialization, so anything here must be safe to lose from the extension developer's perspective. If a rule or principle is useful to extension developers, it belongs in `context.global.md` or another surviving context file instead.
+- **Extension-Mode File Protection**: `tools/`, `domains/`, `project/`, and `context.state.md` are written for extension developers — do not add template development state, progress notes, or temporary tracking to these files. Any template-dev-only content in these files becomes a trace visible to extension developers. Use this file's Upcoming Work section for all template development tracking.
 
 ## Dual Context Overview
 *The two distinct ways this project is used. (The context struggle is real)*
@@ -71,6 +72,13 @@ Items specific to the example implementation (`src/` — the example table visua
 - **i18n support**: Internationalization scaffolding for extensions targeting multi-language tenants
 - **Versioning convention**: Establish when template version increments (patch/minor/major criteria), what version the initialization step resets the project to, and whether version bumping is a PR checklist step or release-point decision — prerequisite to automation
 - **Automated version management**: Automatic version bump and changelog verification as part of the release workflow — depends on versioning convention being defined first
+
+## Template Development Loading Paths
+
+When working on template features:
+→ context.development.md (entry) → domains/qlik-extension.md → tools/git.md
+
+*Note: Template development paths are defined here, not in context.global.md. Extension developers never see this file; all their loading paths are in context.global.md.*
 
 ## System Development Lifecycle Management
 **This context file gets deleted during extension project initialization** - ensures clean user experience with context.global.md as primary entry point.
