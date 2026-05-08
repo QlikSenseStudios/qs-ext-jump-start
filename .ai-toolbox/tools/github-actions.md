@@ -27,10 +27,22 @@ Dependabot (`.github/dependabot.yml`) handles direct dependency version bumps. `
 
 ## Version Bump (`version-bump.yml`)
 
-Triggers on every push to `main` (after each squash merge). Reads the merged PR's labels via the GitHub API and runs `npm version patch|minor|major` accordingly. Pushes a `chore: bump version to X.Y.Z [skip ci]` commit back to `main`.
+Triggers on every push to `main` in the origin repo only (`QlikSenseStudios/qs-ext-jump-start`). Does not run on forks to prevent version clashes.
 
+**Workflow**:
+1. Reads the merged PR's labels via the GitHub API
+2. Runs `npm version patch|minor|major --no-git-tag-version --ignore-scripts`
+3. Updates `package.json` and `package-lock.json`
+4. Creates feature branch `chore/version-bump-${NEW_VERSION}`
+5. Creates a PR with auto-merge (squash merge) enabled
+6. PR merges automatically once all required status checks pass
+
+**Why this approach**: Branch protection on `main` requires all changes through PRs and mandates status checks. Direct commits are rejected. Auto-merge ensures the bump is fast-tracked after CI validation.
+
+**Key implementation details**:
 - Uses `GITHUB_TOKEN` — no PAT required
-- `[skip ci]` prevents CI from re-running on the bump commit
+- `--ignore-scripts` prevents husky execution in CI (husky is dev-only)
+- Origin repo check: `if: github.repository == 'QlikSenseStudios/qs-ext-jump-start'`
 - No matching label = no bump; safe default for infrastructure PRs (Dependabot, audit-fix)
 
 **Version bump labels** (apply one per PR, or none to skip):
