@@ -25,7 +25,7 @@ Current operational status for AI agents. Machine-readable only.
 - **Project Context**: overview.md, standards.md
 - **Domain Contexts**: qlik-extension.md (Qlik Sense extension development), research.md (example — add more as needed)
 - **Pattern Contexts**: setup.md (example — add more as needed)
-- **Tool Contexts**: git.md (Git conventions and PR workflow)
+- **Tool Contexts**: git.md (Git conventions and PR workflow), github-actions.md (CI workflows, version bump, dependency audit)
 - **Core Context**: System README.md
 
 ## Current Capabilities
