@@ -9,6 +9,7 @@ import { hubReadyTests } from './hub-ready.test.js';
 import { extensionUnconfiguredTests } from './extension-unconfigured.test.js';
 import { extensionConfiguredTests } from './extension-configured.test.js';
 import { extensionSelectionsQlikTests } from './extension-selections-qlik.test.js';
+import { extensionPropsConfigTests } from './extension-props-config.test.js';
 
 export {
   connectionTests,
@@ -16,4 +17,5 @@ export {
   extensionUnconfiguredTests,
   extensionConfiguredTests,
   extensionSelectionsQlikTests,
+  extensionPropsConfigTests,
 };

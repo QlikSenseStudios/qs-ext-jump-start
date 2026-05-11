@@ -61,8 +61,6 @@ Items specific to the example implementation (`src/` — the example table visua
 
 *`context.state.md` is not used to track template development progress — it represents the initial delivered state that extension developers inherit and evolve. Template development progress lives only in this section.*
 
-- **Playwright: extended configuration tests** (follow-on branch): Validate custom `props` configuration round-trips correctly — set non-default values via `configureExtension()`, verify they persist in the Monaco JSON editor and are reflected in the property panel UI. Deferred from the unconfigured/configured test units; the clean configuration coverage unblocked selections work.
-
 ### Optional Enhancements
 *Not scheduled — consider for future branches*
 

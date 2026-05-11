@@ -168,7 +168,7 @@ async function setJsonEditorContent(page, jsonContent) {
       // inserts '{}'  making '{}' become '{}}'), so we write to the clipboard and paste instead,
       // which bypasses Monaco's key handlers entirely.
       // After paste, wait until at least one .view-line reflects the new content before
-      // returning — without this, the caller (setConfiguration) clicks Confirm before Monaco
+      // returning — without this, the caller (setObjectProperties) clicks Confirm before Monaco
       // has processed the clipboard, causing the prior content to be confirmed instead.
       verifyViaInputValue: false,
       method: async (element) => {
