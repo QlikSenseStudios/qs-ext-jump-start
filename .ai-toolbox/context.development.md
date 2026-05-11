@@ -64,12 +64,10 @@ Items specific to the example implementation (`src/` — the example table visua
 ### Optional Enhancements
 *Not scheduled — consider for future branches*
 
-- **Unit testing**: Add Jest (or equivalent) for non-UI logic in `src/` \u2014 currently only Playwright E2E exists
-- **Visual regression tests**: Screenshot-based regression coverage for rendered extension states
-- **Keyboard shortcut for selection**: Add keyboard confirm/cancel shortcut for active selection sessions
-- **i18n support**: Internationalization scaffolding for extensions targeting multi-language tenants
-- **Versioning convention**: Establish when template version increments (patch/minor/major criteria), what version the initialization step resets the project to, and whether version bumping is a PR checklist step or release-point decision — prerequisite to automation
-- **Automated version management**: Automatic version bump and changelog verification as part of the release workflow — depends on versioning convention being defined first
+- **Unit testing** (High Value): Add Jest (or equivalent) for non-UI logic in `src/` \u2014 currently only Playwright E2E exists. `src/state/` and `src/qae/` contain pure functions (state management, data transforms, validation) with zero coverage. Medium effort; catches regressions in complex business logic.
+- **Visual regression tests** (Medium Value): Screenshot-based regression coverage for rendered extension states. Extension renders dynamic table with 6+ error types and selection variants; useful post-refactor but requires strict CI environment consistency. High setup effort; medium ongoing cost.
+- **Keyboard shortcut for selection** (Medium Value): Add keyboard confirm/cancel shortcuts (e.g., Escape to cancel) during active selection sessions. Selection handler already has infrastructure (`exitSelectionMode()` function). Low effort (~50 lines); improves UX for keyboard-first and a11y users.
+- **i18n support** (Medium–High Value): Internationalization scaffolding for extensions targeting multi-language tenants. Found ~30+ hardcoded UI strings (errors, hints, labels). Prerequisite: determine target locales and Qlik Sense locale strategy. Medium setup; high ongoing (string extraction and translation maintenance).
 
 ## Template Development Loading Paths
 
