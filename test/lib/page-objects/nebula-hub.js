@@ -11,11 +11,31 @@
 
 import { IDENTIFIERS } from '../core/identifiers.js';
 import { clickWithBackdropHandling, clickFirstVisible } from '../utilities/dom.js';
-import { setJsonEditorContent } from '../utilities/json-editor.js';
+import { setJsonEditorContent, getJsonEditorContent, expandMonacoEditorContent } from '../utilities/json-editor.js';
 import { WAIT_TIMES } from '../core/constants.js';
 
 // Per-page state cache — WeakMap ensures automatic cleanup when pages are disposed
 const _validationCache = new WeakMap();
+
+/**
+ * Recursively merges source into target. Arrays are replaced, not concatenated.
+ *
+ * @param {Object} target
+ * @param {Object} source
+ * @returns {Object} New merged object
+ */
+function deepMerge(target, source) {
+  const result = { ...target };
+  for (const key of Object.keys(source)) {
+    if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])
+        && target[key] !== null && typeof target[key] === 'object' && !Array.isArray(target[key])) {
+      result[key] = deepMerge(target[key], source[key]);
+    } else {
+      result[key] = source[key];
+    }
+  }
+  return result;
+}
 
 /**
  * Clears the per-page state cache between tests to prevent state bleeding across runs.
@@ -38,7 +58,7 @@ function clearValidationCache(page) {
  * const hub = new NebulaHubPage(page);
  * await hub.waitForReady();
  *
- * const configured = await hub.configureExtension({
+ * const configured = await hub.configureDataBindings({
  *   dimensions: ['Dim1'],
  *   measures: [{ field: 'Expression1', aggregation: 'Sum' }]
  * });
@@ -79,15 +99,18 @@ class NebulaHubPage {
   }
 
   /**
-   * Sets JSON configuration in the properties dialog.
+   * Replaces the full object properties JSON in the Monaco editor and confirms.
    *
-   * @param {Object} config - Configuration object to set
-   * @returns {Promise<boolean>} True if configuration was set successfully
+   * Nebula Hub does not merge partial JSON — this overwrites the entire object.
+   * Use patchObjectProperties() to update specific fields while preserving the rest.
+   *
+   * @param {Object} json - Complete object properties to set
+   * @returns {Promise<boolean>} True if properties were set successfully
    */
-  async setConfiguration(config) {
+  async setObjectProperties(json) {
     try {
       // Use compact JSON formatting to avoid editor auto-close issues
-      const jsonString = JSON.stringify(config, null, 0);
+      const jsonString = JSON.stringify(json, null, 0);
       const result = await setJsonEditorContent(this.page, jsonString);
 
       if (result.success) {
@@ -126,20 +149,55 @@ class NebulaHubPage {
 
       return false;
     } catch (error) {
-      console.warn('Failed to set configuration:', error.message);
+      console.warn('Failed to set object properties:', error.message);
       return false;
     }
   }
 
   /**
-   * Configures the extension with dimensions and measures.
+   * Reads the current object properties JSON, merges updates into it, and sets the result.
+   *
+   * Opens the properties dialog, reads the full current JSON, deep-merges the provided
+   * updates, then calls setObjectProperties() with the merged result. The dialog must
+   * not already be open when this is called.
+   *
+   * @param {Object} updates - Partial object to deep-merge into the current properties
+   * @returns {Promise<boolean>} True if patch was applied successfully
+   */
+  async patchObjectProperties(updates) {
+    const dialogOpened = await this.openPropertiesDialog();
+    if (!dialogOpened) {
+      return false;
+    }
+
+    try {
+      await this.page.locator('.monaco-editor').waitFor({ state: 'visible', timeout: 5000 });
+      await expandMonacoEditorContent(this.page);
+
+      const jsonResult = await getJsonEditorContent(this.page);
+      if (!jsonResult.success) {
+        console.warn('patchObjectProperties: failed to read current JSON');
+        return false;
+      }
+
+      const current = JSON.parse(jsonResult.content);
+      const patched = deepMerge(current, updates);
+      return await this.setObjectProperties(patched);
+    } catch (error) {
+      console.warn('patchObjectProperties failed:', error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Configures data bindings (dimensions and measures) via the data panel field pickers.
    *
    * @param {Object} options - Configuration options
-   * @param {string[]} [options.dimensions] - Array of dimension names
+   * @param {string[]} [options.dimensions] - Array of dimension field names
    * @param {Object[]} [options.measures] - Array of measure configurations
    * @returns {Promise<boolean>} True if configuration successful
    */
-  async configureExtension(options = {}) {
+  async configureDataBindings(options = {}) {
     const config = {};
 
     if (options.dimensions && options.dimensions.length > 0) {
@@ -155,7 +213,7 @@ class NebulaHubPage {
       return false;
     }
 
-    return await this.setConfiguration(config);
+    return await this.setObjectProperties(config);
   }
 
   /**
@@ -173,7 +231,7 @@ class NebulaHubPage {
       return false;
     }
 
-    const confirmed = await this.setConfiguration({});
+    const confirmed = await this.setObjectProperties({});
     if (!confirmed) {
       return false;
     }
