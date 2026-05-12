@@ -39,15 +39,17 @@ General development patterns that work across project types.
 - Auto-sync targets (root README.md, context.state.md, context.backlog.md) are consistent with current content — if out of sync, fix immediately as a dependency
 - Lint passes: run `npm run lint` and fix all errors before closing — a change set that fails the linter cannot be committed
 - Staged/unstaged cross-check: any reference in a staged file to another file (import, path, link) must resolve against staged content — an unstaged file referenced by committed code will break anyone pulling the branch
+- Synchronized file consistency: identify related files that should be updated together (e.g., version bumps in package.json should sync with workflow files; configuration changes should sync across all affected config files) — verify all related files are either all staged or all unstaged; if some are staged and others are not, report and request staging or unstaging to achieve consistency
 - Dependent context files updated: all context files (domains/, tools/, commands/, context.*.md) that reference deleted or renamed code, APIs, or file paths are updated in this change set
 - Knowledge capture: identify any framework behavior, fragile patterns, or tool internals discovered during this work — verify they are captured in the appropriate context files per the Knowledge Capture rule before closing
+- Version bump coherence: verify the change set does not mix multiple version bump types (e.g., breaking changes alongside minor features alongside patches) in a way that would be confusing or unsafe — if so, consider splitting into separate change sets or clarifying the primary impact
 
 ## Describe Change Set
 **Purpose**: Generate a descriptive summary of the current change set suitable for recording (commit message, PR description, changelog entry, etc.)
 **Precondition**: All files intended for this commit must be staged before running this command — `git diff --cached` only reflects staged content. If files are not yet staged, stop and report that staging is required; do not attempt to describe the change set from session memory.
 **Pattern**: First retrieve the complete list of version-controlled files in the current change set (exclude gitignored and intentionally untracked files). Then for each file, run `git diff --cached` against the previously committed version and describe only what the diff shows — not what editing steps were taken during the session to produce it. If the diff shows rule A replaced by rule B, describe rule B's content relative to rule A; do not describe intermediate steps like "merged two rules." Produce output covering ALL files in the change set in the exact plain text format below. No markdown, no bold, no extra formatting. Do not use conversational session terms (e.g. "Phase 3", "this session", "as discussed") — the output must be self-contained and meaningful to anyone reading git history with no knowledge of the conversation.
 **Context**: context.global.md + all version-controlled files in the current change set + their prior recorded history
-**Output format** (plain text, copy-paste ready):
+**Output format** (plain text, copy-paste ready for commit message):
 ```
 [Short one-line description]
 
@@ -63,11 +65,28 @@ Updated:
 Fixed:
 -- [filename]: [what was corrected]
 ```
+
+**After generating the output**, provide version bump recommendation to the user:
+- State which label (`version:patch | version:minor | version:major | none`) to apply
+- Explain the rationale based on what changed
+- This recommendation guides PR labeling but is not included in the commit message itself
 **Categories**:
 - **Created** — new files with no prior recorded history
 - **Integrated into** — existing files modified only to wire in new files from this change set
 - **Updated** — existing files with substantive content changes, including auto-sync target updates (README.md, context.state.md, context.backlog.md) kept current as part of the change set
 - **Fixed** — existing files where content was incorrect or broken (wrong information, bad links, rule violations) — not routine sync lag
+
+**Version bump recommendation** (apply `version:` label to PR based on recommendation):
+- **major** — breaking changes (API changes, requirement changes, behavior changes, dropped support)
+  - Example: dropping Node 16 support, changing extension API signature
+- **minor** — new features, backwards-compatible additions, new capabilities
+  - Example: new component, new utility function, new validation rule
+- **patch** — bug fixes and dependency updates that affect users or product code
+  - Example: fix in src/state/ business logic, security patch in a used dependency, fix to extension rendering
+  - NOT: CI/CD changes, context system updates, or build tooling changes (use `none` instead)
+- **none** — infrastructure only (context system, CI/CD workflows, build tooling, internal templates) with no product-level changes
+  - Example: Node version update in workflows, GitHub Actions refactor, context system enhancements, PR template updates
+  - Key distinction: changes that don't touch src/, test/, or user-facing behavior
 
 Omit any category that has no files.
 

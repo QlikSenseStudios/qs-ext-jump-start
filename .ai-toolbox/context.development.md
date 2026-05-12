@@ -68,6 +68,7 @@ Items specific to the example implementation (`src/` — the example table visua
 - **Visual regression tests** (Medium Value): Screenshot-based regression coverage for rendered extension states. Extension renders dynamic table with 6+ error types and selection variants; useful post-refactor but requires strict CI environment consistency. High setup effort; medium ongoing cost.
 - **Keyboard shortcut for selection** (Medium Value): Add keyboard confirm/cancel shortcuts (e.g., Escape to cancel) during active selection sessions. Selection handler already has infrastructure (`exitSelectionMode()` function). Low effort (~50 lines); improves UX for keyboard-first and a11y users.
 - **i18n support** (Medium–High Value): Internationalization scaffolding for extensions targeting multi-language tenants. Found ~30+ hardcoded UI strings (errors, hints, labels). Prerequisite: determine target locales and Qlik Sense locale strategy. Medium setup; high ongoing (string extraction and translation maintenance).
+- **Commands organization** (Low Value): Refactor commands from category-based grouping (development.md, project.md, etc.) to one-command-per-file structure. Improves discoverability, version control clarity, and mental model alignment with explicit invocation pattern. Low effort; organizational improvement only.
 
 ## Template Development Loading Paths
 

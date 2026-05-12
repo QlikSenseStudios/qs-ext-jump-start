@@ -5,10 +5,11 @@
 
 ## Version bump
 
-Apply one label to trigger an automatic version bump on merge — or none to skip:
-- `version:patch` — bug fixes, dependency updates, minor corrections
-- `version:minor` — new features, backwards-compatible additions
-- `version:major` — breaking changes
+Apply one label to trigger an automatic version bump on merge — or omit to skip:
+- `version:major` — breaking changes (API, requirements, behavior, dropped support)
+- `version:minor` — new features, backwards-compatible additions, new capabilities
+- `version:patch` — bug fixes and dependency updates affecting users or product code (src/, test/)
+- *(Omit label)* — infrastructure only (CI/CD, context system, build tooling, templates)
 
 ## Checklist
 
@@ -16,7 +17,7 @@ Apply one label to trigger an automatic version bump on merge — or none to ski
 - [ ] Lint passes locally (npm run -s lint)
 - [ ] I ran tests locally (npm test -s -- --reporter=list) and they passed for my environment
 - [ ] If package.json changed, I ran `npm install` and committed package-lock.json
-- [ ] Docs updated if behavior changed (README/docs/CHANGELOG)
+- [ ] Docs updated if behavior changed (README/docs)
 
 ## Notes for reviewers
 
