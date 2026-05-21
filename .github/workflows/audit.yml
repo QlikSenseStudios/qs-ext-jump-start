@@ -26,24 +26,33 @@ jobs:
               const audit = JSON.parse(chunks.join(''));
               const vulns = Object.values(audit.vulnerabilities || {});
 
-              const fixable = vulns.filter(v => v.fixAvailable !== false);
               const unfixable = vulns.filter(v => v.fixAvailable === false);
+              const canFixNormally = vulns.filter(v => v.fixAvailable && !v.fixAvailable.isSemVerMajor);
+              const requireForce = vulns.filter(v => v.fixAvailable && v.fixAvailable.isSemVerMajor);
 
               if (unfixable.length > 0) {
                 console.warn('WARNING: ' + unfixable.length + ' unfixable vulnerability/vulnerabilities (no fix available — awaiting third-party update):');
                 unfixable.forEach(v => console.warn('  - ' + v.name + ' (' + v.severity + ')'));
               }
 
-              if (fixable.length > 0) {
-                console.error('FAIL: ' + fixable.length + ' fixable vulnerability/vulnerabilities at moderate level or above:');
-                fixable.forEach(v => console.error('  - ' + v.name + ' (' + v.severity + ') fixAvailable: ' + JSON.stringify(v.fixAvailable)));
+              if (canFixNormally.length > 0) {
+                console.error('FAIL: ' + canFixNormally.length + ' fixable vulnerability/vulnerabilities at moderate level or above (can fix without breaking changes):');
+                canFixNormally.forEach(v => console.error('  - ' + v.name + ' (' + v.severity + ')'));
                 process.exit(1);
               }
 
-              if (unfixable.length > 0) {
-                console.log('OK: No fixable vulnerabilities. ' + unfixable.length + ' unfixable vulnerability/vulnerabilities logged above — awaiting third-party updates.');
-              } else {
-                console.log('OK: No vulnerabilities found at moderate level or above.');
+              if (requireForce.length > 0) {
+                console.warn('WARNING: ' + requireForce.length + ' fixable vulnerability/vulnerabilities require breaking changes (npm audit fix --force):');
+                requireForce.forEach(v => console.warn('  - ' + v.name + ' (' + v.severity + ') requires ' + v.fixAvailable.name + '@' + v.fixAvailable.version));
+              }
+
+              const allFixed = unfixable.length === 0 && canFixNormally.length === 0;
+              if (allFixed) {
+                if (requireForce.length > 0) {
+                  console.log('OK: No vulnerabilities fixable without breaking changes. See warnings above for force-required fixes.');
+                } else {
+                  console.log('OK: No vulnerabilities found at moderate level or above.');
+                }
               }
             });
           "

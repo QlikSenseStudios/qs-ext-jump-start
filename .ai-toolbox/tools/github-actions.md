@@ -12,13 +12,20 @@ CI/CD workflows included in `.github/workflows/`. Load when working on automatio
 
 ## Dependency Audit (`audit.yml`)
 
-Parses `npm audit --json` and fails only if fixable vulnerabilities at `moderate` level or above are present. Unfixable vulnerabilities (`fixAvailable === false` — no third-party fix available) are logged as warnings but do not fail the gate.
+Parses `npm audit --json` and categorizes vulnerabilities into three groups:
+
+- **Can fix without breaking changes** — fails the gate; run `npm audit fix` and commit
+- **Require breaking changes** (`npm audit fix --force`) — warns but does not fail; intentional trade-off, acceptable to merge
+- **Unfixable** (`fixAvailable === false` — no third-party fix available) — warns but does not fail; awaiting third-party update
 
 **When a Dependabot PR fails the audit gate:**
 1. Trigger **Audit Fix** manually from the Actions UI
 2. Set `base-branch` to the Dependabot branch name
 3. A `chore/audit-fix` PR opens targeting that branch — merge it
 4. The audit gate on the Dependabot PR passes — merge as normal
+
+**When the audit gate warns about force-required fixes:**
+These are acceptable — they represent dependencies that would require major version bumps (breaking changes). If the force-applied fixes don't break extension functionality, the PR can be merged. Otherwise, consider accepting the vulnerability as a trade-off.
 
 **When the audit gate passes but warns about unfixable vulnerabilities:**
 No action required — the gate stays green until a third-party fix becomes available, at which point `npm audit fix` or Dependabot resolves it automatically.
