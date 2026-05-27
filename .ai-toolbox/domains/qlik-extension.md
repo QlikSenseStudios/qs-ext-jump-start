@@ -13,12 +13,12 @@ The correct sequence: **consult this file → if undocumented, ask → validate 
 Attempting, failing, and then capturing is not acceptable — the wrong conclusion may be captured. The Nebula Hub DOM Patterns section below is the single source of truth for verified selectors and interactions.
 
 ## Technology Stack
-- **Framework**: Nebula.js Supernova API (`@nebula.js/stardust ^6.0.1`)
+- **Framework**: Nebula.js Supernova API (`@nebula.js/stardust ^7.0.1`)
 - **Build**: Nebula CLI (`nebula build`, `nebula serve`, `nebula sense`)
 - **Testing**: Playwright E2E (`@playwright/test`)
 - **Language**: JavaScript ESM (`src/`) with CommonJS in `test/` — migration in progress
 - **Linting**: ESLint v9 flat config (`eslint.config.mjs`)
-- **Node.js**: `>=20.17`
+- **Node.js**: `>=24.5.0`
 
 ## Nebula.js Supernova Hooks
 *Primary API for extension lifecycle — imported from `@nebula.js/stardust`*
@@ -151,7 +151,7 @@ SKIP_OPEN_REPORT=1 npx playwright test --headed --reporter=list           # Head
 `SKIP_OPEN_REPORT=1` suppresses the automatic browser report on failure. `--grep` matches against test and describe block names.
 
 ## Nebula Hub DOM Patterns
-*Verified against `@nebula.js/cli-serve` 6.8.0. Re-verify after version bumps.*
+*Verified against `@nebula.js/cli-serve` 7.0.1. All documented patterns remain valid after upgrade from 6.8.0.*
 
 **Debugging principle — screenshots are unreliable**: Playwright failure screenshots capture only the visible viewport at the moment of failure. The Nebula Hub config panel, accordion state, dialog content, and most relevant UI elements are frequently off-screen or clipped. Do not rely on screenshots to diagnose selector failures or state problems. Instead: (1) add `console.log` statements before every locator assertion to log the actual values, states, and selector strings being used — these appear in the Playwright test runner output and are always reliable; (2) use `logAriaSnapshot(page, label)` from `dom-snapshot.js` to print the full ARIA tree when an element cannot be found; (3) if the root cause of a failure is not clear from console output alone, **do not guess** — ask the developer to run the test in headed mode (`--headed`) and describe what they observe, or to manually verify the interaction in the browser before writing the assertion.
 
@@ -271,7 +271,6 @@ See `docs/DEPLOYMENT.md` for full instructions.
 
 ## Known Environment Unknowns
 *Areas not yet investigated or verified. Do not guess — ask the developer before attempting.*
-- **Nebula Hub version drift**: DOM patterns documented in this file were verified against `@nebula.js/cli-serve` 6.8.0. Behavior after version bumps is unverified — re-verify after any Nebula CLI upgrade.
 - **Qlik Engine API surface**: Only `useSelections()` is documented for this project. Other engine API hooks (bookmark, variable, data fetch behaviors) are not verified in this environment.
 - **Multi-extension Nebula Hub sessions**: All documented patterns assume a single extension loaded in Nebula Hub. Behavior with multiple extensions is unknown.
 
