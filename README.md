@@ -9,13 +9,13 @@ A Qlik Sense extension template built on Nebula.js. Includes a working selection
 
 ## Quick Start
 
-1. Click "Use this template" on [GitHub](https://github.com/QlikSenseStudios/qs-ext-jump-start)
-2. Clone your new repo and open it in your AI agent
-3. Tell your AI agent:
+1. Click "Use this template" on [GitHub](https://github.com/QlikSenseStudios/qs-ext-jump-start) to create your repository
+2. Clone your new repository and open it in your AI agent
+3. Initialize your project by telling your AI agent:
    ```
-   Initialize this project maintaining the context in './.ai-toolbox/context.global.md'
+   Load context from './.ai-toolbox/context.global.md' then use initialize command for this project: "[YOUR_PROJECT_NAME]"; description: "[YOUR_PROJECT_DESCRIPTION]"
    ```
-   This sets up your extension identity, local context, and removes template-only files.
+   This workflow configures your extension name, sets up your local preferences, applies your identity to configuration files, removes template-only artifacts, and removes template development context.
 4. Install dependencies: `npm install`
 5. Set up your Qlik environment: [Qlik Cloud](./docs/QLIK_CLOUD_SETUP.md) · [Enterprise](./docs/QLIK_ENTERPRISE_SETUP.md)
 6. Start the development server: `npm run serve`

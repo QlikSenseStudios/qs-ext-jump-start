@@ -40,6 +40,11 @@ Generate `context.local.md` with:
 - Clearly marked `<!-- USER EDITABLE SECTION -->` boundaries so automated updates never overwrite personal settings
 - Note to user: this file is not committed to version control — it is personal to this workspace
 
+**Important clarification on context.local.md status**:
+- **Having `context.local.md`**: Indicates the current workspace has local preferences configured, but does NOT indicate that the entire project is fully set up. The user may still need to complete Qlik environment setup, run `npm install`, etc.
+- **Not having `context.local.md`**: Does NOT indicate the project is uninitialized. A collaborator cloning the repository will not have `context.local.md` (it is gitignored), but the project is still initialized. The collaborator must create their own `context.local.md` by running initialization on their local machine, or they can run context loading with the understanding that `context.local.md` will be auto-generated with defaults.
+- **Project initialization state** is tracked by the presence of committed files that were modified in Steps 6–7 (extension identity applied to `package.json`, `src/meta.json`, etc.; template artifacts removed). Committed file changes are the authoritative indicator of initialization status, not the presence of `context.local.md`.
+
 ### Step 5 — CI Workflow Decision
 
 The template includes five GitHub Actions workflows in `.github/workflows/`: `build.yml`, `lint.yml`, `audit.yml`, `audit-fix.yml`, and `version-bump.yml`. These are documented in `tools/github-actions.md`.
@@ -57,6 +62,12 @@ Apply the name and description from Step 2 to:
 - **`src/meta.json`**: Update `name` field
 - **`README.md`**: Replace the template title, description, and purpose with the extension's name and purpose; replace the Quick Start section with extension-specific setup steps (remove "Use this template" and AI initialization instructions — those are complete; retain `npm install`, environment setup links, `npm run serve`); remove the Contributing section (references `CONTRIBUTING.md` which is deleted in Step 7)
 - **`project/overview.md`**: Populate mission, goals, and scope from the collected extension purpose
+
+### Step 6a — Reset Project State
+
+Clean up and initialize the changelog:
+- **`docs/CHANGELOG.md`**: Clear all existing version history and template entries; add a single entry documenting the initialization: `## [Unreleased] - Initialized from qs-ext-jump-start template` (or the source project name collected in Step 2 if forked from an existing extension project)
+- This establishes a clean version history for the new extension project separate from the template's development history
 
 ### Step 7 — Remove Template Artifacts
 
@@ -91,8 +102,12 @@ The `.ai-toolbox/` directory is the single source of truth for all project conte
 - Confirm `CONTRIBUTING.md` and `context.development.md` removed
 - Confirm CI workflows retained or removed per Step 5; if retained, remind user to create version bump labels in GitHub
 - Confirm `project/overview.md` reflects the extension's purpose
+- Confirm `docs/CHANGELOG.md` has been reset with initialization entry
 - Report what was completed and what still requires manual action (e.g., git remote configuration, Qlik environment setup)
-- Provide the next steps: set up Qlik environment, run `npm install`, run `npm run serve` to verify the template extension loads
+
+### Step 11 — Next Steps
+
+**Next steps**: Set up Qlik environment per Step 8, run `npm install`, run `npm run serve` to verify the template extension loads, then begin customizing.
 
 ## Error Handling
 
