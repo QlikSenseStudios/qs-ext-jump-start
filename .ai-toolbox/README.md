@@ -26,6 +26,8 @@ context.global.md -> commands/initialization.md   # first-time setup
 ├── context.local.md         # personal environment and preferences (not in version control)
 ├── context.state.md         # current project status
 ├── context.backlog.md       # upcoming work and recently completed items
+├── plans/                   # pre-planning context, one file per upcoming work item
+├── upstream-notes/          # findings for upstream maintainers (not in version control)
 ├── commands/                # operation patterns (initialization, development, project, context)
 ├── docs/                    # documentation about this context system
 ├── project/                 # project overview and quality standards

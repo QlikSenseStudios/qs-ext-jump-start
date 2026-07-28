@@ -12,7 +12,7 @@
 
 ## Hierarchy Levels
 1. **Core**: context.global.md + context.local.md (auto-merged, generated if missing)
-2. **Operational**: context.state.md + available commands/
+2. **Operational**: context.state.md + context.backlog.md + plans/ + available commands/
 3. **Domain**: domains/ (qlik-extension.md primary + research.md as additional example) + patterns/ (setup.md example provided) + tools/ (git.md — Git conventions and PR workflow; github-actions.md — CI/CD workflows)
 4. **Project**: project/ (pre-configured stubs — populate with your project details)
 
@@ -21,6 +21,7 @@
 
 **Core Context**: context.global.md + context.local.md (auto-merged)
 **Project Status**: context.global.md → context.state.md
+**Plan Building**: context.global.md → upcoming work item (context.backlog.md) → plans/ file for that item
 **Initialization**: context.global.md → commands/initialization.md
 
 ### Loading Sequence
@@ -50,6 +51,7 @@
 ### Level 2 (Operational)
 - `context.state.md` - current project status
 - `context.backlog.md` - project backlog and recently completed work
+- `plans/` - pre-planning context for upcoming work items (one file per item; see plans/README.md for the skeleton)
 
 ### Level 3 (Domain)
 - `domains/` - domain-specific contexts
@@ -80,6 +82,7 @@
 - **State Consistency**: Sync status across README.md, context.state.md, and other contexts
 - **Current State Only**: context.state.md reflects present state — no references to superseded decisions or outdated status; Recently Completed Work is an approved duplication (mirrored from context.backlog.md)
 - **Backlog Auto-Management**: Mirror all completed items to context.state.md; age out Recently Completed entries per criteria defined in context.backlog.md; completed items must exist in both files; Recently Completed tracks project deliverables and features only — context system maintenance (updating rules, adding context files, adjusting documentation structure) is not recorded as completed work; "completed" means verified working and user-confirmed — code written does not qualify
+- **Plan File Lifecycle**: Each plans/ file holds pre-planning context for exactly one upcoming work item — enough extracted context (target files, source findings, prior art, open questions) to prompt for a full plan later, not the plan itself; create it when the item is scheduled, keep it in sync if the item's scope changes, and delete it when the item completes
 - **Contributor Attribution**: Always use the Contributor Name from context.local.md User Preferences when recording completed items in context.backlog.md and context.state.md — if not set, prompt the user for their name before recording
 - **Documentation Sync**: Auto-sync between ../README.md and ./README.md when changing linked contexts or project status
 - **File Reference Standards**: Never use Markdown links to files that have not yet been committed — use plain text references only; Markdown links to uncommitted files create broken documentation
@@ -99,6 +102,7 @@
 - **Progressive Disclosure**: Structure human-facing documents in reader-need order — (1) one-sentence description of what it is, (2) direct usage steps or command, (3) only necessary detail for correct usage, (4) background and reference content last or in a linked document; if a document feels like it needs a summary or TL;DR, restructure it instead
 
 ### Operational Behavior
+- **Correction Integration**: When the user corrects the agent or reminds it of a rule, preference, or how they want something done, immediately update the appropriate `.ai-toolbox` context file to enforce the correction — do not rely on session memory or assume retention across sessions. `.ai-toolbox` is the primary and authoritative source of direction; all corrections and refinements belong here to persist across sessions, agents, and collaborators. Treat every user correction as a signal that the context system is incomplete and must be updated before proceeding.
 - **Tool Resolution Loop**: Before attempting any task that requires a specific tool or capability — check context.local.md Available Tools first; if the tool is not recorded, prompt the user before assuming it is available or choosing an alternative; once resolved, record the result (available or unavailable + alternative) before proceeding; if the user reports a recorded status is incorrect, re-verify via shell and update the record before continuing
 - **Tool Discovery Tracking**: At the end of every session, verify that all tools, runtimes, and capabilities used are recorded in context.local.md Available Tools — add any that are missing before closing. When a tool is used or found missing mid-session, record it immediately rather than waiting. Record it in the appropriate location — machine-specific tools (shell type, OS utilities, local runtimes, PDF readers, available commands) go in context.local.md Available Tools; project-wide tool conventions (build tools, test frameworks, deployment targets) go in tools/ contexts; if a needed tool is unavailable, record the absence and the alternative used
 - **Local Context Scope**: context.local.md contains only machine-specific and personal preferences — things that vary by individual user or machine; project decisions (backlog criteria, review process, team standards, documentation approach) belong in their authoritative project files, not context.local.md
@@ -111,13 +115,14 @@
 - **Gitignore Awareness**: Respect .gitignore patterns for file usage in project structure, but reference or use ignored files when contextually relevant
 - **Knowledge Capture**: Any framework behavior, environment pattern, tool behavior, or non-obvious constraint discovered during a session must be captured in the appropriate context file (`domains/`, `tools/`, or `patterns/`) before the session ends. Guessing and then capturing is not acceptable — if a behavior is unverified, record it in the relevant Known Environment Unknowns section instead. The Review Change Set command enforces this as a pre-commit checklist item. Framework/library behavior → domain contexts; fragile vs. stable patterns → `patterns/`; tool-specific behavior → `tools/`. For Qlik extension projects: Nebula.js, MUI, or `@nebula.js/cli-serve` behavior → `domains/qlik-extension.md`; test pattern discoveries (fragile selectors, timing/async behaviors) → `domains/qlik-extension.md` or `patterns/`.
 - **External Memory Scope**: Project-specific findings, audit results, domain knowledge, and work context belong in `.ai-toolbox` context files — not external memory systems (agent memory, session notes, out-of-repo tools). External memory is for personal preferences and session-portable agent identity only. Context files are the shared, version-controlled source of truth for all collaborators.
+- **Upstream Notes**: When a finding is agnostic to the current project and would improve an upstream source it was built from, record it in `.ai-toolbox/upstream-notes/` — one file per upstream target. These files are gitignored and must be sent manually to the upstream maintainer; the finding still gets captured in this project's own context files when it applies here too.
 - **Learn Before Acting — External Environments**: For any external, third-party, or poorly-documented environment (Nebula Hub, Qlik Engine API, browser test infrastructure, MUI internals), do not guess at selectors, API behavior, timing, or DOM structure. If the required interaction is not documented in the relevant domain context, stop and ask the developer — do not attempt, fail, and then capture. The correct sequence is: consult domain context → if undocumented, ask → validate with developer → act → capture. Guessing and then capturing the wrong conclusion is worse than not acting at all.
-- **Context Placement**: When adding to the context system, use the first matching location — user/machine-specific → `context.local.md`; context system operation rules → `context.global.md`; domain knowledge (e.g., Qlik/Nebula.js) → `domains/`; reusable approaches → `patterns/`; tool behavior or conventions → `tools/`; project mission, goals, or standards → `project/`. All locations listed here survive initialization and apply to all projects using this template.
+- **Context Placement**: When adding to the context system, use the first matching location — user/machine-specific → `context.local.md`; context system operation rules → `context.global.md`; pre-planning context for a scheduled work item → `plans/`; domain knowledge (e.g., Qlik/Nebula.js) → `domains/`; reusable approaches → `patterns/`; tool behavior or conventions → `tools/`; project mission, goals, or standards → `project/`. All locations listed here survive initialization and apply to all projects using this template.
 - **Command Execution**: When the user invokes a named command, read its definition from the commands/ directory and execute every step as written — do not answer from session memory or skip steps because the answer seems known. Session context may be incomplete or stale; the command definition is authoritative.
 - **Branch Protection**: When the user requests changes while on main/master branch, create a feature branch before proceeding. Never apply code changes directly to main/master. If already on main/master when changes are requested, check out a new branch (follow project branching convention from `tools/git.md`), then stage changes on that branch.
 
 ## Version Control Integration
-- **User Exclusions**: `context.local.md` (covered by `*.local.*` in .gitignore), `.sandbox/` (gitignored), excluded via .gitignore
+- **User Exclusions**: `context.local.md` (covered by `*.local.*` in .gitignore), `.sandbox/` (gitignored), `upstream-notes/` (gitignored — findings for upstream maintainers, sent manually), excluded via .gitignore
 - **Project Files**: All project infrastructure committed and versioned
 - **Reference Usage**: Can examine ignored files (node_modules, dist/, *-ext/) for context without including in commits
 

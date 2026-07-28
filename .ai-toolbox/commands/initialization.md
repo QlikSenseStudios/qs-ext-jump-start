@@ -75,6 +75,21 @@ These files describe the template's own development process and are not relevant
 - **Delete `CONTRIBUTING.md`**: Describes contributing to the template, not to your extension project
 - **Delete `.ai-toolbox/context.development.md`**: Template development rules; not applicable once initialized
 - **Delete `.ai-toolbox/docs/Getting Started.md`**: Initialization guide; superseded by the initialized `README.md`
+- **Delete all plan files in `.ai-toolbox/plans/` except `README.md`**: Template-development pre-planning context; the `plans/` folder and its `README.md` remain — the plans mechanism is part of the context system and is now available for the extension project's own upcoming work
+
+### Step 7a — Create Upstream Notes Stub
+
+Create `.ai-toolbox/upstream-notes/template-project-context-updates.md` (the folder is gitignored) so the Upstream Notes pattern in `context.global.md` is discoverable from the start:
+
+```markdown
+# Template Project Context Updates
+
+Findings that are agnostic to this extension project and would improve the
+qs-ext-jump-start template for all downstream projects.
+This file is gitignored. Send manually to the upstream template maintainer.
+
+---
+```
 
 ### Step 8 — Qlik Environment Setup
 
@@ -100,6 +115,7 @@ The `.ai-toolbox/` directory is the single source of truth for all project conte
 
 - Confirm `context.local.md` created and populated correctly
 - Confirm `CONTRIBUTING.md` and `context.development.md` removed
+- Confirm `.ai-toolbox/plans/` contains only `README.md` and `.ai-toolbox/upstream-notes/template-project-context-updates.md` exists
 - Confirm CI workflows retained or removed per Step 5; if retained, remind user to create version bump labels in GitHub
 - Confirm `project/overview.md` reflects the extension's purpose
 - Confirm `docs/CHANGELOG.md` has been reset with initialization entry

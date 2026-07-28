@@ -49,3 +49,9 @@ test/artifacts/
 #             Not a build artifact. Treated as read-only by the context system;
 #             edit only when explicitly instructed.
 .sandbox/
+
+# Upstream notes
+# .ai-toolbox/upstream-notes/ - Findings that improve an upstream source (one file
+#             per upstream target). Not versioned; sent manually to the upstream
+#             maintainer.
+.ai-toolbox/upstream-notes/
