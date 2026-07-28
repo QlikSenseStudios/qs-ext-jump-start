@@ -21,11 +21,12 @@ Current operational status for AI agents. Machine-readable only.
 
 ## Available Modules
 - **Commands**: initialization.md (project setup), context.md (context management — includes List Commands), development.md (development workflows), project.md (project management)
-- **Documentation**: Getting Started.md, Local Context.md, Backlog.md, Project Context.md, Domains.md, Patterns.md, Tools.md, Commands.md
+- **Documentation**: Getting Started.md, Local Context.md, Backlog.md, Project Context.md, Domains.md, Patterns.md, Plans.md, Tools.md, Commands.md
 - **Project Context**: overview.md, standards.md
 - **Domain Contexts**: qlik-extension.md (Qlik Sense extension development), research.md (example — add more as needed)
 - **Pattern Contexts**: setup.md (example — add more as needed)
 - **Tool Contexts**: git.md (Git conventions and PR workflow), github-actions.md (CI workflows, version bump, dependency audit)
+- **Plans**: plans/ pre-planning context files (one file per upcoming work item) + plans/README.md skeleton
 - **Core Context**: System README.md
 
 ## Current Capabilities
@@ -41,6 +42,8 @@ Current operational status for AI agents. Machine-readable only.
 │   ├── context.global.md        # Clean project-focused routing
 │   ├── context.state.md         # Project status tracking
 │   ├── context.backlog.md       # Project backlog and completed work
+│   ├── plans/                   # Pre-planning context (one file per upcoming work item)
+│   ├── upstream-notes/          # Upstream-agnostic findings (gitignored; send manually)
 │   ├── commands/                # Available operations
 │   │   ├── README.md           # Commands directory guide
 │   │   ├── initialization.md   # Project initialization
@@ -54,6 +57,7 @@ Current operational status for AI agents. Machine-readable only.
 │   │   ├── Project Context.md  # Project overview and standards guide
 │   │   ├── Domains.md          # Domain contexts guide
 │   │   ├── Patterns.md         # Patterns usage guide
+│   │   ├── Plans.md            # Plans usage guide
 │   │   ├── Tools.md            # Tool contexts guide
 │   │   └── Commands.md         # Commands usage guide
 │   ├── project/                # Project context

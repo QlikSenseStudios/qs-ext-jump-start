@@ -8,7 +8,7 @@
 - **Context Hierarchy**: This file → context.global.md → operational contexts
 - **Scope**: Template architecture, boilerplate improvements, documentation, and context system enhancements
 - **Context Placement**: Anything that applies only while working ON the template — and is not relevant to extension developers — belongs in this file. This file is deleted at initialization, so anything here must be safe to lose from the extension developer's perspective. If a rule or principle is useful to extension developers, it belongs in `context.global.md` or another surviving context file instead.
-- **Extension-Mode File Protection**: `tools/`, `domains/`, `project/`, and `context.state.md` are written for extension developers — do not add template development state, progress notes, or temporary tracking to these files. Any template-dev-only content in these files becomes a trace visible to extension developers. Use this file's Upcoming Work section for all template development tracking.
+- **Extension-Mode File Protection**: `tools/`, `domains/`, `project/`, and `context.state.md` are written for extension developers — do not add template development state, progress notes, or temporary tracking to these files. Any template-dev-only content in these files becomes a trace visible to extension developers. Template development tracking lives in exactly two places: this file's Upcoming Work section (the item list) and `plans/` (one pre-planning context file per item — deleted at initialization along with this file; the `plans/` folder and its README survive as a generic context-system feature).
 
 ## Dual Context Overview
 *The two distinct ways this project is used. (The context struggle is real)*
@@ -57,19 +57,57 @@ Items that exist solely to support this template's own development process do no
 Items specific to the example implementation (`src/` — the example table visualization) are acceptable but must be clearly understood as "example — replace with your own implementation."
 
 ## Upcoming Work
-*Forward-looking only. No history. Remove items when complete — do not mark or annotate them.*
+*Forward-looking only. No history. Remove items when complete — do not mark or annotate them, and delete the item's `plans/` file at the same time.*
 
-*`context.state.md` is not used to track template development progress — it represents the initial delivered state that extension developers inherit and evolve. Template development progress lives only in this section.*
+*`context.state.md` is not used to track template development progress — it represents the initial delivered state that extension developers inherit and evolve. Template development progress lives only in this section and `plans/`.*
+
+### Template Improvement Roadmap
+*Sourced from downstream extension-project learnings. Each item has a pre-planning context file in `plans/` — to pick up an item, prompt: "Build an implementation plan for [item] using plans/[file]". Each item is roughly one PR. Stages are ordered by usefulness/need; items within a stage are ordered by dependency.*
+
+*Annotations: `[complexity / execution tier]` — complexity is Low/Medium/High; execution tier guides model selection: **light** = fast economical model (mechanical, fully specified), **standard** = default model, **deep** = strongest reasoning model (design judgment, cross-file consolidation, subtle async behavior).*
+
+**Stage 1 — Commands & initialization** *(immediately useful operational tooling)*
+1. **Commands one-per-file re-org** `[Medium / light]` — restructure commands/ to one command per file; update all references. Context: plans/commands-one-per-file.md
+2. **Fix Security Advisories command** `[Low / light]` — repeatable npm audit fix procedure with validation gate and PR label rule. Depends on item 1. Context: plans/fix-security-advisories-command.md
+3. **Update Nebula.js Dependencies command** `[Low / light]` — bulk five-package @nebula.js bump in one PR. Depends on item 1. Context: plans/update-nebula-deps-command.md
+4. **Initialization footnote prompt** `[Low / light]` — initialize flow writes a project-specific footnote in src/qae/object-properties.js. Context: plans/initialization-footnote-prompt.md
+
+**Stage 2 — Corrections** *(existing content is wrong and actively misleading)*
+5. **Monaco editor read correction** `[Medium / standard]` — replace the .view-line read approach with Ctrl+A → Ctrl+C → clipboard in docs and test helpers. Context: plans/monaco-editor-read.md
+
+**Stage 3 — Scaffold correctness & robustness** *(latent bugs and blind spots every downstream project inherits)*
+6. **Selection double-call guard** `[Medium / standard]` — optimistic lastInSelection flag prevents intermittent pending-selection wipe. Context: plans/selection-double-call-guard.md
+7. **Limits single source of truth** `[Medium / standard]` — validation predicates and limit strings derived from data.js. Context: plans/limits-single-source.md
+8. **Extension container test identifier** `[Low / standard]` — second identifier so broken validation cannot pass silently. Context: plans/extension-container-identifier.md
+
+**Stage 4 — Structure** *(prerequisite for Stage 5)*
+9. **Testing domain split** `[Medium / standard]` — move testing content into domains/qlik-extension-testing.md; refresh the stale module listing into a module/describe table. Context: plans/testing-domain-split.md
+
+**Stage 5 — Testing guidance** *(all depend on item 9)*
+10. **Targeted test commands** `[Low / light]` — --grep run patterns and the full-suite-at-commit-gates policy. Context: plans/targeted-test-commands.md
+11. **Playwright robustness patterns** `[Medium / standard]` — null-safe style assertions, multi-click race guard, MEAS_MIN=0 measure-add signal, DUAL-field assertions. Context: plans/playwright-robustness.md
+12. **Engine selections persistence** `[Low / light]` — resetConfiguration() does not clear engine selections; clearSelections() in the pre-test guard. Context: plans/engine-selections-persistence.md
+13. **Test-time config injection** `[Low / light]` — nebula serve is webpack-based; globalSetup/globalTeardown file-swap pattern. Context: plans/test-time-config-injection.md
+14. **Render cycle & styling principle** `[Low / light]` — two-render cycle and static-vs-expression-driven styling rule. Context: plans/render-cycle-and-styling-principle.md
+
+**Stage 6 — Engine & property-panel domain knowledge**
+15. **Hypercube pagination** `[High / deep]` — fetchAllDataPages scaffold utility, INITIAL_FETCH_HEIGHT, cancellation-safe integration. Context: plans/hypercube-pagination.md
+16. **Schema normalization & getProperties()** `[Medium / standard]` — engine strips unknown properties at both levels; getProperties() read pattern. Depends on item 15. Context: plans/schema-normalization-getproperties.md
+17. **Engine model additions** `[Low / light]` — associative model bullets, DUAL semantics, em-dash encoding. Context: plans/engine-model-additions.md
+18. **Nebula Hub vs production property panel** `[Low / light]` — components absent from Nebula Hub; Monaco dev workflow; parked Qlik Cloud finding. Context: plans/nebula-hub-vs-production.md
+19. **Property configuration architecture** `[Low / light]` — three-file role-boundary table plus scaffold boundary comments. Context: plans/property-config-architecture.md
+
+**Stage 7 — Attribute expression styling**
+20. **Attribute expression styling pattern** `[High / deep]` — consolidated qAttributeExpressions pattern incl. the one-AER-per-ref rule. Depends on items 14 and 18. Context: plans/attribute-expression-styling-pattern.md
+21. **Color normalization utils** `[Medium / standard]` — d3-color based toRGB/isDarkColor scaffold helpers. Depends on item 20. Context: plans/color-normalization-utils.md
 
 ### Optional Enhancements
 *Not scheduled — consider for future branches*
 
-- **Unit testing** (High Value): Add Jest (or equivalent) for non-UI logic in `src/` \u2014 currently only Playwright E2E exists. `src/state/` and `src/qae/` contain pure functions (state management, data transforms, validation) with zero coverage. Medium effort; catches regressions in complex business logic.
+- **Unit testing** (High Value): Add Jest (or equivalent) for non-UI logic in `src/` — currently only Playwright E2E exists. `src/state/` and `src/qae/` contain pure functions (state management, data transforms, validation) with zero coverage. Medium effort; catches regressions in complex business logic.
 - **Visual regression tests** (Medium Value): Screenshot-based regression coverage for rendered extension states. Extension renders dynamic table with 6+ error types and selection variants; useful post-refactor but requires strict CI environment consistency. High setup effort; medium ongoing cost.
 - **Keyboard shortcut for selection** (Medium Value): Add keyboard confirm/cancel shortcuts (e.g., Escape to cancel) during active selection sessions. Selection handler already has infrastructure (`exitSelectionMode()` function). Low effort (~50 lines); improves UX for keyboard-first and a11y users.
 - **i18n support** (Medium–High Value): Internationalization scaffolding for extensions targeting multi-language tenants. Found ~30+ hardcoded UI strings (errors, hints, labels). Prerequisite: determine target locales and Qlik Sense locale strategy. Medium setup; high ongoing (string extraction and translation maintenance).
-- **Commands organization** (Low Value): Refactor commands from category-based grouping (development.md, project.md, etc.) to one-command-per-file structure. Improves discoverability, version control clarity, and mental model alignment with explicit invocation pattern. Low effort; organizational improvement only.
-
 ## Template Development Loading Paths
 
 When working on template features:
