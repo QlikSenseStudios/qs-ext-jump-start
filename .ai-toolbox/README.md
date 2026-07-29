@@ -15,7 +15,7 @@ Always start by loading context from './.ai-toolbox/context.global.md' and follo
 ```
 context.global.md + context.local.md     # core — always loaded
 context.global.md -> context.state.md     # project status
-context.global.md -> commands/initialization.md   # first-time setup
+context.global.md -> commands/bootstrap-project-from-template.md   # first-time setup
 ```
 
 ## System Structure
@@ -28,7 +28,7 @@ context.global.md -> commands/initialization.md   # first-time setup
 ├── context.backlog.md       # upcoming work and recently completed items
 ├── plans/                   # pre-planning context, one file per upcoming work item
 ├── upstream-notes/          # findings for upstream maintainers (not in version control)
-├── commands/                # operation patterns (initialization, development, project, context)
+├── commands/                # one file per operation pattern (see commands/README.md for the index)
 ├── docs/                    # documentation about this context system
 ├── project/                 # project overview and quality standards
 ├── domains/                 # domain-specific contexts
@@ -51,4 +51,5 @@ context.global.md -> commands/initialization.md   # first-time setup
 Add domain, pattern, or tool contexts as needed. See the guides in `docs/` for how to extend each area. Update `context.global.md` Available Contexts when adding new files so agents can discover them.
 
 ---
-*See `docs/` for human-readable guides. See `context.global.md` for maintenance rules.*
+
+_See `docs/` for human-readable guides. See `context.global.md` for maintenance rules._

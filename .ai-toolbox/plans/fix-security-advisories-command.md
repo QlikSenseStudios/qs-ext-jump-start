@@ -1,14 +1,16 @@
 # Fix Security Advisories Command
 
 **Roadmap entry**: Add a "Fix Security Advisories" command resolving npm audit vulnerabilities with non-breaking fixes only.
-**Depends on**: commands-one-per-file (lands as its own file post-re-org)
+**Depends on**: none (commands-one-per-file re-org complete; lands as commands/fix-security-advisories.md)
 **Complexity**: Low
 **Execution tier**: light
 
 ## Target Files
+
 - .ai-toolbox/commands/ — create — new command file (name per re-org convention); sorted before the Update Nebula.js Dependencies command (generic above project-specific)
 
 ## Source Notes
+
 Security vulnerabilities reported by `npm audit` are addressable independently of any package update cycle. A standalone command gives it a named branch, a full validation gate, and a clear PR label rule.
 
 Command definition (from downstream findings, ready to adapt):
@@ -27,8 +29,10 @@ Command definition (from downstream findings, ready to adapt):
 - **PR label**: `version:patch` if one or more vulnerabilities resolved; `none` if `package-lock.json` unchanged
 
 ## Prior Art in Repo
+
 - tools/github-actions.md Dependency Audit section — audit gate policy this command references
 - Recent commit f5fbc19 "chore(deps): resolve npm audit vulnerabilities (#104)" — a real instance of this workflow having been done ad hoc
 
 ## Open Questions
+
 - Step 2 (branch creation) and step 6 (handoff) must respect the user's VCS workflow preferences in context.local.md — phrase branch/validation steps to be workflow-agnostic per the Workflow Agnostic rule
