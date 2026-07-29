@@ -2,29 +2,33 @@
 
 **AI Agent Entry Point**: Start here for all context loading. `context.local.md` automatically merged.
 
-**Initialization Required**: If `context.local.md` doesn't exist, this workspace has not been initialized yet — the user has set up from the template but has not run the initialization workflow. Follow `./commands/initialization.md` before proceeding.
+**Initialization Required**: If `context.local.md` doesn't exist, this workspace has not been initialized yet — the user has set up from the template but has not run the initialization workflow. Follow `./commands/bootstrap-project-from-template.md` before proceeding.
 
 ## Definitions
+
 - **Project**: The current project using this context management system
 - **Context System**: The hierarchical context management structure within the project
 - **Root README**: `../README.md` (project-level documentation)
 - **System README**: `./README.md` (context system documentation)
 
 ## Hierarchy Levels
+
 1. **Core**: context.global.md + context.local.md (auto-merged, generated if missing)
 2. **Operational**: context.state.md + context.backlog.md + plans/ + available commands/
 3. **Domain**: domains/ (qlik-extension.md primary + research.md as additional example) + patterns/ (setup.md example provided) + tools/ (git.md — Git conventions and PR workflow; github-actions.md — CI/CD workflows)
 4. **Project**: project/ (pre-configured stubs — populate with your project details)
 
 ## Standard Loading Paths
-*Organized by logical importance and application order*
+
+_Organized by logical importance and application order_
 
 **Core Context**: context.global.md + context.local.md (auto-merged)
 **Project Status**: context.global.md → context.state.md
 **Plan Building**: context.global.md → upcoming work item (context.backlog.md) → plans/ file for that item
-**Initialization**: context.global.md → commands/initialization.md
+**Initialization**: context.global.md → commands/bootstrap-project-from-template.md
 
 ### Loading Sequence
+
 1. **Core**: context.global.md + context.local.md (auto-merged)
 2. **Operational**: context.state.md + available commands/
 3. **Domain**: domains/ + patterns/ + tools/
@@ -44,16 +48,18 @@
 **CI Workflow Changes**:
 → tools/github-actions.md
 
-*Additional loading paths available as modules are configured*
+_Additional loading paths available as modules are configured_
 
 ## Available Contexts
 
 ### Level 2 (Operational)
+
 - `context.state.md` - current project status
 - `context.backlog.md` - project backlog and recently completed work
 - `plans/` - pre-planning context for upcoming work items (one file per item; see plans/README.md for the skeleton)
 
 ### Level 3 (Domain)
+
 - `domains/` - domain-specific contexts
   - `qlik-extension.md` - Qlik Sense extension development (Nebula.js, test infrastructure, architecture)
   - `research.md` - research workflows (base system example)
@@ -62,12 +68,14 @@
   - `git.md` - Git conventions, PR methodology, and milestone workflow
   - `github-actions.md` - CI/CD workflows, dependency audit, and version bump automation
 
-*Additional operational commands available in commands/ directory*
+_Additional operational commands available in commands/ directory_
 
 ## Maintenance Rules
-*Organized by logical importance and application order*
+
+_Organized by logical importance and application order_
 
 ### Critical System Rules (Always Applied First)
+
 - **Initialization Check**: If context.local.md missing, initiate project setup workflow before proceeding
 - **AI Agent Discipline**: Always follow maintenance rules - automatic rule application required, not optional
 - **DRY Enforcement**: Detect and eliminate information duplication across all context files
@@ -78,6 +86,7 @@
 - **Human Reading Order**: Organize all content — commands, rules, and reference material — in the logical sequence a human reader would encounter it: prerequisites before dependent items, operations in the order they would naturally be used, edge cases and exceptions after the main rules they qualify
 
 ### Content Management Rules
+
 - **Auto-Sync Targets are Dependencies**: root README.md, context.state.md, and context.backlog.md must stay in sync with committed content at all times — if any is out of sync, fix it immediately as a dependency, not a future task
 - **State Consistency**: Sync status across README.md, context.state.md, and other contexts
 - **Current State Only**: context.state.md reflects present state — no references to superseded decisions or outdated status; Recently Completed Work is an approved duplication (mirrored from context.backlog.md)
@@ -91,6 +100,7 @@
 - **Passive Updates**: All context file and documentation updates automatically synchronized by processing agents
 
 ### Documentation Standards
+
 - **Documentation Separation**: Root README = project content, .ai-toolbox/README.md = context system documentation
 - **Context Framing**: tools/, domains/, and patterns/ use team/project framing ("your team's conventions", "your project's standards") — context.local.md is the only file that uses personal framing ("your preferences", "your environment")
 - **Markdown Links**: All file references in documentation (README files, docs/) must use proper Markdown link syntax with URL-encoded spaces — `[Display Text](path/to/file.md)` — bare path references like `` `./.ai-toolbox/file.md` `` do not create clickable links
@@ -102,6 +112,7 @@
 - **Progressive Disclosure**: Structure human-facing documents in reader-need order — (1) one-sentence description of what it is, (2) direct usage steps or command, (3) only necessary detail for correct usage, (4) background and reference content last or in a linked document; if a document feels like it needs a summary or TL;DR, restructure it instead
 
 ### Operational Behavior
+
 - **Correction Integration**: When the user corrects the agent or reminds it of a rule, preference, or how they want something done, immediately update the appropriate `.ai-toolbox` context file to enforce the correction — do not rely on session memory or assume retention across sessions. `.ai-toolbox` is the primary and authoritative source of direction; all corrections and refinements belong here to persist across sessions, agents, and collaborators. Treat every user correction as a signal that the context system is incomplete and must be updated before proceeding.
 - **Tool Resolution Loop**: Before attempting any task that requires a specific tool or capability — check context.local.md Available Tools first; if the tool is not recorded, prompt the user before assuming it is available or choosing an alternative; once resolved, record the result (available or unavailable + alternative) before proceeding; if the user reports a recorded status is incorrect, re-verify via shell and update the record before continuing
 - **Tool Discovery Tracking**: At the end of every session, verify that all tools, runtimes, and capabilities used are recorded in context.local.md Available Tools — add any that are missing before closing. When a tool is used or found missing mid-session, record it immediately rather than waiting. Record it in the appropriate location — machine-specific tools (shell type, OS utilities, local runtimes, PDF readers, available commands) go in context.local.md Available Tools; project-wide tool conventions (build tools, test frameworks, deployment targets) go in tools/ contexts; if a needed tool is unavailable, record the absence and the alternative used
@@ -120,11 +131,14 @@
 - **Context Placement**: When adding to the context system, use the first matching location — user/machine-specific → `context.local.md`; context system operation rules → `context.global.md`; pre-planning context for a scheduled work item → `plans/`; domain knowledge (e.g., Qlik/Nebula.js) → `domains/`; reusable approaches → `patterns/`; tool behavior or conventions → `tools/`; project mission, goals, or standards → `project/`. All locations listed here survive initialization and apply to all projects using this template.
 - **Command Execution**: When the user invokes a named command, read its definition from the commands/ directory and execute every step as written — do not answer from session memory or skip steps because the answer seems known. Session context may be incomplete or stale; the command definition is authoritative.
 - **Branch Protection**: When the user requests changes while on main/master branch, create a feature branch before proceeding. Never apply code changes directly to main/master. If already on main/master when changes are requested, check out a new branch (follow project branching convention from `tools/git.md`), then stage changes on that branch.
+- **Plan Structure Order**: When building an implementation plan for a work item that will make code changes, place feature branch creation as the first step (per Branch Protection) and running tests plus any other required verification as the last step(s), before merge. This front-loads the branch check so the plan is safe to execute immediately, and back-loads verification so the plan is not considered complete until tests pass — do not interleave verification only at the end of individual steps when the change set spans multiple steps.
 
 ## Version Control Integration
+
 - **User Exclusions**: `context.local.md` (covered by `*.local.*` in .gitignore), `.sandbox/` (gitignored), `upstream-notes/` (gitignored — findings for upstream maintainers, sent manually), excluded via .gitignore
 - **Project Files**: All project infrastructure committed and versioned
 - **Reference Usage**: Can examine ignored files (node_modules, dist/, *-ext/) for context without including in commits
 
 ---
-*Keep this file compact and machine-readable. See `./README.md` for human documentation.*
+
+_Keep this file compact and machine-readable. See `./README.md` for human documentation._

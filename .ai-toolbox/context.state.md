@@ -3,24 +3,28 @@
 Current operational status for AI agents. Machine-readable only.
 
 ## Status
-- **Phase**: Ready to initialize project  
+
+- **Phase**: Ready to initialize project
 - **Project**: Context system operational
 
 ## Context Health
-- **Global Routing**: ✅ context.global.md 
-- **Local Environment**: ⚠️ context.local.md (generated during project initialization)  
+
+- **Global Routing**: ✅ context.global.md
+- **Local Environment**: ⚠️ context.local.md (generated during project initialization)
 - **Project State**: ✅ context.state.md
 - **Core System**: ✅ Ready for project initialization
 
 ## Recently Completed Work
-*Project deliverables and features only — context system maintenance is not recorded here. Mirrored from context.backlog.md — approved duplication; full project deliverable history accumulates here permanently while backlog ages out per its criteria.*
 
-| Item | Contributor | Date |
-|------|-------------|------|
-| *(no completed items yet)* | | |
+_Project deliverables and features only — context system maintenance is not recorded here. Mirrored from context.backlog.md — approved duplication; full project deliverable history accumulates here permanently while backlog ages out per its criteria._
+
+| Item                       | Contributor | Date |
+| -------------------------- | ----------- | ---- |
+| _(no completed items yet)_ |             |      |
 
 ## Available Modules
-- **Commands**: initialization.md (project setup), context.md (context management — includes List Commands), development.md (development workflows), project.md (project management)
+
+- **Commands**: one file per command — see commands/README.md for the full index
 - **Documentation**: Getting Started.md, Local Context.md, Backlog.md, Project Context.md, Domains.md, Patterns.md, Plans.md, Tools.md, Commands.md
 - **Project Context**: overview.md, standards.md
 - **Domain Contexts**: qlik-extension.md (Qlik Sense extension development), research.md (example — add more as needed)
@@ -30,12 +34,14 @@ Current operational status for AI agents. Machine-readable only.
 - **Core Context**: System README.md
 
 ## Current Capabilities
+
 - Project initialization workflow
 - Context-aware Qlik extension development support
 - Git conventions, PR methodology, and milestone workflow
 - Qlik Sense / Nebula.js domain context
 
 ## Workspace Structure
+
 ```
 <your-extension>/                # Project root
 ├── .ai-toolbox/                 # Context management system
@@ -44,12 +50,12 @@ Current operational status for AI agents. Machine-readable only.
 │   ├── context.backlog.md       # Project backlog and completed work
 │   ├── plans/                   # Pre-planning context (one file per upcoming work item)
 │   ├── upstream-notes/          # Upstream-agnostic findings (gitignored; send manually)
-│   ├── commands/                # Available operations
-│   │   ├── README.md           # Commands directory guide
-│   │   ├── initialization.md   # Project initialization
-│   │   ├── context.md          # Context management operations
-│   │   ├── development.md      # Development workflow patterns
-│   │   └── project.md          # Project management operations
+│   ├── commands/                # Available operations — one file per command
+│   │   ├── README.md           # Commands directory guide (index + example ideas)
+│   │   ├── bootstrap-project-from-template.md  # Project initialization
+│   │   ├── list-commands.md    # Display all available commands
+│   │   ├── review-change-set.md    # Pre-commit consistency review
+│   │   └── describe-change-set.md  # Commit/PR description generation
 │   ├── docs/                   # User documentation
 │   │   ├── Getting Started.md  # User onboarding guide
 │   │   ├── Local Context.md    # User customization guide
@@ -79,17 +85,21 @@ Current operational status for AI agents. Machine-readable only.
 ```
 
 ## System Architecture Status
+
 - **Core System**: ✅ Hierarchical context system operational
 - **User Experience**: ✅ Clean initialization process with preference collection
 - **DRY Principles**: ✅ Single source of truth maintained across contexts
 - **Documentation**: ✅ User-focused guides ready for use
 
 ## Maintenance Rules
-*Organized by logical importance and application order*
+
+_Organized by logical importance and application order_
+
 - **Current State Only**: No references to superseded decisions or outdated status — reflects present state only; Recently Completed Work section is the permanent project history and accumulates indefinitely (approved exception)
 - **Agent Agnostic**: No references to specific agents or users
 - **Passive Updates**: Automatically synchronized by processing agents
 - **Project State Sync**: Automatically update root README project status section
 
 ---
-*Updated automatically during operations*
+
+_Updated automatically during operations_
