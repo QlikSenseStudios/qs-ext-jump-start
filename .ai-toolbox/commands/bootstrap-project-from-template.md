@@ -62,6 +62,10 @@ Apply the name and description from Step 2 to:
 - **`src/meta.json`**: Update `name` field
 - **`README.md`**: Replace the template title, description, and purpose with the extension's name and purpose; replace the Quick Start section with extension-specific setup steps (remove "Use this template" and AI initialization instructions — those are complete; retain `npm install`, environment setup links, `npm run serve`); remove the Contributing section (references `CONTRIBUTING.md` which is deleted in Step 7)
 - **`project/overview.md`**: Populate mission, goals, and scope from the collected extension purpose
+- **`src/qae/object-properties.js`**: Replace the placeholder `footnote: 'This is a template project for creating Qlik Sense extensions',` with a value derived from the Step 2 description:
+  - If the description is short (roughly one sentence, under ~80-100 characters), use it as-is as the `footnote` value
+  - If the description is long (multi-sentence or exceeds that length), ask the user for a short one-line caption-length summary instead of using the raw description, and use that as the `footnote` value
+  - Before writing, sanitize the value: replace any em dash (U+2014) with an ASCII hyphen-minus (`-`) — the engine silently replaces em dashes with a space in property-bag strings, so the raw character must never be written
 
 ### Step 6a — Reset Project State
 
@@ -118,6 +122,7 @@ The `.ai-toolbox/` directory is the single source of truth for all project conte
 - Confirm `.ai-toolbox/plans/` contains only `README.md` and `.ai-toolbox/upstream-notes/template-project-context-updates.md` exists
 - Confirm CI workflows retained or removed per Step 5; if retained, remind user to create version bump labels in GitHub
 - Confirm `project/overview.md` reflects the extension's purpose
+- Confirm `footnote` in `src/qae/object-properties.js` reflects the extension's description, not the template placeholder
 - Confirm `docs/CHANGELOG.md` has been reset with initialization entry
 - Report what was completed and what still requires manual action (e.g., git remote configuration, Qlik environment setup)
 
