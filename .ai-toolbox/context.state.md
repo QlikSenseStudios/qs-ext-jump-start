@@ -53,9 +53,11 @@ _Project deliverables and features only — context system maintenance is not re
 │   ├── commands/                # Available operations — one file per command
 │   │   ├── README.md           # Commands directory guide (index + example ideas)
 │   │   ├── bootstrap-project-from-template.md  # Project initialization
-│   │   ├── list-commands.md    # Display all available commands
+│   │   ├── fix-security-advisories.md  # npm audit non-breaking fix workflow
+│   │   ├── update-nebula-deps.md  # Bulk @nebula.js package version bump
+│   │   ├── describe-change-set.md  # Commit/PR description generation
 │   │   ├── review-change-set.md    # Pre-commit consistency review
-│   │   └── describe-change-set.md  # Commit/PR description generation
+│   │   └── list-commands.md    # Display all available commands
 │   ├── docs/                   # User documentation
 │   │   ├── Getting Started.md  # User onboarding guide
 │   │   ├── Local Context.md    # User customization guide

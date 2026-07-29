@@ -6,6 +6,7 @@ One command per file for hierarchical loading. Files are listed below in logical
 
 - [bootstrap-project-from-template.md](bootstrap-project-from-template.md) — Project setup from template (auto-triggered when context.local.md is missing)
 - [fix-security-advisories.md](fix-security-advisories.md) — Resolve npm audit vulnerabilities using non-breaking fixes only
+- [update-nebula-deps.md](update-nebula-deps.md) — Bulk-update all five @nebula.js packages in one PR
 - [describe-change-set.md](describe-change-set.md) — Generate a descriptive summary of a change set for recording
 - [review-change-set.md](review-change-set.md) — Verify a change set is consistent, correct, and ready to record
 - [list-commands.md](list-commands.md) — Display all available commands from this index

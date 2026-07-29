@@ -4,3 +4,7 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    groups:
+      nebula-packages:
+        patterns:
+          - '@nebula.js/*'
