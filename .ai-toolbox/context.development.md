@@ -77,43 +77,42 @@ _Annotations: `[complexity / execution tier]` — complexity is Low/Medium/High;
 
 **Stage 1 — Commands & initialization** _(immediately useful operational tooling)_
 
-1. **Update Nebula.js Dependencies command** `[Low / light]` — bulk five-package @nebula.js bump in one PR. Context: plans/update-nebula-deps-command.md
-2. **Initialization footnote prompt** `[Low / light]` — initialize flow writes a project-specific footnote in src/qae/object-properties.js. Context: plans/initialization-footnote-prompt.md
+1. **Initialization footnote prompt** `[Low / light]` — initialize flow writes a project-specific footnote in src/qae/object-properties.js. Context: plans/initialization-footnote-prompt.md
 
 **Stage 2 — Corrections** _(existing content is wrong and actively misleading)_
 
-3. **Monaco editor read correction** `[Medium / standard]` — replace the .view-line read approach with Ctrl+A → Ctrl+C → clipboard in docs and test helpers. Context: plans/monaco-editor-read.md
+2. **Monaco editor read correction** `[Medium / standard]` — replace the .view-line read approach with Ctrl+A → Ctrl+C → clipboard in docs and test helpers. Context: plans/monaco-editor-read.md
 
 **Stage 3 — Scaffold correctness & robustness** _(latent bugs and blind spots every downstream project inherits)_
 
-4. **Selection double-call guard** `[Medium / standard]` — optimistic lastInSelection flag prevents intermittent pending-selection wipe. Context: plans/selection-double-call-guard.md
-5. **Limits single source of truth** `[Medium / standard]` — validation predicates and limit strings derived from data.js. Context: plans/limits-single-source.md
-6. **Extension container test identifier** `[Low / standard]` — second identifier so broken validation cannot pass silently. Context: plans/extension-container-identifier.md
+3. **Selection double-call guard** `[Medium / standard]` — optimistic lastInSelection flag prevents intermittent pending-selection wipe. Context: plans/selection-double-call-guard.md
+4. **Limits single source of truth** `[Medium / standard]` — validation predicates and limit strings derived from data.js. Context: plans/limits-single-source.md
+5. **Extension container test identifier** `[Low / standard]` — second identifier so broken validation cannot pass silently. Context: plans/extension-container-identifier.md
 
 **Stage 4 — Structure** _(prerequisite for Stage 5)_
 
-7. **Testing domain split** `[Medium / standard]` — move testing content into domains/qlik-extension-testing.md; refresh the stale module listing into a module/describe table. Context: plans/testing-domain-split.md
+6. **Testing domain split** `[Medium / standard]` — move testing content into domains/qlik-extension-testing.md; refresh the stale module listing into a module/describe table. Context: plans/testing-domain-split.md
 
 **Stage 5 — Testing guidance** _(all depend on item 7)_
 
-8. **Targeted test commands** `[Low / light]` — --grep run patterns and the full-suite-at-commit-gates policy. Context: plans/targeted-test-commands.md
-9. **Playwright robustness patterns** `[Medium / standard]` — null-safe style assertions, multi-click race guard, MEAS_MIN=0 measure-add signal, DUAL-field assertions. Context: plans/playwright-robustness.md
-10. **Engine selections persistence** `[Low / light]` — resetConfiguration() does not clear engine selections; clearSelections() in the pre-test guard. Context: plans/engine-selections-persistence.md
-11. **Test-time config injection** `[Low / light]` — nebula serve is webpack-based; globalSetup/globalTeardown file-swap pattern. Context: plans/test-time-config-injection.md
-12. **Render cycle & styling principle** `[Low / light]` — two-render cycle and static-vs-expression-driven styling rule. Context: plans/render-cycle-and-styling-principle.md
+7. **Targeted test commands** `[Low / light]` — --grep run patterns and the full-suite-at-commit-gates policy. Context: plans/targeted-test-commands.md
+8. **Playwright robustness patterns** `[Medium / standard]` — null-safe style assertions, multi-click race guard, MEAS_MIN=0 measure-add signal, DUAL-field assertions. Context: plans/playwright-robustness.md
+9. **Engine selections persistence** `[Low / light]` — resetConfiguration() does not clear engine selections; clearSelections() in the pre-test guard. Context: plans/engine-selections-persistence.md
+10. **Test-time config injection** `[Low / light]` — nebula serve is webpack-based; globalSetup/globalTeardown file-swap pattern. Context: plans/test-time-config-injection.md
+11. **Render cycle & styling principle** `[Low / light]` — two-render cycle and static-vs-expression-driven styling rule. Context: plans/render-cycle-and-styling-principle.md
 
 **Stage 6 — Engine & property-panel domain knowledge**
 
-13. **Hypercube pagination** `[High / deep]` — fetchAllDataPages scaffold utility, INITIAL_FETCH_HEIGHT, cancellation-safe integration. Context: plans/hypercube-pagination.md
-14. **Schema normalization & getProperties()** `[Medium / standard]` — engine strips unknown properties at both levels; getProperties() read pattern. Depends on item 13. Context: plans/schema-normalization-getproperties.md
-15. **Engine model additions** `[Low / light]` — associative model bullets, DUAL semantics, em-dash encoding. Context: plans/engine-model-additions.md
-16. **Nebula Hub vs production property panel** `[Low / light]` — components absent from Nebula Hub; Monaco dev workflow; parked Qlik Cloud finding. Context: plans/nebula-hub-vs-production.md
-17. **Property configuration architecture** `[Low / light]` — three-file role-boundary table plus scaffold boundary comments. Context: plans/property-config-architecture.md
+12. **Hypercube pagination** `[High / deep]` — fetchAllDataPages scaffold utility, INITIAL_FETCH_HEIGHT, cancellation-safe integration. Context: plans/hypercube-pagination.md
+13. **Schema normalization & getProperties()** `[Medium / standard]` — engine strips unknown properties at both levels; getProperties() read pattern. Depends on item 12. Context: plans/schema-normalization-getproperties.md
+14. **Engine model additions** `[Low / light]` — associative model bullets, DUAL semantics, em-dash encoding. Context: plans/engine-model-additions.md
+15. **Nebula Hub vs production property panel** `[Low / light]` — components absent from Nebula Hub; Monaco dev workflow; parked Qlik Cloud finding. Context: plans/nebula-hub-vs-production.md
+16. **Property configuration architecture** `[Low / light]` — three-file role-boundary table plus scaffold boundary comments. Context: plans/property-config-architecture.md
 
 **Stage 7 — Attribute expression styling**
 
-18. **Attribute expression styling pattern** `[High / deep]` — consolidated qAttributeExpressions pattern incl. the one-AER-per-ref rule. Depends on items 12 and 16. Context: plans/attribute-expression-styling-pattern.md
-19. **Color normalization utils** `[Medium / standard]` — d3-color based toRGB/isDarkColor scaffold helpers. Depends on item 18. Context: plans/color-normalization-utils.md
+17. **Attribute expression styling pattern** `[High / deep]` — consolidated qAttributeExpressions pattern incl. the one-AER-per-ref rule. Depends on items 12 and 16. Context: plans/attribute-expression-styling-pattern.md
+18. **Color normalization utils** `[Medium / standard]` — d3-color based toRGB/isDarkColor scaffold helpers. Depends on item 17. Context: plans/color-normalization-utils.md
 
 ### Optional Enhancements
 
