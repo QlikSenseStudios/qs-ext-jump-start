@@ -11,7 +11,7 @@
 
 import { IDENTIFIERS } from '../core/identifiers.js';
 import { clickWithBackdropHandling, clickFirstVisible } from '../utilities/dom.js';
-import { setJsonEditorContent, getJsonEditorContent, expandMonacoEditorContent } from '../utilities/json-editor.js';
+import { setJsonEditorContent, getJsonEditorContent } from '../utilities/json-editor.js';
 import { WAIT_TIMES } from '../core/constants.js';
 
 // Per-page state cache — WeakMap ensures automatic cleanup when pages are disposed
@@ -172,7 +172,6 @@ class NebulaHubPage {
 
     try {
       await this.page.locator('.monaco-editor').waitFor({ state: 'visible', timeout: 5000 });
-      await expandMonacoEditorContent(this.page);
 
       const jsonResult = await getJsonEditorContent(this.page);
       if (!jsonResult.success) {

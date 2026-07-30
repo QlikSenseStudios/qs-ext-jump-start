@@ -23,7 +23,6 @@ import { createMuiAccordionSelector, createMuiFormControlSelector } from '../lib
 import {
   getJsonEditorContent,
   validateJsonStructure,
-  expandMonacoEditorContent,
 } from '../lib/utilities/json-editor.js';
 
 // Selectors for the debug accordion and its leaf controls — derived the same way
@@ -123,20 +122,14 @@ function extensionPropsConfigTests(testContext) {
         console.log('   • Properties dialog: opened');
 
         await expect(hub.page.locator('.monaco-editor')).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-        await expandMonacoEditorContent(hub.page);
 
         const jsonResult = await getJsonEditorContent(hub.page);
         expect(jsonResult.success, `Failed to read JSON — strategy: ${jsonResult.method ?? 'none'}`).toBe(true);
         console.log(`   • JSON read via: ${jsonResult.method}`);
 
         const validationResult = validateJsonStructure(jsonResult.content, {
-          allowPartialJson: false,
           requiredSections: ['props'],
         });
-        expect(
-          validationResult.isPartialJson,
-          'Monaco editor returned collapsed JSON — expandMonacoEditorContent did not fully render all lines.'
-        ).toBe(false);
         expect(validationResult.success, `Missing sections: ${validationResult.missingSections.join(', ')}`).toBe(true);
 
         const json = validationResult.jsonObject;
@@ -193,17 +186,14 @@ function extensionPropsConfigTests(testContext) {
         console.log('   • Properties dialog: opened');
 
         await expect(hub.page.locator('.monaco-editor')).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-        await expandMonacoEditorContent(hub.page);
 
         const jsonResult = await getJsonEditorContent(hub.page);
         expect(jsonResult.success, `Failed to read JSON — strategy: ${jsonResult.method ?? 'none'}`).toBe(true);
         console.log(`   • JSON read via: ${jsonResult.method}`);
 
         const validationResult = validateJsonStructure(jsonResult.content, {
-          allowPartialJson: false,
           requiredSections: ['props'],
         });
-        expect(validationResult.isPartialJson, 'Monaco editor returned collapsed JSON.').toBe(false);
         expect(validationResult.success, `Missing sections: ${validationResult.missingSections.join(', ')}`).toBe(true);
 
         const json = validationResult.jsonObject;

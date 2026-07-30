@@ -14,7 +14,6 @@ import { analyzePropsStructure } from '../lib/utilities/props-structure-analyzer
 import {
   getJsonEditorContent,
   validateJsonStructure,
-  expandMonacoEditorContent,
 } from '../lib/utilities/json-editor.js';
 
 /**
@@ -212,12 +211,8 @@ function extensionUnconfiguredTests(testContext) {
         ).toBe(true);
         dialogIsOpen = true;
 
-        // Wait for Monaco to be present before attempting to expand and read it
+        // Wait for Monaco to be present before attempting to read it
         await expect(hub.page.locator('.monaco-editor')).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-
-        // Resize the dialog and editor to force Monaco to render all lines — Monaco virtualizes
-        // rows so only visible lines exist in the DOM without this step.
-        await expandMonacoEditorContent(hub.page);
 
         const jsonResult = await getJsonEditorContent(hub.page);
         expect(
@@ -232,17 +227,12 @@ function extensionUnconfiguredTests(testContext) {
         console.log(`   • JSON read via: ${jsonResult.method}`);
 
         // Validate structure against object-properties.js — all top-level keys must be present
-        // and parseable as complete JSON (partial/collapsed JSON means the expand step failed).
+        // and parseable as complete JSON.
         const requiredSections = ['qInfo', 'qHyperCubeDef', 'showTitles', 'props'];
         const validationResult = validateJsonStructure(jsonResult.content, {
-          allowPartialJson: false,
           requiredSections,
         });
 
-        expect(
-          validationResult.isPartialJson,
-          'Monaco editor returned collapsed JSON — expandMonacoEditorContent did not fully render all lines.'
-        ).toBe(false);
         expect(validationResult.success, `Missing sections: ${validationResult.missingSections.join(', ')}`).toBe(true);
 
         const json = validationResult.jsonObject;

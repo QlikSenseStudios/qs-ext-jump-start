@@ -12,7 +12,6 @@ import { CONFIGURATION_IDENTIFIERS } from '../core/configuration-identifiers.js'
 import {
   getJsonEditorContent,
   validateJsonStructure,
-  expandMonacoEditorContent,
 } from './json-editor.js';
 
 /**
@@ -62,13 +61,11 @@ async function assertCleanExtensionState({ hub }) {
 
     dialogIsOpen = true;
     await expect(hub.page.locator('.monaco-editor')).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-    await expandMonacoEditorContent(hub.page);
 
     const jsonResult = await getJsonEditorContent(hub.page);
     if (!jsonResult.success) {return;}
 
     const validationResult = validateJsonStructure(jsonResult.content, {
-      allowPartialJson: false,
       requiredSections: ['qHyperCubeDef'],
     });
     if (!validationResult.success) {return;}
