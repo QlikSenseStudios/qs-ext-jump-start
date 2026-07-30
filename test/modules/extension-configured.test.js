@@ -20,7 +20,6 @@ import { CONFIGURATION_IDENTIFIERS } from '../lib/core/configuration-identifiers
 import {
   getJsonEditorContent,
   validateJsonStructure,
-  expandMonacoEditorContent,
 } from '../lib/utilities/json-editor.js';
 import { assertCleanExtensionState, closePropertiesDialog } from '../lib/utilities/test-setup.js';
 
@@ -116,7 +115,6 @@ function extensionConfiguredTests(testContext) {
         dialogIsOpen = true;
 
         await expect(hub.page.locator('.monaco-editor')).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-        await expandMonacoEditorContent(hub.page);
 
         const jsonResult = await getJsonEditorContent(hub.page);
         expect(
@@ -126,13 +124,8 @@ function extensionConfiguredTests(testContext) {
         expect(jsonResult.method).toBe('Monaco Editor');
 
         const validationResult = validateJsonStructure(jsonResult.content, {
-          allowPartialJson: false,
           requiredSections: ['qHyperCubeDef'],
         });
-        expect(
-          validationResult.isPartialJson,
-          'Monaco editor returned collapsed JSON — expandMonacoEditorContent did not fully render all lines.'
-        ).toBe(false);
         expect(validationResult.success, `Missing sections: ${validationResult.missingSections.join(', ')}`).toBe(true);
 
         const json = validationResult.jsonObject;
@@ -225,7 +218,6 @@ function extensionConfiguredTests(testContext) {
         dialogIsOpen = true;
 
         await expect(hub.page.locator('.monaco-editor')).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-        await expandMonacoEditorContent(hub.page);
 
         const jsonResult = await getJsonEditorContent(hub.page);
         expect(
@@ -235,13 +227,8 @@ function extensionConfiguredTests(testContext) {
         expect(jsonResult.method).toBe('Monaco Editor');
 
         const validationResult = validateJsonStructure(jsonResult.content, {
-          allowPartialJson: false,
           requiredSections: ['qHyperCubeDef'],
         });
-        expect(
-          validationResult.isPartialJson,
-          'Monaco editor returned collapsed JSON — expandMonacoEditorContent did not fully render all lines.'
-        ).toBe(false);
         expect(validationResult.success, `Missing sections: ${validationResult.missingSections.join(', ')}`).toBe(true);
 
         const json = validationResult.jsonObject;
@@ -366,7 +353,6 @@ function extensionConfiguredTests(testContext) {
         dialogIsOpen = true;
 
         await expect(hub.page.locator('.monaco-editor')).toBeVisible({ timeout: TIMEOUTS.STANDARD });
-        await expandMonacoEditorContent(hub.page);
 
         const jsonResult = await getJsonEditorContent(hub.page);
         expect(
@@ -376,13 +362,8 @@ function extensionConfiguredTests(testContext) {
         expect(jsonResult.method).toBe('Monaco Editor');
 
         const validationResult = validateJsonStructure(jsonResult.content, {
-          allowPartialJson: false,
           requiredSections: ['qHyperCubeDef'],
         });
-        expect(
-          validationResult.isPartialJson,
-          'Monaco editor returned collapsed JSON — expandMonacoEditorContent did not fully render all lines.'
-        ).toBe(false);
         expect(validationResult.success, `Missing sections: ${validationResult.missingSections.join(', ')}`).toBe(true);
 
         const json = validationResult.jsonObject;

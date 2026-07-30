@@ -57,13 +57,13 @@ async function getJsonEditorContent(page) {
     {
       name: 'Monaco Editor',
       selector: '.monaco-editor .view-lines',
-      // Nebula Hub does not expose window.monaco — read by collecting all rendered .view-line
-      // elements. Call expandMonacoEditorContent() first so Monaco renders the full document.
+      // Monaco virtualizes rows, so reading rendered .view-line text truncates long documents.
+      // Select-all + copy targets the full document model instead, mirroring the write strategy.
       method: async (element) => {
-        return await element.evaluate((container) => {
-          const lines = [...container.querySelectorAll('.view-line')];
-          return lines.map((l) => l.textContent).join('\n');
-        });
+        await element.click();
+        await page.keyboard.press('Control+a');
+        await page.keyboard.press('Control+c');
+        return await page.evaluate(() => navigator.clipboard.readText());
       },
     },
     {
@@ -98,13 +98,10 @@ async function getJsonEditorContent(page) {
           const content = await strategy.method(element);
 
           if (content && content.trim().length > 0) {
-            // Monaco uses non-breaking spaces (U+00A0) for indentation — strip all
-            // non-printable/non-ASCII-printable chars so JSON.parse works correctly
-            const sanitized = content.replace(/[^\x20-\x7E\n]/g, ' ').trim();
             return {
               success: true,
               method: strategy.name,
-              content: sanitized,
+              content: content.trim(),
             };
           }
         }
@@ -244,55 +241,21 @@ async function setJsonEditorContent(page, jsonContent) {
  *
  * @param {string} jsonContent - The JSON content to validate
  * @param {Object} options - Validation options
- * @param {boolean} options.allowPartialJson - Allow validation of partial/collapsed JSON content
  * @param {Array<string>} options.requiredSections - Array of required JSON property names
  * @param {Object} [options.propertyPaths] - Mapping of section names to their JSON paths (e.g., {'qType': 'qInfo.qType'})
  * @param {Object} [options.expectedValues] - Expected values for specific properties (e.g., {'qType': 'my-extension'})
  * @returns {Object} Validation result with success status and details
  */
 function validateJsonStructure(jsonContent, options = {}) {
-  const { allowPartialJson = true, requiredSections = [], propertyPaths = {}, expectedValues = {} } = options;
+  const { requiredSections = [], propertyPaths = {}, expectedValues = {} } = options;
 
   const result = {
     success: false,
-    isPartialJson: false,
     foundSections: [],
     missingSections: [],
     validationDetails: [],
     jsonObject: null,
   };
-
-  // Check if this is collapsed/partial JSON (Monaco Editor display)
-  const isCollapsed = jsonContent.includes('…') || jsonContent.includes('{…');
-
-  if (isCollapsed && allowPartialJson) {
-    result.isPartialJson = true;
-    result.validationDetails.push('Detected collapsed JSON content from Monaco Editor');
-
-    // Validate visible structure in collapsed content
-    for (const section of requiredSections) {
-      if (jsonContent.includes(`"${section}"`)) {
-        result.foundSections.push(section);
-        result.validationDetails.push(`✓ Found section: ${section}`);
-
-        // Check expected values for this section in partial JSON
-        if (expectedValues[section]) {
-          const expectedValue = expectedValues[section];
-          if (jsonContent.includes(`"${section}": "${expectedValue}"`)) {
-            result.validationDetails.push(`✓ Found correct ${section}: ${expectedValue}`);
-          } else {
-            result.validationDetails.push(`⚠ Section ${section} found but value validation limited in partial JSON`);
-          }
-        }
-      } else {
-        result.missingSections.push(section);
-        result.validationDetails.push(`✗ Missing section: ${section}`);
-      }
-    }
-
-    result.success = result.missingSections.length === 0;
-    return result;
-  }
 
   // Try to parse as complete JSON
   try {
@@ -346,40 +309,6 @@ function validateJsonStructure(jsonContent, options = {}) {
 }
 
 /**
- * Attempts to expand collapsed content in Monaco Editor before reading JSON.
- * This function tries various methods to expand collapsed sections.
- *
- * @param {import('@playwright/test').Page} page - Playwright page object
- * @returns {Promise<boolean>} True if expansion was attempted, false otherwise
- */
-async function expandMonacoEditorContent(page) {
-  try {
-    const monacoEditor = page.locator('.monaco-editor');
-    if (await monacoEditor.isVisible()) {
-      // Expand the dialog content and editor height so Monaco renders all lines at once.
-      // Monaco virtualizes rows — only visible lines are in the DOM — so we must make the
-      // viewport tall enough to hold the full document before reading via .view-line elements.
-      await page.evaluate(() => {
-        const content = document.querySelector('.MuiDialogContent-root');
-        if (content) {
-          content.style.maxHeight = 'none';
-          content.style.height = '8000px';
-          content.style.overflow = 'visible';
-        }
-        const editor = document.querySelector('.monaco-editor');
-        if (editor) { editor.style.height = '8000px'; }
-      });
-      await page.waitForTimeout(400);
-      return true;
-    }
-  } catch (error) {
-    console.debug('Monaco Editor expansion failed:', error.message);
-  }
-
-  return false;
-}
-
-/**
  * Clears JSON editor content by setting it to empty object.
  * This function provides a clean way to reset JSON editors for testing.
  *
@@ -395,6 +324,5 @@ export {
   setJsonEditorContent,
   getJsonEditorContent,
   validateJsonStructure,
-  expandMonacoEditorContent,
   clearJsonEditorContent,
 };
